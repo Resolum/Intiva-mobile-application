@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -7,10 +9,11 @@ plugins {
 
     // KSP plugin for annotation processing
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
-    namespace = "com.resolum.intiva.intiva"
+    namespace = "com.resolum.intiva"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -18,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.resolum.intiva.intiva"
+        applicationId = "com.resolum.intiva"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -28,12 +31,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/v1/\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"https://stocksip-back-end.azurewebsites.net/api/v1/\"")
         }
     }
     compileOptions {
@@ -42,10 +49,17 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+        }
     }
 }
 
 dependencies {
+    // Core dependencies
     implementation(libs.androidx.core.ktx)
 
     // Compose dependencies
@@ -58,6 +72,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.animation)
 
     // Retrofit and Gson Converter
     implementation(libs.retrofit)
@@ -75,6 +90,8 @@ dependencies {
 
     // Test dependencies
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -99,4 +116,9 @@ dependencies {
     // CameraX ML Kit Vision dependencies for integrating ML Kit's vision APIs with CameraX
     implementation(libs.androidx.camera.mlkit.vision)
 
+    // Datastore dependencies for local data storage
+    implementation(libs.androidx.datastore.preferences)
+
+    // Material Icons dependency for using Material Design icons in the app
+    implementation(libs.androidx.compose.material.icons.extended)
 }
