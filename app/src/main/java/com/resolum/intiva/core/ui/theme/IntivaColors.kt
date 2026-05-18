@@ -9,6 +9,8 @@ object IntivaColors {
     val SurfaceWhite       = Color(0xFFFFFFFF)
     val FieldBackground    = Color(0xFFF0EEF8)
 
+    val BackgroundPurple   = Color(0xFF7927F5)
+
 
     // Primary
     val PrimaryGreen       = Color(0xFFB8F000)
