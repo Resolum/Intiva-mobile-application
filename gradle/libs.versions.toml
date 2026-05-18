@@ -1,14 +1,19 @@
 [versions]
-agp = "9.2.0"
+agp = "8.12.3"
 coreKtx = "1.10.1"
 lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.8.0"
-kotlin = "2.3.21"
+
+# Kotlin Version
+kotlin = "2.2.20"
 
 # Test dependencies
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+mockk = "1.14.9"
+mockwebserver = "5.3.2"
+kotlinxCoroutinesTest = "1.11.0"
 
 # Compose
 composeBom = "2026.02.01"
@@ -26,7 +31,7 @@ coilCompose = "3.3.0"
 lifecycleViewmodelCompose = "2.9.4"
 
 # Hilt
-hiltAndroid = "2.59.2"
+hiltAndroid = "2.57.2"
 
 # Hilt Navigation Compose
 hiltNavigationCompose = "1.3.0"
@@ -35,16 +40,26 @@ hiltNavigationCompose = "1.3.0"
 kspVersion = "2.2.20-2.0.3"
 
 # Room
-roomRuntime = "2.8.3"
+roomRuntime = "2.8.1"
 
 # Camara X
 camerax = "1.6.0"
 
+# DataStore
+datastorePreferences = "1.2.1"
+
+# Material Icons Extended
+materialIconsExtended = "1.7.8"
+animation = "1.11.1"
 
 [libraries]
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+
+# DataStore
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 
 # Compose dependencies
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -59,9 +74,12 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
 # Retrofit
+mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 
@@ -92,10 +110,12 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 # KSP plugin
 ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }

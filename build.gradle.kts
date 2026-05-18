@@ -8,4 +8,5 @@ plugins {
 
     // KSP plugin for annotation processing
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kotlin.android) apply false
 }
