@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.resolum.intiva.BuildConfig
+import com.resolum.intiva.core.data.local.TokenDataStore
 import com.resolum.intiva.core.network.api.ApiClientFactory
 import com.resolum.intiva.core.network.interceptor.AuthInterceptor
 import com.resolum.intiva.core.network.interceptor.LoggingInterceptor
@@ -14,6 +15,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Singleton
@@ -47,8 +50,10 @@ object NetworkModule {
      */
     @Provides
     @Singleton
-    fun provideAuthInterceptor(): AuthInterceptor =
-        AuthInterceptor { null } // Replace with real token provider
+    fun provideAuthInterceptor(tokenDataStore: TokenDataStore): AuthInterceptor =
+        AuthInterceptor(tokenProvider = {
+            runBlocking { tokenDataStore.tokenFlow.firstOrNull() }
+        })
 
     /**
      * Provides a singleton instance of LoggingInterceptor, which logs network requests and

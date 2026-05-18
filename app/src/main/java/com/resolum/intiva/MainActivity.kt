@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Text
 import com.resolum.intiva.core.root.AppRoot
-import com.resolum.intiva.features.iam.presentation.SignUpScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 /**

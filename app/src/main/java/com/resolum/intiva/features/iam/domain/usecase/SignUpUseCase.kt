@@ -36,8 +36,6 @@ class SignUpUseCase @Inject constructor(
             return NetworkResult.Error("Password must be at least 8 characters")
         }
 
-        return repository.signUp(request).map {
-            dto -> dto.toDomain()
-        }
+        return repository.signUp(request)
     }
 }

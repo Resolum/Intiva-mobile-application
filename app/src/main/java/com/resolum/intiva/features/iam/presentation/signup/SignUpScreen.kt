@@ -1,4 +1,4 @@
-package com.resolum.intiva.features.iam.presentation
+package com.resolum.intiva.features.iam.presentation.signup
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

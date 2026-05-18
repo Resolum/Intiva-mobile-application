@@ -1,4 +1,4 @@
-package com.resolum.intiva.features.iam.presentation
+package com.resolum.intiva.features.iam.presentation.signup
 
 import androidx.lifecycle.viewModelScope
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
@@ -16,9 +16,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel para la pantalla de registro de usuario.
+ * ViewModel for the Sign-Up screen, responsible for handling user input and managing the sign-up process.
  *
- * @property signUpUseCase Caso de uso para registrar un nuevo usuario.
+ * @property signUpUseCase The use case for performing the sign-up operation, injected via Hilt.
  */
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
