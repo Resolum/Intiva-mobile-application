@@ -1,4 +1,4 @@
-package com.resolum.intiva.features.iam.presentation
+package com.resolum.intiva.features.iam.presentation.signup
 
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.features.iam.domain.models.SignUpResult
