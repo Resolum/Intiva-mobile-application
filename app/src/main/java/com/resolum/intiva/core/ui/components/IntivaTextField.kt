@@ -79,7 +79,15 @@ fun IntivaTextField(
     val borderColor = when {
         isError   -> IntivaColors.FieldBorderError
         isFocused -> IntivaColors.FieldBorderFocused
-        else      -> Color.Transparent
+        else      -> Color(0xFFE2DDF0)
+    }
+
+    val backgroundColor = if (isFocused) Color.White else Color(0xFFF9F8FD)
+
+    val iconTint = when {
+        isError   -> IntivaColors.FieldBorderError
+        isFocused -> IntivaColors.IconPurple
+        else      -> IntivaColors.TextSecondary
     }
 
     Column(modifier = modifier) {
@@ -98,7 +106,7 @@ fun IntivaTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(IntivaColors.FieldBackground)
+                .background(backgroundColor)
                 .border(
                     width = 1.5.dp,
                     color = borderColor,
@@ -111,7 +119,7 @@ fun IntivaTextField(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    tint = IntivaColors.IconPurple,
+                    tint = iconTint,
                     modifier = Modifier.size(22.dp),
                 )
 

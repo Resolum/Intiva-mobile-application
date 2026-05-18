@@ -4,13 +4,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -82,13 +86,13 @@ fun SignInScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.15f)
+                    .weight(0.26f)
                     .background(IntivaColors.BackgroundPurple),
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.65f)
+                    .weight(0.74f)
                     .background(IntivaColors.BackgroundLavender),
             )
         }
@@ -102,15 +106,16 @@ fun SignInScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 36.dp),
+                    .padding(top = 54.dp, bottom = 24.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "Intiva",
                     style = TextStyle(
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = IntivaColors.SurfaceWhite,
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White,
+                        letterSpacing = 1.sp
                     ),
                 )
             }
@@ -120,8 +125,8 @@ fun SignInScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = IntivaColors.SurfaceWhite),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             ) {
                 Column(
                     modifier = Modifier
@@ -131,21 +136,22 @@ fun SignInScreen(
                     Text(
                         text = "Bienvenido",
                         style = TextStyle(
-                            fontSize = 26.sp,
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
-                            color = IntivaColors.TextPrimary,
+                            color = Color(0xFF2C226B),
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
                     )
 
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(6.dp))
 
                     Text(
                         text = "Accede a tu cuenta familiar",
                         style = TextStyle(
                             fontSize = 14.sp,
-                            color = IntivaColors.TextSecondary,
+                            color = Color(0xFF6E6A8A),
+                            fontWeight = FontWeight.Medium
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
@@ -181,7 +187,7 @@ fun SignInScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(12.dp))
 
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -191,8 +197,8 @@ fun SignInScreen(
                             text = "¿Olvidaste tu contraseña?",
                             style = TextStyle(
                                 fontSize = 13.sp,
-                                color = IntivaColors.TextLink,
-                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF534AB7),
+                                fontWeight = FontWeight.Bold,
                             ),
                             modifier = Modifier.clickable(
                                 interactionSource = remember { MutableInteractionSource() },
@@ -202,7 +208,7 @@ fun SignInScreen(
                         )
                     }
 
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(24.dp))
 
                     AnimatedVisibility(visible = uiState.signInState is UiState.Error) {
                         Column {
@@ -232,22 +238,23 @@ fun SignInScreen(
                     ) {
                         HorizontalDivider(
                             modifier = Modifier.weight(1f),
-                            color = IntivaColors.TextSecondary.copy(alpha = 0.3f),
+                            color = Color(0xFFE2DDF0),
                         )
                         Text(
                             text = "  o continuar con  ",
                             style = TextStyle(
-                                fontSize = 12.sp,
-                                color = IntivaColors.TextSecondary,
+                                fontSize = 13.sp,
+                                color = Color(0xFF78767E),
+                                fontWeight = FontWeight.Medium
                             ),
                         )
                         HorizontalDivider(
                             modifier = Modifier.weight(1f),
-                            color = IntivaColors.TextSecondary.copy(alpha = 0.3f),
+                            color = Color(0xFFE2DDF0),
                         )
                     }
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(20.dp))
 
                     IntivaGoogleButton(
                         onClick = onGoogleSignIn,
@@ -264,17 +271,17 @@ fun SignInScreen(
             ) {
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = IntivaColors.TextSecondary, fontSize = 14.sp)) {
+                        withStyle(SpanStyle(color = Color(0xFF78767E), fontSize = 15.sp)) {
                             append("¿No tienes una cuenta? ")
                         }
                         withStyle(
                             SpanStyle(
-                                color = IntivaColors.TextLink,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp,
+                                color = Color(0xFF534AB7),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
                             )
                         ) {
-                            append("Regístrate aquí")
+                            append("Solicitar acceso")
                         }
                     },
                     modifier = Modifier.clickable(
@@ -285,7 +292,7 @@ fun SignInScreen(
                 )
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(48.dp))
         }
     }
 }

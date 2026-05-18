@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.resolum.intiva.features.finances.presentation.HomeScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
+import com.resolum.intiva.features.onboarding.presentation.OnboardingScreen
 
 /**
  * Sealed class that centralises all navigation routes in the app.
@@ -26,6 +27,7 @@ import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
  * ```
  */
 sealed class Screen(val route: String) {
+    data object Onboarding : Screen("onboarding")
     data object SignIn : Screen("sign_in")
     data object SignUp : Screen("sign_up")
     data object Home   : Screen("home")
@@ -40,13 +42,27 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.SignIn.route,
+    startDestination: String = Screen.Onboarding.route,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
+        /**
+         * Onboarding Screen
+         */
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onNavigateToSignIn = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.SignIn.route,
+                        popUpTo = Screen.Onboarding.route,
+                    )
+                }
+            )
+        }
+
         /**
          * IAM Screens
          */
