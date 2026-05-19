@@ -1,4 +1,4 @@
-package com.resolum.intiva.features.onboarding.presentation.components
+package com.resolum.intiva.features.iam.presentation.splash.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,10 +29,15 @@ import androidx.compose.ui.unit.sp
 import com.resolum.intiva.core.ui.theme.IntivaColors
 
 /**
- * 1. Splash / Welcome Screen (Image 2)
+ * Composable for the content of the splash screen.
+ *
+ * @param progress The loading progress (0f to 1f) for the progress bar.
  */
 @Composable
-fun SplashScreenContent() {
+fun SplashScreenContent(
+    progress: Float = 0f
+) {
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -110,7 +115,7 @@ fun SplashScreenContent() {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .weight(0.4f)
+                    .fillMaxWidth(fraction = progress)
                     .background(IntivaColors.PrimaryGreen, shape = RoundedCornerShape(2.5.dp))
             )
             Spacer(modifier = Modifier.weight(0.6f))
