@@ -1,7 +1,4 @@
-package com.resolum.intiva.core.data.local
-
-import androidx.room.Database
-import androidx.room.RoomDatabase
+package com.resolum.intiva.core.data.local.room
 
 /**
  * Base Room database for the application.

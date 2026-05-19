@@ -1,4 +1,4 @@
-package com.resolum.intiva.core.data.local
+package com.resolum.intiva.core.data.local.room
 
 /*
 import androidx.room.Delete

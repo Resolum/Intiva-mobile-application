@@ -1,14 +1,12 @@
 package com.resolum.intiva.features.iam.data.repositories
 
-import android.util.Log
-import com.resolum.intiva.core.data.local.TokenDataStore
+import com.resolum.intiva.core.data.local.datastore.TokenDataStore
 import com.resolum.intiva.core.data.repository.BaseRepository
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.core.network.model.map
 import com.resolum.intiva.features.iam.data.remote.AuthFacadeService
 import com.resolum.intiva.features.iam.data.remote.mappers.toDomain
 import com.resolum.intiva.features.iam.data.remote.models.SignInRequestDto
-import com.resolum.intiva.features.iam.data.remote.models.SignInResponseDto
 import com.resolum.intiva.features.iam.domain.models.SignUpRequest
 import com.resolum.intiva.features.iam.domain.repositories.AuthRepository
 import com.resolum.intiva.features.iam.data.remote.models.SignUpRequestDto
@@ -16,6 +14,7 @@ import com.resolum.intiva.features.iam.data.remote.models.SignUpResponseDto
 import com.resolum.intiva.features.iam.domain.models.SignInRequest
 import com.resolum.intiva.features.iam.domain.models.SignInResult
 import com.resolum.intiva.features.iam.domain.models.SignUpResult
+import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import javax.inject.Inject
 
 /**
@@ -26,7 +25,7 @@ import javax.inject.Inject
  */
 class AuthRepositoryImpl @Inject constructor(
     private val authFacadeService: AuthFacadeService,
-    private val tokenDataStore: TokenDataStore
+    private val sessionRepository: SessionRepository
 ) : BaseRepository(), AuthRepository {
 
     /**
@@ -69,9 +68,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
         if (result is NetworkResult.Success) {
-            result.data.accessToken.let { token ->
-                tokenDataStore.saveToken(token)
-            }
+            sessionRepository.saveToken(result.data.accessToken)
         }
 
         return result

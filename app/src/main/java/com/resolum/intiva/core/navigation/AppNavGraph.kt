@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import com.resolum.intiva.features.finances.presentation.HomeScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
+import com.resolum.intiva.features.iam.presentation.splash.SplashScreen
+import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingScreen
 
 /**
  * Sealed class that centralises all navigation routes in the app.
@@ -26,6 +28,8 @@ import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
  * ```
  */
 sealed class Screen(val route: String) {
+    data object Splash : Screen("splash")
+    data object Onboarding : Screen("onboarding")
     data object SignIn : Screen("sign_in")
     data object SignUp : Screen("sign_up")
     data object Home   : Screen("home")
@@ -40,13 +44,48 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.SignIn.route,
+    startDestination: String = Screen.Splash.route,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
+
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onNavigateToOnboarding = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.Onboarding.route,
+                        popUpTo = Screen.Splash.route,
+                    )
+                },
+                onNavigateToSignIn = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.SignIn.route,
+                        popUpTo = Screen.Splash.route,
+                    )
+                },
+                onNavigateToHome = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.Home.route,
+                        popUpTo = Screen.Splash.route,
+                    )
+                },
+            )
+        }
+
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onNavigateToSignIn = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.SignIn.route,
+                        popUpTo = Screen.Onboarding.route,
+                    )
+                },
+            )
+        }
+
         /**
          * IAM Screens
          */
