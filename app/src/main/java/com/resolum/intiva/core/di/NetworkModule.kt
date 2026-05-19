@@ -5,11 +5,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.resolum.intiva.BuildConfig
-import com.resolum.intiva.core.data.local.TokenDataStore
+import com.resolum.intiva.core.data.local.datastore.TokenDataStore
 import com.resolum.intiva.core.network.api.ApiClientFactory
 import com.resolum.intiva.core.network.interceptor.AuthInterceptor
 import com.resolum.intiva.core.network.interceptor.LoggingInterceptor
-import com.resolum.intiva.features.iam.data.remote.services.AuthService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,7 +51,7 @@ object NetworkModule {
     @Singleton
     fun provideAuthInterceptor(tokenDataStore: TokenDataStore): AuthInterceptor =
         AuthInterceptor(tokenProvider = {
-            runBlocking { tokenDataStore.tokenFlow.firstOrNull() }
+            runBlocking { tokenDataStore.authToken.firstOrNull() }
         })
 
     /**
