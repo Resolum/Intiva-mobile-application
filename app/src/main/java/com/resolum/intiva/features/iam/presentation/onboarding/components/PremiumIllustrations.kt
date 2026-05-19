@@ -1,4 +1,4 @@
-package com.resolum.intiva.features.onboarding.presentation.components
+package com.resolum.intiva.features.iam.presentation.onboarding.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -22,6 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -122,7 +125,7 @@ fun PremiumDashboardIllustration() {
                 drawCircle(
                     color = IntivaColors.PrimaryGreen,
                     radius = 5.dp.toPx(),
-                    center = androidx.compose.ui.geometry.Offset(size.width * 0.65f, size.height * 0.35f)
+                    center = Offset(size.width * 0.65f, size.height * 0.35f)
                 )
             }
 
@@ -188,13 +191,13 @@ fun PremiumGoalsIllustration() {
             drawCircle(
                 color = Color.White.copy(alpha = 0.06f),
                 radius = 125.dp.toPx(),
-                center = androidx.compose.ui.geometry.Offset(cx, cy),
+                center = Offset(cx, cy),
                 style = Stroke(width = 1.dp.toPx())
             )
             drawCircle(
                 color = IntivaColors.PrimaryGreen.copy(alpha = 0.15f),
                 radius = 95.dp.toPx(),
-                center = androidx.compose.ui.geometry.Offset(cx, cy),
+                center = Offset(cx, cy),
                 style = Stroke(width = 2.dp.toPx())
             )
 
@@ -202,7 +205,7 @@ fun PremiumGoalsIllustration() {
             drawCircle(
                 color = Color.White.copy(alpha = 0.08f),
                 radius = 65.dp.toPx(),
-                center = androidx.compose.ui.geometry.Offset(cx, cy + 40.dp.toPx())
+                center = Offset(cx, cy + 40.dp.toPx())
             )
 
 
@@ -218,9 +221,9 @@ fun PremiumGoalsIllustration() {
                 val barColor = if (index == 2) IntivaColors.PrimaryGreen else Color.White.copy(alpha = 0.25f)
                 drawRoundRect(
                     color = barColor,
-                    topLeft = androidx.compose.ui.geometry.Offset(bx, by),
-                    size = androidx.compose.ui.geometry.Size(barWidth, height),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(barWidth / 2f, barWidth / 2f)
+                    topLeft = Offset(bx, by),
+                    size = Size(barWidth, height),
+                    cornerRadius = CornerRadius(barWidth / 2f, barWidth / 2f)
                 )
             }
 
@@ -286,18 +289,18 @@ fun PremiumFamilyIllustration() {
 
                 drawRect(
                     color = Color(0xFF6B5FD4),
-                    topLeft = androidx.compose.ui.geometry.Offset(w * 0.35f, h * 0.32f),
-                    size = androidx.compose.ui.geometry.Size(12.dp.toPx(), 30.dp.toPx())
+                    topLeft = Offset(w * 0.35f, h * 0.32f),
+                    size = Size(12.dp.toPx(), 30.dp.toPx())
                 )
                 drawRect(
                     color = IntivaColors.PrimaryGreen,
-                    topLeft = androidx.compose.ui.geometry.Offset(w * 0.45f, h * 0.26f),
-                    size = androidx.compose.ui.geometry.Size(12.dp.toPx(), 42.dp.toPx())
+                    topLeft = Offset(w * 0.45f, h * 0.26f),
+                    size = Size(12.dp.toPx(), 42.dp.toPx())
                 )
                 drawRect(
                     color = Color(0xFF6B5FD4),
-                    topLeft = androidx.compose.ui.geometry.Offset(w * 0.55f, h * 0.36f),
-                    size = androidx.compose.ui.geometry.Size(12.dp.toPx(), 22.dp.toPx())
+                    topLeft = Offset(w * 0.55f, h * 0.36f),
+                    size = Size(12.dp.toPx(), 22.dp.toPx())
                 )
 
 
@@ -323,17 +326,17 @@ fun PremiumFamilyIllustration() {
                 drawCircle(
                     color = Color(0xFFFFD700),
                     radius = 11.dp.toPx(),
-                    center = androidx.compose.ui.geometry.Offset(w * 0.25f, h * 0.82f)
+                    center = Offset(w * 0.25f, h * 0.82f)
                 )
                 drawCircle(
                     color = Color(0xFFDAA520),
                     radius = 9.dp.toPx(),
-                    center = androidx.compose.ui.geometry.Offset(w * 0.29f, h * 0.85f)
+                    center = Offset(w * 0.29f, h * 0.85f)
                 )
                 drawCircle(
                     color = Color(0xFFFFD700),
                     radius = 11.dp.toPx(),
-                    center = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.78f)
+                    center = Offset(w * 0.78f, h * 0.78f)
                 )
 
 
@@ -362,7 +365,7 @@ fun PremiumFamilyIllustration() {
                 drawCircle(
                     color = Color.White,
                     radius = 5.dp.toPx(),
-                    center = androidx.compose.ui.geometry.Offset(w * 0.75f, h * 0.35f)
+                    center = Offset(w * 0.75f, h * 0.35f)
                 )
             }
         }
