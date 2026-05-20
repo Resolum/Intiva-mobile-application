@@ -1,5 +1,5 @@
 // IntivaBottomNavBar.kt
-package com.resolum.intiva.core.navigation
+package com.resolum.intiva.core.navigation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import com.resolum.intiva.core.navigation.model.NavItem
+import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.core.ui.theme.IntivaColors
 
 /**
@@ -38,11 +40,16 @@ fun IntivaBottomNavBar(
     /** Define the navigation items for the bottom navigation bar. */
     val navItems = remember {
         listOf(
-            NavItem(NavRoutes.HOME,         "INICIO",           Icons.Default.Home,         "Home"),
-            NavItem(NavRoutes.TRANSACTIONS, "TRANSACCIONES.",   Icons.Default.Receipt,      "Transactions"),
-            NavItem(NavRoutes.SAVINGS_GOALS,"METAS",            Icons.Default.TrackChanges, "Savings Goals"),
-            NavItem(NavRoutes.FAMILY,       "FAMILIA",          Icons.Default.Group,        "Family"),
-            NavItem(NavRoutes.PROFILE,      "PERFIL",           Icons.Default.Person,       "Profile")
+            NavItem(NavRoutes.HOME, "INICIO", Icons.Default.Home, "Home"),
+            NavItem(
+                NavRoutes.TRANSACTIONS,
+                "TRANSACCIONES.",
+                Icons.Default.Receipt,
+                "Transactions"
+            ),
+            NavItem(NavRoutes.SAVINGS_GOALS, "METAS", Icons.Default.TrackChanges, "Savings Goals"),
+            NavItem(NavRoutes.FAMILY, "FAMILIA", Icons.Default.Group, "Family"),
+            NavItem(NavRoutes.PROFILE, "PERFIL", Icons.Default.Person, "Profile")
         )
     }
 

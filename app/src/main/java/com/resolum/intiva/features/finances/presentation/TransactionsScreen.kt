@@ -1,9 +1,8 @@
-package com.resolum.intiva.features.home.presentation.home
+package com.resolum.intiva.features.finances.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +30,7 @@ import com.resolum.intiva.core.ui.theme.IntivaColors
  * Data class representing a financial transaction.
  */
 data class Transaction(
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val title: String,
     val subtitle: String,
     val amount: String,
@@ -42,7 +42,7 @@ data class Transaction(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeView() {
+fun TransactionsScreen() {
 
     val transactions = listOf(
         Transaction(Icons.Default.ShoppingCart, "Supermercado Wong", "Hoy, 14:30", "-S/ 145.50", false),

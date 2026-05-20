@@ -1,4 +1,4 @@
-package com.resolum.intiva.core.navigation
+package com.resolum.intiva.core.navigation.extensions
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptionsBuilder

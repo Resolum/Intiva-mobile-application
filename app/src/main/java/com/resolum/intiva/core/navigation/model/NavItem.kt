@@ -1,4 +1,4 @@
-package com.resolum.intiva.core.navigation
+package com.resolum.intiva.core.navigation.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
 
