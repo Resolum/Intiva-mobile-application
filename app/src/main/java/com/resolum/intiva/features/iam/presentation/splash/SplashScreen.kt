@@ -42,25 +42,21 @@ fun SplashScreen(
 
     val progress = remember { Animatable(0f) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(destination) {
+
         progress.animateTo(
-            targetValue = 1f,
+            targetValue   = 1f,
             animationSpec = tween(
-                durationMillis = 1000,
-                easing = LinearEasing,
+                durationMillis = 1500,
+                easing         = LinearEasing,
             ),
         )
-    }
 
-    LaunchedEffect(destination) {
-        if (destination != null) {
-            delay(1000)
-            when (destination) {
-                SplashDestination.Onboarding -> onNavigateToOnboarding()
-                SplashDestination.SignIn     -> onNavigateToSignIn()
-                SplashDestination.Home       -> onNavigateToHome()
-                null                         -> Unit
-            }
+        when (destination) {
+            SplashDestination.Onboarding -> onNavigateToOnboarding()
+            SplashDestination.SignIn     -> onNavigateToSignIn()
+            SplashDestination.Home       -> onNavigateToHome()
+            null                         -> Unit
         }
     }
 
