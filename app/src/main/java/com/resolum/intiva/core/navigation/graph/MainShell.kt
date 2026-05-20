@@ -18,6 +18,10 @@ import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalsScreen
 
+/**
+ * Main shell of the app, containing the bottom navigation and root-level destinations.
+ * Each feature's main screen should be registered here, with deeper navigation handled within the feature's own nav graph.
+ */
 @Composable
 fun MainShell() {
     val shellNavController = rememberNavController()
