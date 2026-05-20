@@ -3,29 +3,38 @@ package com.resolum.intiva.core.ui.theme
 import androidx.compose.ui.graphics.Color
 
 object IntivaColors {
-
+    
+    val PrimaryBrand      = Color(0xFF4C3FF7)
+    val PrimaryAction     = Color(0xFFCCFF00)
+    
     // Backgrounds
-    val BackgroundLavender = Color(0xFFF2F0FA)
-    val SurfaceWhite       = Color(0xFFFFFFFF)
-    val FieldBackground    = Color(0xFFF0EEF8)
-
-    val BackgroundPurple   = Color(0xFF7927F5)
-
-
-    // Primary
-    val PrimaryGreen       = Color(0xFFB8F000)
-    val IconPurple         = Color(0xFF6B5FD4)
-    val CheckGreen         = Color(0xFF4CAF50)
-
+    val BackgroundDefault = Color(0xFFFFFFFF)
+    val BackgroundSurface = Color(0xFFF5F5F7)
+    val BackgroundDark    = Color(0xFF1A1A2E)
+    
     // Text
-    val TextPrimary        = Color(0xFF1A1A2E)
-    val TextSecondary      = Color(0xFF6B7080)
-    val TextLink           = Color(0xFF6B5FD4)
+    val TextPrimary       = Color(0xFF0D0D0D)
+    val TextSecondary     = Color(0xFF6B7280)
+    val TextInverse       = Color(0xFFFFFFFF)
+    
+    val StatusSuccess     = Color(0xFF22C55E)
+    val StatusWarning     = Color(0xFFF59E0B)
+    val StatusError       = Color(0xFFEF4444)
+    val StatusInfo        = Color(0xFF3B82F6)
 
+    val BackgroundLavender = BackgroundSurface
+    val SurfaceWhite       = BackgroundDefault
+    val FieldBackground    = BackgroundSurface
+    val BackgroundPurple   = PrimaryBrand
+    val PrimaryGreen       = PrimaryAction
+    val IconPurple         = PrimaryBrand
+    val CheckGreen         = StatusSuccess
+    val TextLink           = PrimaryBrand
+  
     // Error
-    val ErrorRed           = Color(0xFFE53935)
-
+    val ErrorRed           = StatusError
+  
     // Borders
-    val FieldBorderError   = Color(0xFFE53935)
-    val FieldBorderFocused = Color(0xFF6B5FD4)
+    val FieldBorderError   = StatusError
+    val FieldBorderFocused = PrimaryBrand
 }
