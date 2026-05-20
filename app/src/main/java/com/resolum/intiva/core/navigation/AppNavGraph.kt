@@ -9,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.resolum.intiva.core.ui.components.IntivaBottomNavBar
 import com.resolum.intiva.features.home.presentation.home.HomeView
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
@@ -126,9 +125,9 @@ fun AppNavGraph(
 
             /**
              * Savings Screens
-             */
+
             composable(Screen.SavingsGoals.route) {
-                com.resolum.intiva.features.savings.presentation.SavingsGoalsScreen(
+                SavingsGoalsScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToCreate = { navController.navigate(Screen.SavingsGoalCreate.route) },
                     onNavigateToDetail = { id -> navController.navigate(Screen.SavingsGoalDetail.createRoute(id)) },
@@ -139,7 +138,7 @@ fun AppNavGraph(
             }
             
             composable(Screen.SavingsGoalCreate.route) {
-                com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen(
+                SavingsGoalCreateScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onGoalCreated = { navController.popBackStack() }
                 )
@@ -147,7 +146,7 @@ fun AppNavGraph(
             
             composable(Screen.SavingsGoalEdit.route) { backStackEntry ->
                 val id = backStackEntry.arguments?.getString("id") ?: return@composable
-                com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen(
+                SavingsGoalEditScreen(
                     goalId = id,
                     onNavigateBack = { navController.popBackStack() },
                     onGoalUpdated = { navController.popBackStack() }
@@ -161,6 +160,7 @@ fun AppNavGraph(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+             */
         }
     }
 }
