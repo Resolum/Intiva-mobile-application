@@ -42,7 +42,10 @@ data class Transaction(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionsScreen() {
+fun HomeScreen(
+    onNavigateToNewExpense: () -> Unit,
+    onNavigateToNewIncome: () -> Unit
+) {
 
     val transactions = listOf(
         Transaction(Icons.Default.ShoppingCart, "Supermercado Wong", "Hoy, 14:30", "-S/ 145.50", false),
@@ -123,7 +126,9 @@ fun TransactionsScreen() {
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Button(
-                                onClick = { /*TODO*/ },
+                                onClick = {
+                                    onNavigateToNewExpense()
+                                },
                                 modifier = Modifier.weight(1f).height(48.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = IntivaColors.PrimaryGreen),
                                 shape = RoundedCornerShape(12.dp)
@@ -134,7 +139,9 @@ fun TransactionsScreen() {
                             }
 
                             Button(
-                                onClick = { /*TODO*/ },
+                                onClick = {
+                                    onNavigateToNewIncome()
+                                },
                                 modifier = Modifier.weight(1f).height(48.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6B5FD4)),
                                 shape = RoundedCornerShape(12.dp)

@@ -12,7 +12,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.resolum.intiva.core.navigation.components.IntivaBottomNavBar
 import com.resolum.intiva.core.navigation.routes.NavRoutes
-import com.resolum.intiva.features.finances.presentation.TransactionsScreen
+import com.resolum.intiva.features.finances.domain.model.TransactionType
+import com.resolum.intiva.features.finances.presentation.HomeScreen
+import com.resolum.intiva.features.finances.presentation.TransactionFormScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
@@ -47,7 +49,13 @@ fun MainShell() {
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         ) {
 
-            composable(NavRoutes.HOME) { TransactionsScreen() }
+            composable(NavRoutes.HOME) {
+                HomeScreen(
+                    onNavigateToNewExpense = { shellNavController.navigate(NavRoutes.NEW_EXPENSE) },
+                    onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) }
+                )
+            }
+
             composable(NavRoutes.TRANSACTIONS) { }
             composable(NavRoutes.FAMILY) { }
             composable(NavRoutes.PROFILE) { }
@@ -82,6 +90,26 @@ fun MainShell() {
                 SavingsGoalDetailScreen(
                     goalId = id,
                     onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.NEW_INCOME) {
+                TransactionFormScreen(
+                    transactionType = TransactionType.INCOME,
+                    onDismiss = { shellNavController.popBackStack() },
+                    onSave = { amount, categoryId, accountId ->
+                        shellNavController.popBackStack()
+                    }
+                )
+            }
+
+            composable(NavRoutes.NEW_EXPENSE) {
+                TransactionFormScreen(
+                    transactionType = TransactionType.EXPENSE,
+                    onDismiss = { shellNavController.popBackStack() },
+                    onSave = { amount, categoryId, accountId ->
+                        shellNavController.popBackStack()
+                    }
                 )
             }
         }

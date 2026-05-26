@@ -13,5 +13,8 @@ object NavRoutes {
     const val FAMILY              = "family"
     const val PROFILE             = "profile"
 
+    const val NEW_INCOME           = "transactions/new_income"
+    const val NEW_EXPENSE          = "transaction/new_expense"
+
     val BOTTOM_NAV_ROUTES = setOf(HOME, TRANSACTIONS, SAVINGS_GOALS, FAMILY, PROFILE)
 }
