@@ -68,7 +68,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
         if (result is NetworkResult.Success) {
-            sessionRepository.saveToken(result.data.accessToken)
+            sessionRepository.saveToken(result.data.accessToken, result.data.userId)
         }
 
         return result

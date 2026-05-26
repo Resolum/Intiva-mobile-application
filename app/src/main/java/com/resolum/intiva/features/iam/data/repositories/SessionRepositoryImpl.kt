@@ -2,6 +2,7 @@ package com.resolum.intiva.features.iam.data.repositories
 
 import com.resolum.intiva.core.data.local.datastore.TokenDataStore
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,12 +27,24 @@ class SessionRepositoryImpl @Inject constructor(
      * the actual persistence of the token. This keeps the repository focused on
      * business logic rather than data management details.
      */
-    override suspend fun saveToken(token: String) = dataStore.saveToken(token)
+    override suspend fun saveToken(token: String, userId: Long) = dataStore.saveToken(token, userId)
 
     /**
      * Clearing the token effectively logs the user out, and any consumers of [authToken]
      * will be notified of this change, allowing the UI to update accordingly.
      */
     override suspend fun clearToken() = dataStore.clearToken()
+
+    /**
+     * The getAuthToken and getUserId functions provide a way to retrieve the current token and user ID
+     * synchronously, which can be useful in certain scenarios (e.g., when initializing network clients).
+     */
+    override suspend fun getAuthToken(): String? = dataStore.authToken.first()
+
+    /**
+     * The getUserId function retrieves the current user ID from the data store, allowing other parts of the application
+     * to access this information when needed (e.g., for making authenticated API calls).
+     */
+    override suspend fun getUserId(): Long? = dataStore.userId.first()
 
 }
