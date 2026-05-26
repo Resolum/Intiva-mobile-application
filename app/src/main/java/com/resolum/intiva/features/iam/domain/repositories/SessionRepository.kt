@@ -22,10 +22,24 @@ interface SessionRepository {
      *
      * @param token The authentication token to be saved.
      */
-    suspend fun saveToken(token: String)
+    suspend fun saveToken(token: String, userId: Long)
 
     /**
      * Clears the stored authentication token, effectively logging the user out.
      */
     suspend fun clearToken()
+
+    /**
+     * Retrieves the current authentication token from the data store.
+     *
+     * @return The current authentication token, or null if no token is stored.
+     */
+    suspend fun getAuthToken(): String?
+
+    /**
+     * Retrieves the user ID associated with the current session from the data store.
+     *
+     * @return The user ID, or null if no user ID is stored.
+     */
+    suspend fun getUserId(): Long?
 }

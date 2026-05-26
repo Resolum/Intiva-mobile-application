@@ -1,30 +1,17 @@
 package com.resolum.intiva.core.navigation.graph
 
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.resolum.intiva.core.navigation.components.IntivaBottomNavBar
 import com.resolum.intiva.core.navigation.extensions.navigateAndClearBackStack
 import com.resolum.intiva.core.navigation.extensions.navigateSingleTop
-import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.core.navigation.routes.Screen
-import com.resolum.intiva.features.finances.presentation.TransactionsScreen
 import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
 import com.resolum.intiva.features.iam.presentation.splash.SplashScreen
-import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
-import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
-import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
-import com.resolum.intiva.features.savings.presentation.SavingsGoalsScreen
 
 /**
  * Root nav graph. Register each feature's composable destinations inside the [NavHost] block.
