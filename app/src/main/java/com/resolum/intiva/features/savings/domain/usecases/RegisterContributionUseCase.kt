@@ -31,7 +31,7 @@ class RegisterContributionUseCase @Inject constructor(
      * Then re-fetches the updated [SavingGoal] so the detail screen reflects
      * the new [currentAmount].
      *
-     * @param accountId     The ID of the account.
+     * @param userId        The ID of the user.
      * @param savingGoalId  The ID of the goal to contribute to.
      * @param amount        The monetary amount — must be > 0.
      * @param currencyCode  ISO 4217 currency code.
@@ -40,7 +40,7 @@ class RegisterContributionUseCase @Inject constructor(
      *         [NetworkResult.Error] on validation failure or API error.
      */
     suspend operator fun invoke(
-        accountId: Long,
+        userId: Long,
         savingGoalId: Long,
         amount: BigDecimal,
         currencyCode: String,
@@ -56,7 +56,7 @@ class RegisterContributionUseCase @Inject constructor(
 
         // Post the contribution; return immediately on error
         val contributionResult = repository.registerContribution(
-            accountId = accountId,
+            userId = userId,
             savingGoalId = savingGoalId,
             amount = amount,
             currencyCode = currencyCode,
@@ -68,7 +68,7 @@ class RegisterContributionUseCase @Inject constructor(
         }
 
         // Re-fetch the goal so the UI can update currentAmount and progress
-        return when (val goalResult = repository.getSavingGoal(accountId, savingGoalId)) {
+        return when (val goalResult = repository.getSavingGoal(userId, savingGoalId)) {
             is NetworkResult.Success -> NetworkResult.Success(
                 ContributionResult(
                     contribution = contribution,

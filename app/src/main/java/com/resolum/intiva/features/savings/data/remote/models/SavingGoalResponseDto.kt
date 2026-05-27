@@ -8,7 +8,7 @@ import java.math.BigDecimal
  *
  * This class is used to parse the JSON response from the GET endpoint into a Kotlin object.
  * It maps directly to the JSON fields returned by:
- * GET /api/v1/accounts/{accountId}/saving-goals/{savingGoalId}
+ * GET /api/v1/users/{userId}/saving-goals/{savingGoalId}
  */
 data class SavingGoalResponseDto(
     @SerializedName("id") val id: Long,

@@ -92,7 +92,7 @@ class SavingsGoalCreateViewModel @Inject constructor(
 
             when (
                 val result = createSavingGoalUseCase(
-                    accountId = accountId,
+                    userId = accountId,
                     title = state.title.trim(),
                     targetAmount = targetAmount,
                     currencyCode = state.currencyCode,

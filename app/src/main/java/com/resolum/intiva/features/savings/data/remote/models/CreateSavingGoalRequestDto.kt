@@ -6,7 +6,7 @@ import java.math.BigDecimal
 /**
  * Request body for creating a saving goal.
  *
- * POST /api/v1/accounts/{accountId}/saving-goals
+ * POST /api/v1/users/{userId}/saving-goals
  */
 data class CreateSavingGoalRequestDto(
     @SerializedName("title") val title: String,

@@ -11,6 +11,6 @@ import javax.inject.Inject
 class GetCompletedGoalsUseCase @Inject constructor(
     private val repository: SavingGoalRepository
 ) {
-    suspend operator fun invoke(accountId: Long): NetworkResult<List<SavingGoal>> =
-        repository.getCompletedSavingGoals(accountId)
+    suspend operator fun invoke(userId: Long): NetworkResult<List<SavingGoal>> =
+        repository.getCompletedSavingGoals(userId)
 }

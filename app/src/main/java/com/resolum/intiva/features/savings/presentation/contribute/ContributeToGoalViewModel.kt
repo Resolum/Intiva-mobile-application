@@ -114,7 +114,7 @@ class ContributeToGoalViewModel @Inject constructor(
 
             when (
                 val result = registerContributionUseCase(
-                    accountId = currentAccountId,
+                    userId = currentAccountId,
                     savingGoalId = currentGoalId,
                     amount = amount,
                     currencyCode = currencyCode,

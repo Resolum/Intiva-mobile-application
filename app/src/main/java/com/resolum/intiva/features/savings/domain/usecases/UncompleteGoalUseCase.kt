@@ -16,12 +16,12 @@ class UncompleteGoalUseCase @Inject constructor(
     /**
      * Reverts the specified saving goal to UNCOMPLETED via PATCH endpoint.
      *
-     * @param accountId    The ID of the account.
+     * @param userId       The ID of the user.
      * @param savingGoalId The ID of the goal to uncomplete.
      * @return [NetworkResult.Success] on success, [NetworkResult.Error] otherwise.
      */
     suspend operator fun invoke(
-        accountId: Long,
+        userId: Long,
         savingGoalId: Long
-    ): NetworkResult<Unit> = repository.uncompleteGoal(accountId, savingGoalId)
+    ): NetworkResult<Unit> = repository.uncompleteGoal(userId, savingGoalId)
 }

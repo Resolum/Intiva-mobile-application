@@ -16,12 +16,12 @@ class CompleteGoalUseCase @Inject constructor(
     /**
      * Marks the specified saving goal as COMPLETED via PATCH endpoint.
      *
-     * @param accountId    The ID of the account.
+     * @param userId       The ID of the user.
      * @param savingGoalId The ID of the goal to mark complete.
      * @return [NetworkResult.Success] on success, [NetworkResult.Error] otherwise.
      */
     suspend operator fun invoke(
-        accountId: Long,
+        userId: Long,
         savingGoalId: Long
-    ): NetworkResult<Unit> = repository.completeGoal(accountId, savingGoalId)
+    ): NetworkResult<Unit> = repository.completeGoal(userId, savingGoalId)
 }

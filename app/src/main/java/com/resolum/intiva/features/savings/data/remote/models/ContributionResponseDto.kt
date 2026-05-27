@@ -7,7 +7,7 @@ import java.math.BigDecimal
  * Data Transfer Object (DTO) representing a contribution response from the API.
  *
  * Returned by:
- * POST /api/v1/accounts/{accountId}/saving-goals/{savingGoalId}/contributions
+ * POST /api/v1/users/{userId}/saving-goals/{savingGoalId}/contributions
  */
 data class ContributionResponseDto(
     @SerializedName("id") val id: Long,

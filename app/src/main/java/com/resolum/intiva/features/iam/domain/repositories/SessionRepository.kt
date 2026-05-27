@@ -42,4 +42,18 @@ interface SessionRepository {
      * @return The user ID, or null if no user ID is stored.
      */
     suspend fun getUserId(): Long?
+
+    /**
+     * Retrieves the family group ID associated with the current session.
+     *
+     * @return The group ID, or null if not stored.
+     */
+    suspend fun getGroupId(): Long?
+
+    /**
+     * Saves the family group ID to the session data store.
+     *
+     * @param groupId The group ID to be saved.
+     */
+    suspend fun saveGroupId(groupId: Long)
 }

@@ -14,12 +14,12 @@ class GetSavingGoalUseCase @Inject constructor(
     private val repository: SavingGoalRepository
 ) {
     /**
-     * @param accountId    The ID of the account that owns the goal.
+     * @param userId       The ID of the user that owns the goal.
      * @param savingGoalId The ID of the saving goal.
      * @return [NetworkResult.Success] with [SavingGoal] or [NetworkResult.Error] on failure.
      */
     suspend operator fun invoke(
-        accountId: Long,
+        userId: Long,
         savingGoalId: Long
-    ): NetworkResult<SavingGoal> = repository.getSavingGoal(accountId, savingGoalId)
+    ): NetworkResult<SavingGoal> = repository.getSavingGoal(userId, savingGoalId)
 }

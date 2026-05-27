@@ -18,59 +18,59 @@ class SavingGoalFacadeService @Inject constructor(
     private val savingGoalService: SavingGoalService
 ) {
 
-    suspend fun getSavingGoals(accountId: Long): List<SavingGoalResponseDto> =
-        savingGoalService.getSavingGoals(accountId)
+    suspend fun getSavingGoals(userId: Long): List<SavingGoalResponseDto> =
+        savingGoalService.getSavingGoals(userId)
 
-    suspend fun getCompletedSavingGoals(accountId: Long): List<SavingGoalResponseDto> =
-        savingGoalService.getCompletedSavingGoals(accountId)
+    suspend fun getCompletedSavingGoals(userId: Long): List<SavingGoalResponseDto> =
+        savingGoalService.getCompletedSavingGoals(userId)
 
-    suspend fun getGroupSavingGoals(accountId: Long, groupId: Long): List<SavingGoalResponseDto> =
-        savingGoalService.getGroupSavingGoals(accountId, groupId)
+    suspend fun getGroupSavingGoals(userId: Long, groupId: Long): List<SavingGoalResponseDto> =
+        savingGoalService.getGroupSavingGoals(userId, groupId)
 
     suspend fun createSavingGoal(
-        accountId: Long,
+        userId: Long,
         request: CreateSavingGoalRequestDto
-    ): SavingGoalResponseDto = savingGoalService.createSavingGoal(accountId, request)
+    ): SavingGoalResponseDto = savingGoalService.createSavingGoal(userId, request)
 
     /**
      * Retrieves the details of a saving goal.
      *
-     * @param accountId    The ID of the account that owns the goal.
+     * @param userId       The ID of the user that owns the goal.
      * @param savingGoalId The ID of the saving goal.
      * @return A [SavingGoalResponseDto] with the goal's current data.
      */
-    suspend fun getSavingGoal(accountId: Long, savingGoalId: Long): SavingGoalResponseDto =
-        savingGoalService.getSavingGoal(accountId, savingGoalId)
+    suspend fun getSavingGoal(userId: Long, savingGoalId: Long): SavingGoalResponseDto =
+        savingGoalService.getSavingGoal(userId, savingGoalId)
 
     /**
      * Registers a monetary contribution to the specified saving goal.
      *
-     * @param accountId    The ID of the account.
+     * @param userId       The ID of the user.
      * @param savingGoalId The ID of the goal.
      * @param request      The contribution details.
      */
     suspend fun registerContribution(
-        accountId: Long,
+        userId: Long,
         savingGoalId: Long,
         request: ContributionRequestDto
     ): ContributionResponseDto =
-        savingGoalService.registerContribution(accountId, savingGoalId, request)
+        savingGoalService.registerContribution(userId, savingGoalId, request)
 
     /**
      * Marks a saving goal as COMPLETED.
      *
-     * @param accountId    The ID of the account.
+     * @param userId       The ID of the user.
      * @param savingGoalId The ID of the goal.
      */
-    suspend fun completeGoal(accountId: Long, savingGoalId: Long) =
-        savingGoalService.completeGoal(accountId, savingGoalId)
+    suspend fun completeGoal(userId: Long, savingGoalId: Long) =
+        savingGoalService.completeGoal(userId, savingGoalId)
 
     /**
      * Reverts a saving goal to UNCOMPLETED.
      *
-     * @param accountId    The ID of the account.
+     * @param userId       The ID of the user.
      * @param savingGoalId The ID of the goal.
      */
-    suspend fun uncompleteGoal(accountId: Long, savingGoalId: Long) =
-        savingGoalService.uncompleteGoal(accountId, savingGoalId)
+    suspend fun uncompleteGoal(userId: Long, savingGoalId: Long) =
+        savingGoalService.uncompleteGoal(userId, savingGoalId)
 }

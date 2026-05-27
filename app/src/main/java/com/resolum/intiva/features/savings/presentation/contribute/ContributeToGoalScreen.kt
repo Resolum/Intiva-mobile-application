@@ -124,10 +124,10 @@ fun ContributeToGoalScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     val isLoading = uiState.goalState is UiState.Loading ||
-                        uiState.isContributorIdLoading
+                            uiState.isContributorIdLoading
                     val canContribute = uiState.contributorId != null &&
-                        uiState.amountInput.isNotEmpty() &&
-                        !isLoading
+                            uiState.amountInput.isNotEmpty() &&
+                            !isLoading
                     Button(
                         onClick = {
                             viewModel.contribute(

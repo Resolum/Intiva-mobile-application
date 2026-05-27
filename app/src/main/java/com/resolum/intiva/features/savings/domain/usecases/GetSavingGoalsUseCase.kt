@@ -12,8 +12,8 @@ import javax.inject.Inject
 class GetSavingGoalsUseCase @Inject constructor(
     private val repository: SavingGoalRepository
 ) {
-    suspend operator fun invoke(accountId: Long): NetworkResult<List<SavingGoal>> =
-        when (val result = repository.getSavingGoals(accountId)) {
+    suspend operator fun invoke(userId: Long): NetworkResult<List<SavingGoal>> =
+        when (val result = repository.getSavingGoals(userId)) {
             is NetworkResult.Success -> NetworkResult.Success(
                 result.data.filter { SavingGoalOwnerType.isPersonal(it.ownerType) }
             )

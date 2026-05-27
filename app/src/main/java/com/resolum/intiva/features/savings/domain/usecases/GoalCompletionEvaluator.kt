@@ -23,21 +23,21 @@ class GoalCompletionEvaluator @Inject constructor(
     /**
      * Evaluates the goal's current state and triggers the appropriate use case if needed.
      *
-     * @param accountId    The ID of the account.
-     * @param goal         The refreshed [SavingGoal] after a contribution.
+     * @param userId The ID of the user.
+     * @param goal   The refreshed [SavingGoal] after a contribution.
      * @return [CompletionResult] indicating the outcome of the evaluation.
      */
-    suspend fun evaluate(accountId: Long, goal: SavingGoal): CompletionResult {
+    suspend fun evaluate(userId: Long, goal: SavingGoal): CompletionResult {
         return when {
             // Target reached → mark as COMPLETED
             goal.currentAmount >= goal.targetAmount -> {
-                val result = completeGoalUseCase(accountId, goal.id)
+                val result = completeGoalUseCase(userId, goal.id)
                 if (result is NetworkResult.Success) CompletionResult.Completed
                 else CompletionResult.NoChange
             }
             // Deadline passed without reaching target → mark as UNCOMPLETED
             isDeadlinePassed(goal.deadline) && goal.currentAmount < goal.targetAmount -> {
-                val result = uncompleteGoalUseCase(accountId, goal.id)
+                val result = uncompleteGoalUseCase(userId, goal.id)
                 if (result is NetworkResult.Success) CompletionResult.Uncompleted
                 else CompletionResult.NoChange
             }

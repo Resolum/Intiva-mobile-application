@@ -13,7 +13,7 @@ class CreateSavingGoalUseCase @Inject constructor(
     private val repository: SavingGoalRepository
 ) {
     suspend operator fun invoke(
-        accountId: Long,
+        userId: Long,
         title: String,
         targetAmount: BigDecimal,
         currencyCode: String,
@@ -22,7 +22,7 @@ class CreateSavingGoalUseCase @Inject constructor(
         categoryId: Long,
         description: String = ""
     ): NetworkResult<SavingGoal> = repository.createSavingGoal(
-        accountId = accountId,
+        userId = userId,
         title = title,
         targetAmount = targetAmount,
         currencyCode = currencyCode,

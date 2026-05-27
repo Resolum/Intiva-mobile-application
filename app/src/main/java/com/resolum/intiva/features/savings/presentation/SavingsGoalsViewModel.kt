@@ -16,7 +16,7 @@ import javax.inject.Inject
 /**
  * ViewModel for [SavingsGoalsScreen].
  *
- * Resolves [accountId] (which equals the authenticated userId) exactly once on init
+ * Resolves [userId] (the authenticated user ID) exactly once on init
  * and loads personal or family goals per selected tab.
  */
 @HiltViewModel
