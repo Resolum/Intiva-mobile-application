@@ -19,6 +19,9 @@ import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalsScreen
+import com.resolum.intiva.features.savings.presentation.completion.GoalCompletedScreen
+import com.resolum.intiva.features.savings.presentation.completion.GoalUncompletedScreen
+import com.resolum.intiva.features.savings.presentation.contribute.ContributeToGoalScreen
 
 /**
  * Main shell of the app, containing the bottom navigation and root-level destinations.
@@ -63,16 +66,29 @@ fun MainShell() {
             composable(NavRoutes.SAVINGS_GOALS) {
                 SavingsGoalsScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
-                    onNavigateToCreate = { shellNavController.navigate(NavRoutes.SAVINGS_GOAL_CREATE) },
-                    onNavigateToDetail = { id -> shellNavController.navigate("savings_goal_detail/$id") },
-                    onNavigateToEdit = { id -> shellNavController.navigate("savings_goal_edit/$id") }
+                    onNavigateToCreate = { accountId ->
+                        shellNavController.navigate("savings_goal_create/$accountId")
+                    },
+                    onNavigateToDetail = { accountId, goalId ->
+                        shellNavController.navigate("savings_goal_detail/$accountId/$goalId")
+                    },
+                    onNavigateToEdit = { accountId, goalId ->
+                        shellNavController.navigate("savings_goal_edit/$goalId")
+                    }
                 )
             }
 
-            composable(NavRoutes.SAVINGS_GOAL_CREATE) {
+            composable(NavRoutes.SAVINGS_GOAL_CREATE) { backStackEntry ->
+                val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull()
+                    ?: return@composable
                 SavingsGoalCreateScreen(
+                    accountId = accountId,
                     onNavigateBack = { shellNavController.popBackStack() },
-                    onGoalCreated = { shellNavController.popBackStack() }
+                    onGoalCreated = { resolvedAccountId, goalId ->
+                        shellNavController.navigate("savings_goal_detail/$resolvedAccountId/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    }
                 )
             }
 
@@ -86,10 +102,82 @@ fun MainShell() {
             }
 
             composable(NavRoutes.SAVINGS_GOAL_DETAIL) { backStackEntry ->
-                val id = backStackEntry.arguments?.getString("id") ?: return@composable
+                val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
+                val goalId = backStackEntry.arguments?.getString("goalId") ?: return@composable
                 SavingsGoalDetailScreen(
-                    goalId = id,
-                    onNavigateBack = { shellNavController.popBackStack() }
+                    accountId = accountId,
+                    goalId = goalId.toLongOrNull() ?: return@composable,
+                    onNavigateBack = { shellNavController.popBackStack() },
+                    onContributeClick = {
+                        shellNavController.navigate("savings_goal_contribute/$accountId/$goalId")
+                    },
+                    onGoalCompleted = {
+                        shellNavController.navigate("savings_goal_completed/$accountId/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    },
+                    onGoalUncompleted = {
+                        shellNavController.navigate("savings_goal_uncompleted/$accountId/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    }
+                )
+            }
+
+            composable(NavRoutes.SAVINGS_GOAL_CONTRIBUTE) { backStackEntry ->
+                val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
+                val goalId = backStackEntry.arguments?.getString("goalId")?.toLongOrNull() ?: return@composable
+                ContributeToGoalScreen(
+                    accountId = accountId,
+                    goalId = goalId,
+                    onNavigateBack = { shellNavController.popBackStack() },
+                    onGoalCompleted = {
+                        shellNavController.navigate("savings_goal_completed/$accountId/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    },
+                    onGoalUncompleted = {
+                        shellNavController.navigate("savings_goal_uncompleted/$accountId/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    },
+                    onContributionSuccess = { _ -> shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.SAVINGS_GOAL_COMPLETED) { backStackEntry ->
+                val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
+                val goalId = backStackEntry.arguments?.getString("goalId")?.toLongOrNull() ?: return@composable
+                GoalCompletedScreen(
+                    accountId = accountId,
+                    goalId = goalId,
+                    onNewGoal = {
+                        shellNavController.navigate("savings_goal_create/$accountId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    },
+                    onBack = {
+                        shellNavController.navigate(NavRoutes.SAVINGS_GOALS) {
+                            popUpTo(NavRoutes.SAVINGS_GOALS) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(NavRoutes.SAVINGS_GOAL_UNCOMPLETED) { backStackEntry ->
+                val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
+                val goalId = backStackEntry.arguments?.getString("goalId")?.toLongOrNull() ?: return@composable
+                GoalUncompletedScreen(
+                    accountId = accountId,
+                    goalId = goalId,
+                    onTryAgain = {
+                        shellNavController.navigate("savings_goal_contribute/$accountId/$goalId")
+                    },
+                    onBack = {
+                        shellNavController.navigate(NavRoutes.SAVINGS_GOALS) {
+                            popUpTo(NavRoutes.SAVINGS_GOALS) { inclusive = true }
+                        }
+                    }
                 )
             }
 
