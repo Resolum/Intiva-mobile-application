@@ -33,15 +33,15 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Cat
 @Composable
 fun CategoryItem(
     category: Category,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
         modifier = Modifier.aspectRatio(1f),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors = if (isSelected) CardDefaults.cardColors(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+        else CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(

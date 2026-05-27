@@ -34,6 +34,7 @@ import com.resolum.intiva.features.paymentmethodsandcategories.presentation.cate
  */
 @Composable
 fun CategoryGrid(
+    selectedCategory: Category?,
     viewModel: CategoryViewModel = hiltViewModel(),
     onCategorySelected: (Category) -> Unit
 ) {
@@ -86,6 +87,7 @@ fun CategoryGrid(
                         items(uiState.categories) { category ->
                             CategoryItem(
                                 category = category,
+                                isSelected = category.id == selectedCategory?.id,
                                 onClick = { onCategorySelected(category) }
                             )
                         }
