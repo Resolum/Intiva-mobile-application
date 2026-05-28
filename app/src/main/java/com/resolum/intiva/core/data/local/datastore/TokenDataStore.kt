@@ -19,10 +19,11 @@ import javax.inject.Singleton
 class TokenDataStore @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) {
-    /** Key used to store the authentication token and UserId in DataStore preferences. */
+    /** Key used to store the authentication token, UserId, and GroupId in DataStore preferences. */
     companion object {
         private val AUTH_TOKEN = stringPreferencesKey("auth_token")
-        private val USER_ID = longPreferencesKey("user_id")
+        private val USER_ID    = longPreferencesKey("user_id")
+        private val GROUP_ID   = longPreferencesKey("group_id")
     }
 
     /** Flow that emits the current authentication token, or null if not set. */
@@ -33,6 +34,10 @@ class TokenDataStore @Inject constructor(
     val userId: Flow<Long?> =
         dataStore.data.map { it[USER_ID] }
 
+    /** Flow that emits the current family GroupId, or null if not set. */
+    val groupId: Flow<Long?> =
+        dataStore.data.map { it[GROUP_ID] }
+
     /** Saves the provided authentication token to DataStore preferences. */
     suspend fun saveToken(token: String, userId: Long) {
         dataStore.edit {
@@ -41,11 +46,17 @@ class TokenDataStore @Inject constructor(
         }
     }
 
+    /** Saves the family group ID to DataStore preferences. */
+    suspend fun saveGroupId(groupId: Long) {
+        dataStore.edit { it[GROUP_ID] = groupId }
+    }
+
     /** Clears the authentication token from DataStore preferences. */
     suspend fun clearToken() {
         dataStore.edit {
             it.remove(AUTH_TOKEN)
             it.remove(USER_ID)
+            it.remove(GROUP_ID)
         }
     }
 }

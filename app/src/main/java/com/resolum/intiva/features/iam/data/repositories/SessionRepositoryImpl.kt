@@ -47,4 +47,14 @@ class SessionRepositoryImpl @Inject constructor(
      */
     override suspend fun getUserId(): Long? = dataStore.userId.first()
 
+    /**
+     * Retrieves the cached family group ID from the data store.
+     */
+    override suspend fun getGroupId(): Long? = dataStore.groupId.first()
+
+    /**
+     * Persists the family group ID to the data store for future use.
+     */
+    override suspend fun saveGroupId(groupId: Long) = dataStore.saveGroupId(groupId)
+
 }
