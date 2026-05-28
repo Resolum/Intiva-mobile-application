@@ -8,6 +8,7 @@ import com.resolum.intiva.core.ui.snackbar.SnackBarBus
 import com.resolum.intiva.core.ui.snackbar.SnackBarType
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
 import com.resolum.intiva.features.finances.domain.models.TransactionType
+import com.resolum.intiva.features.finances.domain.usecase.GetTransactionsByOwnerIdUseCase
 import com.resolum.intiva.features.finances.domain.usecase.RegisterIndividualTransactionUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
@@ -28,7 +29,8 @@ import kotlinx.coroutines.launch
  */
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
-    private val registerIndividualTransactionUseCase: RegisterIndividualTransactionUseCase
+    private val registerIndividualTransactionUseCase: RegisterIndividualTransactionUseCase,
+    private val getTransactionsByOwnerIdUseCase: GetTransactionsByOwnerIdUseCase
 ) : BaseViewModel() {
 
     /** Backing property for the UI state, initialized with a default TransactionUiState. */
@@ -109,7 +111,7 @@ class TransactionViewModel @Inject constructor(
         val request = RegisterTransactionRequest(
             amount = amountBigDecimal,
             currencyCode = "PEN",
-            description = "Nueva transacción",
+            description = category.name,
             financialAccountId = account.id,
             transactionType = transactionType,
             categoryId = category.id,
@@ -146,6 +148,55 @@ class TransactionViewModel @Inject constructor(
                     viewModelScope.launch {
                         SnackBarBus.send(
                             "Error al registrar la transacción: ${result.message}",
+                            SnackBarType.Error
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun getTransactionsByOwnerId(
+        transactionType: TransactionType?
+    ) {
+
+        safeLaunch {
+
+            _uiState.update {
+                it.copy(
+                    transactionsState = UiState.Loading
+                )
+            }
+
+            when (
+                val result = getTransactionsByOwnerIdUseCase(
+                    transactionType = transactionType?.name
+                )
+            ) {
+
+                is NetworkResult.Success -> {
+
+                    _uiState.update {
+                        it.copy(
+                            transactionsState = UiState.Success(result.data)
+                        )
+                    }
+                }
+
+                is NetworkResult.Error -> {
+
+                    _uiState.update {
+                        it.copy(
+                            transactionsState = UiState.Error(
+                                message = result.message,
+                                throwable = result.throwable
+                            )
+                        )
+                    }
+
+                    viewModelScope.launch {
+                        SnackBarBus.send(
+                            "Error al obtener transacciones: ${result.message}",
                             SnackBarType.Error
                         )
                     }

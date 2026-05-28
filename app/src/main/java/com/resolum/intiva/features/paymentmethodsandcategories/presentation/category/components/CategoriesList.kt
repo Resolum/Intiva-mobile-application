@@ -42,7 +42,7 @@ fun CategoryGrid(
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "CATEGORÍA",
+            text = "SELECCIONA UNA CATEGORÍA",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 12.dp)

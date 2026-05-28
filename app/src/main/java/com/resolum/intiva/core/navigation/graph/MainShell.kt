@@ -15,6 +15,7 @@ import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.HomeScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionFormScreen
+import com.resolum.intiva.features.finances.presentation.transactions.TransactionsScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
@@ -57,7 +58,9 @@ fun MainShell() {
                 )
             }
 
-            composable(NavRoutes.TRANSACTIONS) { }
+            composable(NavRoutes.TRANSACTIONS) {
+                TransactionsScreen()
+            }
             composable(NavRoutes.FAMILY) { }
             composable(NavRoutes.PROFILE) { }
 

@@ -7,6 +7,7 @@ import com.resolum.intiva.features.finances.data.remote.mappers.toDomain
 import com.resolum.intiva.features.finances.data.remote.mappers.toDto
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
 import com.resolum.intiva.features.finances.domain.models.Transaction
+import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
 import com.resolum.intiva.features.finances.domain.repositories.TransactionRepository
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import javax.inject.Inject
@@ -47,4 +48,28 @@ class TransactionRepositoryImpl @Inject constructor(
 
         return result
     }
+
+    /**
+     * Retrieves a list of transactions grouped by date for a specific owner by making an API call through the [TransactionFacadeService].
+     *
+     * @param transactionType The type of transactions to filter by (e.g., "income", "expense").
+     * @return A [NetworkResult] containing a list of [TransactionGroupByDate] if successful, or an error if not.
+     */
+    override suspend fun getTransactionsByOwnerId(transactionType: String?): NetworkResult<List<TransactionGroupByDate>> {
+        val result = safeCall {
+
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("User ID not found in session")
+
+            val response = transactionFacadeService.getTransactionsByOwnerId(
+                ownerId = userId,
+                transactionType = transactionType
+            )
+
+            response.data.map { it.toDomain() }
+        }
+
+        return result
+    }
+
 }

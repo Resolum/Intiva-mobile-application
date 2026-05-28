@@ -24,4 +24,7 @@ class TransactionFacadeService @Inject constructor(
      */
     suspend fun registerIndividualTransaction(request: RegisterTransactionRequestDto, userId: Long)  = transactionService.registerIndividualTransaction(userId, request)
 
+
+    suspend fun getTransactionsByOwnerId(ownerId: Long, transactionType: String?) = transactionService.getTransactionsByOwnerId(ownerId, transactionType)
+
 }

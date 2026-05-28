@@ -1,7 +1,9 @@
-package com.resolum.intiva.features.finances.domain.models
+package com.resolum.intiva.features.finances.data.remote.models
+
+import com.google.gson.annotations.SerializedName
 
 /**
- * Represents a financial transaction resource with all its details.
+ * Data Transfer Object (DTO) representing a financial transaction response from the API.
  *
  * @property id The unique identifier of the transaction.
  * @property amount The amount of the transaction as a string (e.g., "100.00").
@@ -12,17 +14,36 @@ package com.resolum.intiva.features.finances.domain.models
  * @property actorUserId The ID of the user who performed the transaction.
  * @property transactionType The type of the transaction (e.g., "income", "expense").
  * @property categoryId The optional ID of the category associated with the transaction.
- * @property registeredAt The timestamp when the transaction was registered, in ISO 8601 format.
  */
-data class Transaction(
+data class TransactionWithDesignResponseDto(
+
+    @SerializedName("id")
     val id: Long,
+
+    @SerializedName("amount")
     val amount: String,
+
+    @SerializedName("currencyCode")
     val currencyCode: String,
+
+    @SerializedName("description")
     val description: String,
+
+    @SerializedName("ownerId")
     val ownerId: Long,
+
+    @SerializedName("financialAccountId")
     val financialAccountId: Long,
+
+    @SerializedName("actorUserId")
     val actorUserId: Long,
+
+    @SerializedName("transactionType")
     val transactionType: String,
+
+    @SerializedName("categoryId")
     val categoryId: Long?,
-    val registeredAt: String
+
+    @SerializedName("categoryDesign")
+    val categoryDesign: CategoryDesignResponseDto,
 )
