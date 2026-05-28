@@ -5,6 +5,7 @@ import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.core.ui.snackbar.SnackBarBus
+import com.resolum.intiva.core.ui.snackbar.SnackBarType
 import com.resolum.intiva.features.iam.domain.models.SignUpRequest
 import com.resolum.intiva.features.iam.domain.usecase.SignUpUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -75,9 +76,8 @@ class SignUpViewModel @Inject constructor(
                         )
                     }
 
-                    viewModelScope.launch {
-                        SnackBarBus.send("Cuenta creada exitosamente")
-                    }
+                    SnackBarBus.send("Cuenta creada exitosamente", SnackBarType.Success)
+
                 }
 
                 is NetworkResult.Error -> {
@@ -87,9 +87,8 @@ class SignUpViewModel @Inject constructor(
                         )
                     }
 
-                    viewModelScope.launch {
-                        SnackBarBus.send("Error al crear la cuenta: ${result.message}")
-                    }
+                    SnackBarBus.send("Error al crear la cuenta: ${result.message}", SnackBarType.Error)
+
                 }
             }
         }

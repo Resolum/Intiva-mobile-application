@@ -1,4 +1,4 @@
-package com.resolum.intiva.features.finances.presentation.components
+package com.resolum.intiva.features.finances.presentation.transactions.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

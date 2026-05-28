@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +26,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
+import com.resolum.intiva.core.ui.snackbar.SnackBarType
+import com.resolum.intiva.core.ui.snackbar.SnackBarVisualsWithType
 import com.resolum.intiva.core.ui.theme.IntivaColors
 
 /**
@@ -44,7 +50,8 @@ data class Transaction(
 @Composable
 fun HomeScreen(
     onNavigateToNewExpense: () -> Unit,
-    onNavigateToNewIncome: () -> Unit
+    onNavigateToNewIncome: () -> Unit,
+    navController: NavController
 ) {
 
     val transactions = listOf(
@@ -54,6 +61,23 @@ fun HomeScreen(
         Transaction(Icons.Default.LocalGasStation, "Primax", "12 Mar, 08:45", "-S/ 85.00", false),
         Transaction(Icons.Default.Movie, "Netflix", "11 Mar, 00:00", "-S/ 44.90", false)
     )
+
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        val success = navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.remove<Boolean>("transaction_success")
+
+        if (success == true) {
+            snackBarHostState.showSnackbar(
+                SnackBarVisualsWithType(
+                    message = "Transacción registrada exitosamente",
+                    type = SnackBarType.Success
+                )
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -79,7 +103,10 @@ fun HomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = IntivaColors.BackgroundLavender)
             )
         },
-        containerColor = IntivaColors.BackgroundLavender
+        containerColor = IntivaColors.BackgroundLavender,
+        snackbarHost = {
+            IntivaSnackBarHost(hostState = snackBarHostState)
+        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier

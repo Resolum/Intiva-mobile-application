@@ -281,7 +281,7 @@ fun SignInScreen(
                                 fontSize = 15.sp,
                             )
                         ) {
-                            append("Solicitar acceso")
+                            append("Registrarse")
                         }
                     },
                     modifier = Modifier.clickable(
