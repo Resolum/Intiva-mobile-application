@@ -64,6 +64,26 @@ class TransactionViewModel @Inject constructor(
             return
         }
 
+        if (amount.endsWith(".")) {
+            viewModelScope.launch {
+                SnackBarBus.send(
+                    "Ingresa los centavos o elimina el punto decimal",
+                    SnackBarType.Error
+                )
+            }
+            return
+        }
+
+        if (amount == "0.00" || amount == "0") {
+            viewModelScope.launch {
+                SnackBarBus.send(
+                    "El monto debe ser mayor a cero",
+                    SnackBarType.Error
+                )
+            }
+            return
+        }
+
         if (account == null) {
             viewModelScope.launch {
                 SnackBarBus.send(
@@ -109,13 +129,6 @@ class TransactionViewModel @Inject constructor(
                         it.copy(
                             state = UiState.Success(result.data),
                             navigateBack = true
-                        )
-                    }
-
-                    viewModelScope.launch {
-                        SnackBarBus.send(
-                            "Transacción registrada exitosamente",
-                            SnackBarType.Success
                         )
                     }
                 }

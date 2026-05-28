@@ -52,7 +52,8 @@ fun MainShell() {
             composable(NavRoutes.HOME) {
                 HomeScreen(
                     onNavigateToNewExpense = { shellNavController.navigate(NavRoutes.NEW_EXPENSE) },
-                    onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) }
+                    onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) },
+                    navController = shellNavController
                 )
             }
 
@@ -97,6 +98,7 @@ fun MainShell() {
                 TransactionFormScreen(
                     transactionType = TransactionType.INCOME,
                     onDismiss = { shellNavController.popBackStack() },
+                    navController = shellNavController
                 )
             }
 
@@ -104,6 +106,7 @@ fun MainShell() {
                 TransactionFormScreen(
                     transactionType = TransactionType.EXPENSE,
                     onDismiss = { shellNavController.popBackStack() },
+                    navController = shellNavController
                 )
             }
         }

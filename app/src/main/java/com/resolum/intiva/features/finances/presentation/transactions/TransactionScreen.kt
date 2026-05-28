@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.resolum.intiva.core.ui.components.IntivaBackButton
 import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
 import com.resolum.intiva.core.ui.snackbar.SnackBarBus
@@ -62,14 +63,38 @@ import kotlinx.coroutines.flow.collectLatest
 fun TransactionFormScreen(
     transactionType: TransactionType,
     onDismiss: () -> Unit,
+    navController: NavController,
     viewModel: TransactionViewModel = hiltViewModel(),
 ) {
-    var amountText by remember { mutableStateOf("0.00") }
+    var amountText by remember { mutableStateOf("0") }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
     var selectedAccount by remember { mutableStateOf<FinancialAccount?>(null) }
     val uiState by viewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
 
+    val displayAmount = when {
+        amountText.contains(".") -> {
+            val decimal = amountText.substringAfter(".")
+            when (decimal.length) {
+                0 -> amountText
+                1 -> amountText
+                else -> amountText
+            }
+        }
+        else -> amountText
+    }
+
+    val amountToSend = when {
+        amountText.contains(".") -> {
+            val decimal = amountText.substringAfter(".")
+            when (decimal.length) {
+                0 -> "${amountText}00"
+                1 -> "${amountText}0"
+                else -> amountText
+            }
+        }
+        else -> "$amountText.00"
+    }
 
     LaunchedEffect(Unit) {
         SnackBarBus.messages.collectLatest { event ->
@@ -79,6 +104,9 @@ fun TransactionFormScreen(
 
     if (uiState.navigateBack) {
         LaunchedEffect(Unit) {
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("transaction_success", true)
             onDismiss()
         }
     }
@@ -143,7 +171,7 @@ fun TransactionFormScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "S/. $amountText",
+                        text = "S/. $displayAmount",
                         style = MaterialTheme.typography.displayMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
@@ -177,8 +205,7 @@ fun TransactionFormScreen(
                         amountText = appendDigit(amountText, digit)
                     },
                     onDecimalClick = {
-                        if (!amountText.contains("."))
-                            amountText = "$amountText."
+                        if (!amountText.contains(".")) amountText = "$amountText."
                     },
                     onDeleteClick = {
                         amountText = deleteDigit(amountText)
@@ -194,7 +221,7 @@ fun TransactionFormScreen(
                 Button(
                     onClick = {
                         viewModel.registerIndividualTransaction(
-                            amount = amountText,
+                            amount = amountToSend,
                             category = selectedCategory,
                             account = selectedAccount,
                             transactionType = transactionType
