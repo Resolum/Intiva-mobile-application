@@ -54,13 +54,6 @@ fun HomeScreen(
     navController: NavController
 ) {
 
-    val transactions = listOf(
-        Transaction(Icons.Default.ShoppingCart, "Supermercado Wong", "Hoy, 14:30", "-S/ 145.50", false),
-        Transaction(Icons.Default.Restaurant, "Restaurante Central", "Ayer, 20:15", "-S/ 320.00", false),
-        Transaction(Icons.Default.SwapHoriz, "Transferencia de Juan", "Ayer, 10:00", "+S/ 500.00", true),
-        Transaction(Icons.Default.LocalGasStation, "Primax", "12 Mar, 08:45", "-S/ 85.00", false),
-        Transaction(Icons.Default.Movie, "Netflix", "11 Mar, 00:00", "-S/ 44.90", false)
-    )
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -248,12 +241,7 @@ fun HomeScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column {
-                        transactions.forEachIndexed { index, transaction ->
-                            TransactionItem(transaction)
-                            if (index < transactions.size - 1) {
-                                Divider(color = Color(0xFFF2F0FA), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
-                            }
-                        }
+
                     }
                 }
             }

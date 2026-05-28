@@ -36,6 +36,7 @@ fun CategoryItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+
     Card(
         onClick = onClick,
         modifier = Modifier.aspectRatio(1f),
