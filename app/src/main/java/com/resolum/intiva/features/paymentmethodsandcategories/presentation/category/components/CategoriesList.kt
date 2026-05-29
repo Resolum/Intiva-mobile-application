@@ -32,7 +32,8 @@ private const val PAGE_SIZE = 6
 fun CategoryGrid(
     selectedCategory: Category?,
     viewModel: CategoryViewModel = hiltViewModel(),
-    onCategorySelected: (Category) -> Unit
+    onCategorySelected: (Category) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -40,7 +41,7 @@ fun CategoryGrid(
         viewModel.getCategories()
     }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "SELECCIONA UNA CATEGORÍA",
             style = MaterialTheme.typography.labelMedium,
@@ -52,7 +53,9 @@ fun CategoryGrid(
 
             is UiState.Loading -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -62,7 +65,9 @@ fun CategoryGrid(
             is UiState.Success -> {
                 if (uiState.categories.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -111,7 +116,9 @@ fun CategoryGrid(
 
             is UiState.Error -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {

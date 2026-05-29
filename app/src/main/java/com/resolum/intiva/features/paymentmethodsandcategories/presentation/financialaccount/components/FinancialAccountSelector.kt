@@ -45,7 +45,7 @@ import com.resolum.intiva.features.paymentmethodsandcategories.presentation.fina
 @Composable
 fun FinancialAccountSelector(
     viewModel: FinancialAccountViewModel = hiltViewModel(),
-    onAccountSelected: (FinancialAccount) -> Unit
+    onAccountSelected: (FinancialAccount) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var expanded by remember { mutableStateOf(false) }
