@@ -50,20 +50,34 @@ fun MainShell() {
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         ) {
 
+            /**
+             * Root-level destinations
+             * Each of these should ideally just host the main screen for the feature, with deeper navigation handled in the feature's own nav graph.
+             */
             composable(NavRoutes.HOME) {
                 HomeScreen(
                     onNavigateToNewExpense = { shellNavController.navigate(NavRoutes.NEW_EXPENSE) },
                     onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) },
-                    navController = shellNavController
+                    navController = shellNavController,
+                    onNavigateToTransactions = { shellNavController.navigate(NavRoutes.TRANSACTIONS) },
                 )
             }
 
+            /**
+             * Placeholder destinations for features that haven't been implemented yet.
+             * These can be fleshed out with actual screens and nested navigation graphs as the app is developed.
+             */
             composable(NavRoutes.TRANSACTIONS) {
                 TransactionsScreen()
             }
             composable(NavRoutes.FAMILY) { }
             composable(NavRoutes.PROFILE) { }
 
+            /**
+             * Savings Goals feature navigation.
+             * This is a bit more complex, with multiple screens for listing, creating, editing, and viewing details of savings goals.
+             * Each screen is registered here for simplicity, but in a larger app you might want to create a separate nav graph for the savings feature.
+             */
             composable(NavRoutes.SAVINGS_GOALS) {
                 SavingsGoalsScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
@@ -73,6 +87,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * Screens for creating, editing, and viewing details of savings goals.
+             * These are registered at the root level for simplicity, but in a larger app you might want to create a separate nav graph for the savings feature and register these screens there instead.
+             */
             composable(NavRoutes.SAVINGS_GOAL_CREATE) {
                 SavingsGoalCreateScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
@@ -80,6 +98,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The edit and detail screens require an ID parameter to know which savings goal to display or edit.
+             * We extract this ID from the back stack entry's arguments and pass it to the respective screen.
+             */
             composable(NavRoutes.SAVINGS_GOAL_EDIT) { backStackEntry ->
                 val id = backStackEntry.arguments?.getString("id") ?: return@composable
                 SavingsGoalEditScreen(

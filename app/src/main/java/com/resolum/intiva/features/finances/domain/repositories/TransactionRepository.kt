@@ -28,4 +28,11 @@ interface TransactionRepository {
      * @return A [NetworkResult] containing a list of [TransactionGroupByDate] if successful, or an error if the operation fails.
      */
     suspend fun getTransactionsByOwnerId(transactionType: String?) : NetworkResult<List<TransactionGroupByDate>>
+
+    /**
+     * Retrieves the latest transactions for a specific owner.
+     *
+        * @return A [NetworkResult] containing a list of [TransactionGroupByDate] representing the latest transactions if successful, or an error if the operation fails.
+     */
+    suspend fun getLastestTransactionsByOwnerId() : NetworkResult<List<TransactionGroupByDate>>
 }

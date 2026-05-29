@@ -72,4 +72,25 @@ class TransactionRepositoryImpl @Inject constructor(
         return result
     }
 
+    /**
+     * Retrieves the latest transactions for a specific owner by making an API call through the [TransactionFacadeService].
+     *
+     * @return A [NetworkResult] containing a list of [TransactionGroupByDate] representing the latest transactions if successful, or an error if not.
+     */
+    override suspend fun getLastestTransactionsByOwnerId(): NetworkResult<List<TransactionGroupByDate>> {
+        val result = safeCall {
+
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("User ID not found in session")
+
+            val response = transactionFacadeService.getLastestTransactionByOwnerId(
+                ownerId = userId
+            )
+
+            response.data.map { it.toDomain() }
+        }
+
+        return result
+    }
+
 }

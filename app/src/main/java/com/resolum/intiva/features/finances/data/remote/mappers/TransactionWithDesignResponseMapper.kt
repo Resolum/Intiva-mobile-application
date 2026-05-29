@@ -23,6 +23,7 @@ fun TransactionWithDesignResponseDto.toDomain(): TransactionWithDesignResponse {
         actorUserId = actorUserId,
         transactionType = transactionType,
         categoryId = categoryId,
+        registeredAt = registeredAt,
         categoryDesign = CategoryDesign(
             categoryColor = categoryDesign.categoryColor,
             categoryIcon = categoryDesign.categoryIcon

@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.finances.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -9,39 +10,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.filled.LocalGasStation
-import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
 import com.resolum.intiva.core.ui.snackbar.SnackBarType
 import com.resolum.intiva.core.ui.snackbar.SnackBarVisualsWithType
 import com.resolum.intiva.core.ui.theme.IntivaColors
-
-/**
- * Data class representing a financial transaction.
- */
-data class Transaction(
-    val icon: ImageVector,
-    val title: String,
-    val subtitle: String,
-    val amount: String,
-    val isPositive: Boolean
-)
+import com.resolum.intiva.features.finances.presentation.transactions.TransactionViewModel
+import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionItem
 
 /**
  * Main dashboard screen representing the user's financial overview.
@@ -51,20 +41,19 @@ data class Transaction(
 fun HomeScreen(
     onNavigateToNewExpense: () -> Unit,
     onNavigateToNewIncome: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    viewModel: TransactionViewModel = hiltViewModel(),
+    onNavigateToTransactions: () -> Unit
 ) {
-
-    val transactions = listOf(
-        Transaction(Icons.Default.ShoppingCart, "Supermercado Wong", "Hoy, 14:30", "-S/ 145.50", false),
-        Transaction(Icons.Default.Restaurant, "Restaurante Central", "Ayer, 20:15", "-S/ 320.00", false),
-        Transaction(Icons.Default.SwapHoriz, "Transferencia de Juan", "Ayer, 10:00", "+S/ 500.00", true),
-        Transaction(Icons.Default.LocalGasStation, "Primax", "12 Mar, 08:45", "-S/ 85.00", false),
-        Transaction(Icons.Default.Movie, "Netflix", "11 Mar, 00:00", "-S/ 44.90", false)
-    )
 
     val snackBarHostState = remember { SnackbarHostState() }
 
+    val uiState by viewModel.uiState.collectAsState()
+
+
     LaunchedEffect(Unit) {
+        viewModel.getTransactionsByOwnerId(onlyLatest = true)
+
         val success = navController.currentBackStackEntry
             ?.savedStateHandle
             ?.remove<Boolean>("transaction_success")
@@ -84,7 +73,6 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // User Avatar
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
@@ -236,60 +224,44 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = "Actividad Reciente", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = IntivaColors.TextPrimary)
-                    Text(text = "Ver todo", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = IntivaColors.IconPurple)
+                    Text(text = "Ver todo", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = IntivaColors.IconPurple, modifier = Modifier.clickable { onNavigateToTransactions() })
                 }
             }
 
-
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column {
-                        transactions.forEachIndexed { index, transaction ->
-                            TransactionItem(transaction)
-                            if (index < transactions.size - 1) {
-                                Divider(color = Color(0xFFF2F0FA), thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))
+                when (val state = uiState.transactionsState) {
+
+                    is UiState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = IntivaColors.IconPurple)
+                        }
+                    }
+
+                    is UiState.Success -> {
+                        val allTransactions = state.data
+                            .flatMap { it.transactions }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            allTransactions.forEach { transaction ->
+                                TransactionItem(transaction = transaction)
                             }
                         }
                     }
+
+                    is UiState.Error -> {
+                        Text(
+                            text = "Error al cargar transacciones",
+                            color = Color.Red,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    else -> Unit
                 }
             }
         }
-    }
-}
-
-/**
- * Individual item representing a single transaction in the history list.
- */
-@Composable
-fun TransactionItem(transaction: Transaction) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(Color(0xFFE8E6F1), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(transaction.icon, contentDescription = null, tint = IntivaColors.TextPrimary, modifier = Modifier.size(20.dp))
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = transaction.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = IntivaColors.TextPrimary)
-            Text(text = transaction.subtitle, fontSize = 12.sp, color = IntivaColors.TextSecondary)
-        }
-        Text(
-            text = transaction.amount,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            color = if (transaction.isPositive) Color(0xFF4CAF50) else IntivaColors.TextPrimary
-        )
     }
 }

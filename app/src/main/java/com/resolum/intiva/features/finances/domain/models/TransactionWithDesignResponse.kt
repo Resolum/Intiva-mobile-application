@@ -24,5 +24,6 @@ data class TransactionWithDesignResponse(
     val actorUserId: Long,
     val transactionType: String,
     val categoryId: Long?,
+    val registeredAt: String,
     val categoryDesign: CategoryDesign?,
 )
