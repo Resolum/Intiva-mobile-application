@@ -47,7 +47,21 @@ fun TransactionDateSection(
 
 private fun formatDate(date: String): String {
     return runCatching {
-        val parsedDate = LocalDate.parse(date)
-        parsedDate.format(DateTimeFormatter.ofPattern("dd 'de' MMMM, yyyy"))
-    }.getOrElse { date }
+
+        val parsedDate = if (date.contains("T")) {
+            java.time.LocalDateTime.parse(date).toLocalDate()
+        } else {
+            LocalDate.parse(date)
+        }
+
+        parsedDate.format(
+            DateTimeFormatter.ofPattern(
+                "dd 'de' MMMM, yyyy",
+                java.util.Locale("es")
+            )
+        )
+
+    }.getOrElse {
+        date
+    }
 }

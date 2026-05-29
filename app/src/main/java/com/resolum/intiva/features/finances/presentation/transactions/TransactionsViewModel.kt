@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
     private val registerIndividualTransactionUseCase: RegisterIndividualTransactionUseCase,
-    private val getTransactionsByOwnerIdUseCase: GetTransactionsByOwnerIdUseCase
+    private val getTransactionsByOwnerIdUseCase: GetTransactionsByOwnerIdUseCase,
 ) : BaseViewModel() {
 
     /** Backing property for the UI state, initialized with a default TransactionUiState. */
@@ -157,7 +157,8 @@ class TransactionViewModel @Inject constructor(
     }
 
     fun getTransactionsByOwnerId(
-        transactionType: TransactionType?
+        transactionType: TransactionType? = null,
+        onlyLatest: Boolean = false
     ) {
 
         safeLaunch {
@@ -170,7 +171,8 @@ class TransactionViewModel @Inject constructor(
 
             when (
                 val result = getTransactionsByOwnerIdUseCase(
-                    transactionType = transactionType?.name
+                    transactionType = transactionType?.name,
+                    onlyLatest = onlyLatest
                 )
             ) {
 
@@ -204,4 +206,5 @@ class TransactionViewModel @Inject constructor(
             }
         }
     }
+
 }

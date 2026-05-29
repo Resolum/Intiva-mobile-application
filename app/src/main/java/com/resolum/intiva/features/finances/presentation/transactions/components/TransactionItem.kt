@@ -25,6 +25,7 @@ import androidx.core.graphics.toColorInt
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.domain.models.TransactionWithDesignResponse
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.components.CategoryIcon
+import com.resolum.intiva.core.utils.date.toRelativeDateTime
 
 /**
  * Composable function representing a single transaction item in the transaction list.
@@ -50,6 +51,7 @@ fun TransactionItem(
     }
 
     val iconName = transaction.categoryDesign?.categoryIcon ?: "default"
+
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -88,6 +90,11 @@ fun TransactionItem(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.Black
+                )
+                Text(
+                    text = transaction.registeredAt.toRelativeDateTime(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
                 )
             }
 

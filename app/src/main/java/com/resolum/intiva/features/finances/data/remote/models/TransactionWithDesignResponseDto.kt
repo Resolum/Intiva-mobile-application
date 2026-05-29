@@ -44,6 +44,9 @@ data class TransactionWithDesignResponseDto(
     @SerializedName("categoryId")
     val categoryId: Long?,
 
+    @SerializedName("registeredAt")
+    val registeredAt: String,
+
     @SerializedName("categoryDesign")
     val categoryDesign: CategoryDesignResponseDto,
 )

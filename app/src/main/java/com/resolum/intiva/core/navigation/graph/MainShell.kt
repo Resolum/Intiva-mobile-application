@@ -53,20 +53,34 @@ fun MainShell() {
             modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
         ) {
 
+            /**
+             * Root-level destinations
+             * Each of these should ideally just host the main screen for the feature, with deeper navigation handled in the feature's own nav graph.
+             */
             composable(NavRoutes.HOME) {
                 HomeScreen(
                     onNavigateToNewExpense = { shellNavController.navigate(NavRoutes.NEW_EXPENSE) },
                     onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) },
-                    navController = shellNavController
+                    navController = shellNavController,
+                    onNavigateToTransactions = { shellNavController.navigate(NavRoutes.TRANSACTIONS) },
                 )
             }
 
+            /**
+             * Placeholder destinations for features that haven't been implemented yet.
+             * These can be fleshed out with actual screens and nested navigation graphs as the app is developed.
+             */
             composable(NavRoutes.TRANSACTIONS) {
                 TransactionsScreen()
             }
             composable(NavRoutes.FAMILY) { }
             composable(NavRoutes.PROFILE) { }
 
+            /**
+             * Savings Goals feature navigation.
+             * This is a bit more complex, with multiple screens for listing, creating, editing, and viewing details of savings goals.
+             * Each screen is registered here for simplicity, but in a larger app you might want to create a separate nav graph for the savings feature.
+             */
             composable(NavRoutes.SAVINGS_GOALS) {
                 SavingsGoalsScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
@@ -82,6 +96,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The create screen is shown when a user wants to create a new savings goal. It requires the account ID to know which account the goal belongs to.
+             * After successfully creating a goal, the user is navigated to the detail screen for that goal.
+             */
             composable(NavRoutes.SAVINGS_GOAL_CREATE) { backStackEntry ->
                 val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull()
                     ?: return@composable
@@ -96,6 +114,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The edit and detail screens require an ID parameter to know which savings goal to display or edit.
+             * We extract this ID from the back stack entry's arguments and pass it to the respective screen.
+             */
             composable(NavRoutes.SAVINGS_GOAL_EDIT) { backStackEntry ->
                 val id = backStackEntry.arguments?.getString("id") ?: return@composable
                 SavingsGoalEditScreen(
@@ -105,6 +127,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The contribute screen is shown when a user selects a savings goal to contribute to. It allows them to enter an amount and confirm the contribution.
+             * If the contribution is successful, they are navigated to the completion screen. If it fails (e.g. due to insufficient funds), they are navigated to the uncompleted screen.
+             */
             composable(NavRoutes.SAVINGS_GOAL_DETAIL) { backStackEntry ->
                 val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
                 val goalId = backStackEntry.arguments?.getString("goalId") ?: return@composable
@@ -128,6 +154,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The contribute screen allows users to add funds to a specific savings goal. It requires both the account ID and goal ID to know which goal to contribute to.
+             * After contributing, users can either be taken back to the goal detail screen or shown a completion/uncompletion screen based on whether the contribution completed the goal or not.
+             */
             composable(NavRoutes.SAVINGS_GOAL_CONTRIBUTE) { backStackEntry ->
                 val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
                 val goalId = backStackEntry.arguments?.getString("goalId")?.toLongOrNull() ?: return@composable
@@ -149,6 +179,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The completed screen is shown when a user successfully completes a savings goal. It provides options to create a new goal or go back to the goals list.
+             * We pass the accountId and goalId as parameters to this screen so it can display relevant information about the completed goal.
+             */
             composable(NavRoutes.SAVINGS_GOAL_COMPLETED) { backStackEntry ->
                 val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
                 val goalId = backStackEntry.arguments?.getString("goalId")?.toLongOrNull() ?: return@composable
@@ -168,6 +202,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The uncompleted screen is shown when a user tries to contribute to a goal but doesn't have enough funds.
+             * It provides options to try contributing again (which will take them back to the contribute screen) or to go back to the savings goals list.
+             */
             composable(NavRoutes.SAVINGS_GOAL_UNCOMPLETED) { backStackEntry ->
                 val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull() ?: return@composable
                 val goalId = backStackEntry.arguments?.getString("goalId")?.toLongOrNull() ?: return@composable
@@ -185,6 +223,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * Transaction form screens for creating new income or expense transactions.
+             * These are registered at the root level for simplicity, but in a larger app you might want to create a separate nav graph for transaction-related screens.
+             */
             composable(NavRoutes.NEW_INCOME) {
                 TransactionFormScreen(
                     transactionType = TransactionType.INCOME,
@@ -193,6 +235,10 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The new expense screen is very similar to the new income screen, but with the transaction type set to EXPENSE.
+             * We reuse the same TransactionFormScreen composable for both, passing in the appropriate transaction type as a parameter.
+             */
             composable(NavRoutes.NEW_EXPENSE) {
                 TransactionFormScreen(
                     transactionType = TransactionType.EXPENSE,
