@@ -1,5 +1,6 @@
 package com.resolum.intiva.features.finances.presentation
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.NotificationsNone
@@ -15,12 +17,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -32,9 +39,25 @@ import com.resolum.intiva.core.ui.snackbar.SnackBarVisualsWithType
 import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionViewModel
 import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionItem
+import com.resolum.intiva.features.iam.domain.models.FirstTransactionTutorialStep
+import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingViewModel
+import com.resolum.intiva.features.iam.presentation.onboarding.components.SpotlightOverlay
 
 /**
- * Main dashboard screen representing the user's financial overview.
+ * HomeScreen.kt
+ *
+ * This file defines the HomeScreen composable, which serves as the main dashboard for the Intiva app.
+ * It displays a greeting, total balance, quick action buttons for adding expenses and incomes, a monthly spending limit indicator,
+ * and a list of recent transactions. The screen also integrates an onboarding tutorial for first-time users.
+ *
+ * Key Features:
+ * - Displays user's total balance and a monthly spending limit indicator.
+ * - Provides quick access buttons to add new expenses and incomes.
+ * - Shows recent transactions with a link to view all transactions.
+ * - Integrates an onboarding tutorial that guides users through their first transaction entry.
+ *
+ * The HomeScreen interacts with the TransactionViewModel to fetch and display transaction data,
+ * and with the OnboardingViewModel to manage the state of the onboarding tutorial.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,13 +68,16 @@ fun HomeScreen(
     viewModel: TransactionViewModel = hiltViewModel(),
     onNavigateToTransactions: () -> Unit
 ) {
-
     val snackBarHostState = remember { SnackbarHostState() }
-
     val uiState by viewModel.uiState.collectAsState()
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val onboardingState by onboardingViewModel.state.collectAsState()
+    var incomeButtonRect by remember { mutableStateOf<Rect?>(null) }
 
+    var isNavigatingToForm by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        onboardingViewModel.loadStatus()
         viewModel.getTransactionsByOwnerId(onlyLatest = true)
 
         val success = navController.currentBackStackEntry
@@ -68,6 +94,19 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(onboardingState.step) {
+        when (onboardingState.step) {
+            FirstTransactionTutorialStep.SELECT_CATEGORY,
+            FirstTransactionTutorialStep.CONFIRM_TRANSACTION -> {
+                if (!isNavigatingToForm) {
+                    onboardingViewModel.rollback()
+                }
+                isNavigatingToForm = false
+            }
+            else -> Unit
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -76,191 +115,313 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .clip(CircleShape)
+                                    .clip(CircleShape)
                                 .background(Color.LightGray)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Intiva", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = IntivaColors.TextPrimary)
+                        Text(
+                            "Intiva",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = IntivaColors.TextPrimary
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.NotificationsNone, contentDescription = "Notifications", tint = IntivaColors.IconPurple)
+                    IconButton(onClick = { }) {
+                        Icon(
+                            Icons.Default.NotificationsNone,
+                            contentDescription = "Notifications",
+                            tint = IntivaColors.IconPurple
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = IntivaColors.BackgroundLavender)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = IntivaColors.BackgroundLavender
+                )
             )
         },
         containerColor = IntivaColors.BackgroundLavender,
-        snackbarHost = {
-            IntivaSnackBarHost(hostState = snackBarHostState)
-        }
+        snackbarHost = { IntivaSnackBarHost(hostState = snackBarHostState) }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
-        ) {
 
-            item {
-                Column {
-                    Text(
-                        text = "Hola, Jennifer 👋",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = IntivaColors.TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Aquí está el resumen de tus finanzas hoy.",
-                        fontSize = 14.sp,
-                        color = IntivaColors.TextSecondary
-                    )
-                }
-            }
+        Box(modifier = Modifier.fillMaxSize()) {
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = IntivaColors.BackgroundPurple)
-                ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Text(text = "BALANCE TOTAL", fontSize = 12.sp, color = Color(0xCCFFFFFF), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(text = "S/ ", fontSize = 20.sp, color = Color.White)
-                            Text(text = "12,400.00", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
 
-                        Spacer(modifier = Modifier.height(20.dp))
-
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Button(
-                                onClick = {
-                                    onNavigateToNewExpense()
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = IntivaColors.PrimaryGreen),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF0D0D0D), modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Gasto", color = Color(0xFF0D0D0D), fontWeight = FontWeight.Medium)
-                            }
-
-                            Button(
-                                onClick = {
-                                    onNavigateToNewIncome()
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6B5FD4)),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.ArrowDownward, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Ingreso", color = Color.White, fontWeight = FontWeight.Medium)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text(text = "Ver cuentas >", color = Color(0xCCFFFFFF), fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
-
-
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) {
-                            CircularProgressIndicator(
-                                progress = { 1f },
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color(0xFFF2F0FA),
-                                strokeWidth = 5.dp
-                            )
-                            CircularProgressIndicator(
-                                progress = { 0.65f },
-                                modifier = Modifier.fillMaxSize(),
-                                color = IntivaColors.PrimaryGreen,
-                                strokeWidth = 5.dp,
-                                trackColor = Color.Transparent
-                            )
-                            Text(
-                                text = "65%",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp,
-                                color = IntivaColors.TextPrimary
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(text = "Límite de Gasto Mensual", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = IntivaColors.TextPrimary)
-                            Text(text = "Te quedan S/ 1,200.00 disponibles", fontSize = 12.sp, color = IntivaColors.TextSecondary)
-                        }
-                    }
-                }
-            }
-
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Actividad Reciente", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = IntivaColors.TextPrimary)
-                    Text(text = "Ver todo", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = IntivaColors.IconPurple, modifier = Modifier.clickable { onNavigateToTransactions() })
-                }
-            }
-
-            item {
-                when (val state = uiState.transactionsState) {
-
-                    is UiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = IntivaColors.IconPurple)
-                        }
-                    }
-
-                    is UiState.Success -> {
-                        val allTransactions = state.data
-                            .flatMap { it.transactions }
-
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            allTransactions.forEach { transaction ->
-                                TransactionItem(transaction = transaction)
-                            }
-                        }
-                    }
-
-                    is UiState.Error -> {
+                item {
+                    Column {
                         Text(
-                            text = "Error al cargar transacciones",
-                            color = Color.Red,
-                            modifier = Modifier.fillMaxWidth()
+                            text = "Hola, Jennifer 👋",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = IntivaColors.TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Aquí está el resumen de tus finanzas hoy.",
+                            fontSize = 14.sp,
+                            color = IntivaColors.TextSecondary
                         )
                     }
-
-                    else -> Unit
                 }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = IntivaColors.BackgroundPurple
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text(
+                                text = "BALANCE TOTAL",
+                                fontSize = 12.sp,
+                                color = Color(0xCCFFFFFF),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                Text(text = "S/ ", fontSize = 20.sp, color = Color.White)
+                                Text(
+                                    text = "12,400.00",
+                                    fontSize = 32.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Button(
+                                    onClick = { onNavigateToNewExpense() },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = IntivaColors.PrimaryGreen
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = null,
+                                        tint = Color(0xFF0D0D0D),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Gasto",
+                                        color = Color(0xFF0D0D0D),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        if (onboardingState.step == FirstTransactionTutorialStep.OPEN_CREATE_TRANSACTION) {
+                                            isNavigatingToForm = true
+                                            onboardingViewModel.advance()
+                                        }
+                                        onNavigateToNewIncome()
+                                    },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
+                                        .onGloballyPositioned { cords ->
+                                            incomeButtonRect = cords.boundsInRoot()
+                                        },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF6B5FD4)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.ArrowDownward,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Ingreso",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Ver cuentas >",
+                                    color = Color(0xCCFFFFFF),
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    progress = { 1f },
+                                    modifier = Modifier.fillMaxSize(),
+                                    color = Color(0xFFF2F0FA),
+                                    strokeWidth = 5.dp
+                                )
+                                CircularProgressIndicator(
+                                    progress = { 0.65f },
+                                    modifier = Modifier.fillMaxSize(),
+                                    color = IntivaColors.PrimaryGreen,
+                                    strokeWidth = 5.dp,
+                                    trackColor = Color.Transparent
+                                )
+                                Text(
+                                    text = "65%",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp,
+                                    color = IntivaColors.TextPrimary
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
+                                Text(
+                                    text = "Límite de Gasto Mensual",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = IntivaColors.TextPrimary
+                                )
+                                Text(
+                                    text = "Te quedan S/ 1,200.00 disponibles",
+                                    fontSize = 12.sp,
+                                    color = IntivaColors.TextSecondary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Actividad Reciente",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = IntivaColors.TextPrimary
+                        )
+                        Text(
+                            text = "Ver todo",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = IntivaColors.IconPurple,
+                            modifier = Modifier.clickable { onNavigateToTransactions() }
+                        )
+                    }
+                }
+
+                item {
+                    when (val state = uiState.transactionsState) {
+                        is UiState.Loading -> {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = IntivaColors.IconPurple)
+                            }
+                        }
+                        is UiState.Success -> {
+                            val allTransactions = state.data.flatMap { it.transactions }
+                            if (allTransactions.isEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(64.dp),
+                                        tint = IntivaColors.IconPurple.copy(alpha = 0.4f)
+                                    )
+                                    Text(
+                                        text = "Aún no tienes transacciones",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = IntivaColors.TextPrimary
+                                    )
+                                    Text(
+                                        text = "Registra tu primer ingreso o gasto\npara empezar a ver tu historial.",
+                                        fontSize = 13.sp,
+                                        color = IntivaColors.TextSecondary,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            } else {
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    allTransactions.forEach { transaction ->
+                                        TransactionItem(transaction = transaction)
+                                    }
+                                }
+                            }
+                        }
+                        is UiState.Error -> {
+                            Text(
+                                text = "Error al cargar transacciones",
+                                color = Color.Red,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        else -> Unit
+                    }
+                }
+            }
+
+            if (onboardingState.step == FirstTransactionTutorialStep.OPEN_CREATE_TRANSACTION
+                && incomeButtonRect != null
+            ) {
+                SpotlightOverlay(
+                    rect = incomeButtonRect,
+                    title = "Registra tu primer ingreso",
+                    message = "Toca el botón Ingreso para comenzar a llevar el control de tus finanzas.",
+                    stepNumber = 1,
+                    totalSteps = 4,
+                    onNext = { onboardingViewModel.advance() }
+                )
             }
         }
     }
