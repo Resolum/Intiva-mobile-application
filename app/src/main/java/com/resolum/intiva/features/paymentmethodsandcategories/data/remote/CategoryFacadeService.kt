@@ -1,5 +1,6 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.data.remote
 
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateCategoryRequestDto
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services.CategoryService
 import javax.inject.Inject
 
@@ -20,4 +21,9 @@ class CategoryFacadeService @Inject constructor(
      * @return A list of categories associated with the specified user ID.
      */
     suspend fun getCategoriesByUserId(userId: Long) = categoryService.getCategoriesByUserId(userId)
+
+    suspend fun createCategory(
+        userId: Long,
+        request: CreateCategoryRequestDto
+    ) = categoryService.createCategory(userId, request)
 }

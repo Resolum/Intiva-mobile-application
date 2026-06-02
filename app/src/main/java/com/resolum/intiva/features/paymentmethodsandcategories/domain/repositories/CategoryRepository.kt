@@ -12,4 +12,11 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Cat
 interface CategoryRepository {
 
     suspend fun getCategoriesByUserId(): NetworkResult<List<Category>>
+
+    suspend fun createCategory(
+        name: String,
+        description: String,
+        color: String,
+        icon: String
+    ): NetworkResult<Category>
 }
