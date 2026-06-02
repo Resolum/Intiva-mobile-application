@@ -1,8 +1,11 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services
 
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.FinancialAccountResponseDto
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateFinancialAccountRequestDto
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Body
+import retrofit2.http.POST
 
 /**
  * Retrofit service interface for fetching financial account data from the API.
@@ -22,4 +25,10 @@ interface FinancialAccountService {
     suspend fun getFinancialAccountsByUserId(
         @Path("userId") userId: Long
     ) : List<FinancialAccountResponseDto>
+
+    @POST("users/{userId}/financial-accounts")
+    suspend fun createFinancialAccount(
+        @Path("userId") userId: Long,
+        @Body request: CreateFinancialAccountRequestDto
+    ): FinancialAccountResponseDto
 }

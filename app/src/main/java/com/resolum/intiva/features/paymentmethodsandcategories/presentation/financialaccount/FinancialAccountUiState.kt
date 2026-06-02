@@ -12,5 +12,6 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Fin
  */
 data class FinancialAccountUiState(
     val accounts: List<FinancialAccount> = emptyList(),
-    val accountsState: UiState<List<FinancialAccount>> = UiState.Idle
+    val accountsState: UiState<List<FinancialAccount>> = UiState.Idle,
+    val createAccountState: UiState<FinancialAccount> = UiState.Idle
 )
