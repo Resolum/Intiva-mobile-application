@@ -22,9 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitSummary
-import com.resolum.intiva.features.finances.presentation.spendinglimits.daysUntilMonthEnd
-import com.resolum.intiva.features.finances.presentation.spendinglimits.formatCurrency
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -115,4 +114,9 @@ fun BudgetSummaryCard(summaries: List<SpendingLimitSummary>) {
 private fun daysUntilMonthEnd(): Long {
     val today = LocalDate.now()
     return ChronoUnit.DAYS.between(today, today.withDayOfMonth(today.lengthOfMonth())).coerceAtLeast(0)
+}
+
+private fun formatCurrency(amount: BigDecimal): String {
+    val formatter = DecimalFormat("#,##0.00")
+    return "S/ ${formatter.format(amount)}"
 }
