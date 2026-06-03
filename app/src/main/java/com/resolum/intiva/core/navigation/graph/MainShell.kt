@@ -14,6 +14,7 @@ import com.resolum.intiva.core.navigation.components.IntivaBottomNavBar
 import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.HomeScreen
+import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionFormScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionsScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
@@ -63,6 +64,9 @@ fun MainShell() {
                     onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) },
                     navController = shellNavController,
                     onNavigateToTransactions = { shellNavController.navigate(NavRoutes.TRANSACTIONS) },
+                    onNavigateToSpendingLimitAlert = {
+                        shellNavController.navigate(NavRoutes.SPENDING_LIMIT_ALERT)
+                    },
                 )
             }
 
@@ -72,6 +76,9 @@ fun MainShell() {
              */
             composable(NavRoutes.TRANSACTIONS) {
                 TransactionsScreen()
+            }
+            composable(NavRoutes.SPENDING_LIMIT_ALERT) {
+                SpendingLimitScreen(onNavigateBack = { shellNavController.popBackStack() })
             }
             composable(NavRoutes.FAMILY) { }
             composable(NavRoutes.PROFILE) { }
