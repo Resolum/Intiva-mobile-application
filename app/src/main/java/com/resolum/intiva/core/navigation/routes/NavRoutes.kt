@@ -18,5 +18,8 @@ object NavRoutes {
 
     const val MANAGE_CATEGORIES           = "manage_categories"
 
+    const val FINANCIAL_ACCOUNTS = "financial_accounts"
+    const val CREATE_FINANCIAL_ACCOUNT = "create_financial_account"
+
     val BOTTOM_NAV_ROUTES = setOf(HOME, TRANSACTIONS, SAVINGS_GOALS, FAMILY, PROFILE)
 }

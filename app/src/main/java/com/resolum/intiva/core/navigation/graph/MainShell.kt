@@ -23,6 +23,8 @@ import com.resolum.intiva.features.savings.presentation.completion.GoalCompleted
 import com.resolum.intiva.features.savings.presentation.completion.GoalUncompletedScreen
 import com.resolum.intiva.features.savings.presentation.contribute.ContributeToGoalScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.ManageCategoriesScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.CreateFinancialAccountScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.FinancialAccountScreen
 
 /**
  * Main shell of the app, containing the bottom navigation and root-level destinations.
@@ -67,6 +69,25 @@ fun MainShell() {
             composable(NavRoutes.MANAGE_CATEGORIES) {
                 ManageCategoriesScreen(
                     onNavigateBack = {
+                        shellNavController.popBackStack()
+                    }
+                )
+            }
+
+            composable(NavRoutes.FINANCIAL_ACCOUNTS) {
+                FinancialAccountScreen(
+                    onAddAccountClick = {
+                        shellNavController.navigate(NavRoutes.CREATE_FINANCIAL_ACCOUNT)
+                    }
+                )
+            }
+
+            composable(NavRoutes.CREATE_FINANCIAL_ACCOUNT) {
+                CreateFinancialAccountScreen(
+                    onAccountCreated = {
+                        shellNavController.popBackStack()
+                    },
+                    onBackClick = {
                         shellNavController.popBackStack()
                     }
                 )
