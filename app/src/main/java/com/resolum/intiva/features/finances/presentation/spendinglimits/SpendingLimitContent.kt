@@ -1,0 +1,138 @@
+package com.resolum.intiva.features.finances.presentation.spendinglimits
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.resolum.intiva.core.common.state.UiState
+import com.resolum.intiva.core.ui.theme.IntivaColors
+import com.resolum.intiva.features.finances.presentation.spendinglimits.components.BudgetSummaryCard
+import com.resolum.intiva.features.finances.presentation.spendinglimits.components.EmptyLimitsCard
+import com.resolum.intiva.features.finances.presentation.spendinglimits.components.MessageCard
+import com.resolum.intiva.features.finances.presentation.spendinglimits.components.SpendingLimitListItem
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SpendingLimitListContent(
+    limitsState: UiState<List<SpendingLimitSummary>>,
+    categories: List<Category>,
+    onAddClick: () -> Unit,
+    onBack: () -> Unit
+) {
+    Scaffold(
+        containerColor = Color(0xFFFAF7FF),
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddClick,
+                containerColor = IntivaColors.PrimaryGreen,
+                contentColor = IntivaColors.TextPrimary,
+                shape = CircleShape
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Crear límite",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp),
+            contentPadding = PaddingValues(top = 32.dp, bottom = 112.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+            item {
+                Text(
+                    text = "Límites de Gasto",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = IntivaColors.TextPrimary
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Monitorea tus presupuestos por categoría este mes.",
+                    fontSize = 18.sp,
+                    color = IntivaColors.TextSecondary
+                )
+            }
+
+            when (limitsState) {
+                is UiState.Loading -> item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = IntivaColors.IconPurple)
+                    }
+                }
+
+                is UiState.Success -> {
+                    val summaries = limitsState.data
+                    item {
+                        BudgetSummaryCard(summaries = summaries)
+                    }
+
+                    if (summaries.isEmpty()) {
+                        item {
+                            EmptyLimitsCard(onAddClick = onAddClick)
+                        }
+                    } else {
+                        items(summaries) { summary ->
+                            SpendingLimitListItem(
+                                summary = summary,
+                                category = categories.firstOrNull { it.id == summary.limit.targetId }
+                            )
+                        }
+                    }
+                }
+
+                is UiState.Error -> item {
+                    MessageCard(
+                        title = "No pudimos cargar tus límites",
+                        message = limitsState.message
+                    )
+                }
+
+                is UiState.Idle -> item {
+                    MessageCard(
+                        title = "Aún no tienes límites",
+                        message = "Crea tu primer límite para controlar tu presupuesto mensual."
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
+}
