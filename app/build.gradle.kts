@@ -10,6 +10,9 @@ plugins {
     // KSP plugin for annotation processing
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.android)
+
+    // Firebase plugin for using Firebase services in the app
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -132,4 +135,10 @@ dependencies {
 
     // Material Icons dependency for using Material Design icons in the app
     implementation(libs.androidx.compose.material.icons.extended)
+
+    // Firebase dependencies for using Firebase services in the app
+    implementation(platform(libs.firebase.bom))
+
+    // Firebase Cloud Messaging dependency for handling push notifications
+    implementation(libs.firebase.messaging)
 }
