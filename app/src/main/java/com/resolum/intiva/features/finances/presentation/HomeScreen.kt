@@ -10,7 +10,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -37,11 +39,16 @@ import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
 import com.resolum.intiva.core.ui.snackbar.SnackBarType
 import com.resolum.intiva.core.ui.snackbar.SnackBarVisualsWithType
 import com.resolum.intiva.core.ui.theme.IntivaColors
+import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitSummary
+import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitViewModel
+import com.resolum.intiva.features.finances.presentation.spendinglimits.components.SpendingLimitCard
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionViewModel
 import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionItem
 import com.resolum.intiva.features.iam.domain.models.FirstTransactionTutorialStep
 import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingViewModel
 import com.resolum.intiva.features.iam.presentation.onboarding.components.SpotlightOverlay
+import java.math.BigDecimal
+import java.text.DecimalFormat
 
 /**
  * HomeScreen.kt
@@ -66,10 +73,13 @@ fun HomeScreen(
     onNavigateToNewIncome: () -> Unit,
     navController: NavController,
     viewModel: TransactionViewModel = hiltViewModel(),
-    onNavigateToTransactions: () -> Unit
+    spendingLimitViewModel: SpendingLimitViewModel = hiltViewModel(),
+    onNavigateToTransactions: () -> Unit,
+    onNavigateToSpendingLimitAlert: () -> Unit = {}
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
+    val spendingLimitUiState by spendingLimitViewModel.uiState.collectAsState()
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
     val onboardingState by onboardingViewModel.state.collectAsState()
     var incomeButtonRect by remember { mutableStateOf<Rect?>(null) }
@@ -79,6 +89,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         onboardingViewModel.loadStatus()
         viewModel.getTransactionsByOwnerId(onlyLatest = true)
+        spendingLimitViewModel.loadMonthlySpendingLimit()
 
         val success = navController.currentBackStackEntry
             ?.savedStateHandle
@@ -279,55 +290,11 @@ fun HomeScreen(
                 }
 
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                CircularProgressIndicator(
-                                    progress = { 1f },
-                                    modifier = Modifier.fillMaxSize(),
-                                    color = Color(0xFFF2F0FA),
-                                    strokeWidth = 5.dp
-                                )
-                                CircularProgressIndicator(
-                                    progress = { 0.65f },
-                                    modifier = Modifier.fillMaxSize(),
-                                    color = IntivaColors.PrimaryGreen,
-                                    strokeWidth = 5.dp,
-                                    trackColor = Color.Transparent
-                                )
-                                Text(
-                                    text = "65%",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp,
-                                    color = IntivaColors.TextPrimary
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(
-                                    text = "Límite de Gasto Mensual",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp,
-                                    color = IntivaColors.TextPrimary
-                                )
-                                Text(
-                                    text = "Te quedan S/ 1,200.00 disponibles",
-                                    fontSize = 12.sp,
-                                    color = IntivaColors.TextSecondary
-                                )
-                            }
-                        }
-                    }
+                    SpendingLimitCard(
+                        state = spendingLimitUiState.spendingLimitState,
+                        onRetry = { spendingLimitViewModel.loadMonthlySpendingLimit() },
+                        onOpenAlert = onNavigateToSpendingLimitAlert
+                    )
                 }
 
                 item {
