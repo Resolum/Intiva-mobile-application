@@ -41,12 +41,12 @@ fun SpendingLimitListItem(
     val progressColor = when {
         summary.isExceeded -> IntivaColors.StatusError
         summary.progressPercent >= 80 -> Color(0xFFFF9800)
-        else -> IntivaColors.PrimaryGreen
+        else -> IntivaColors.CheckGreen
     }
     val statusText = when {
         summary.isExceeded -> "Límite alcanzado"
         summary.progressPercent >= 80 -> "¡Cerca del límite!"
-        else -> "A buen ritmo"
+        else -> "Dentro del límite"
     }
     val categoryColor = parseColor(category?.color, fallback = progressColor.copy(alpha = 0.14f))
     val iconTint = parseColor(category?.color, fallback = progressColor)

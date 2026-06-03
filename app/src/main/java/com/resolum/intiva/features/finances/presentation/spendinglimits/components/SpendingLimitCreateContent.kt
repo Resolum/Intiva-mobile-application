@@ -145,7 +145,7 @@ fun SpendingLimitCreateContent(
 
             item {
                 StepLabel(
-                    text = "PASO 2: MONTO MÁXIMO",
+                    text = "PASO 2: INGRESA UN MONTO MÁXIMO",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
