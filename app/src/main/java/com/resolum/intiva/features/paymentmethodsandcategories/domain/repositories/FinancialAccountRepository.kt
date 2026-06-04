@@ -22,5 +22,6 @@ interface FinancialAccountRepository {
         creditLimit: Double?
     ): NetworkResult<FinancialAccount>
 
+    suspend fun disableFinancialAccount(accountId: Long): NetworkResult<FinancialAccount>
 
 }
