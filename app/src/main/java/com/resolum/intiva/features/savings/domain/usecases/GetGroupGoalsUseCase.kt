@@ -5,12 +5,10 @@ import com.resolum.intiva.features.savings.domain.models.SavingGoal
 import com.resolum.intiva.features.savings.domain.repositories.SavingGoalRepository
 import javax.inject.Inject
 
-/**
- * Fetches saving goals that belong to a family group.
- */
+/** Fetches saving goals for a family group via GET /saving-goals/group/{groupId}. */
 class GetGroupGoalsUseCase @Inject constructor(
     private val repository: SavingGoalRepository
 ) {
-    suspend operator fun invoke(userId: Long, groupId: Long): NetworkResult<List<SavingGoal>> =
-        repository.getGroupSavingGoals(userId, groupId)
+    suspend operator fun invoke(groupId: String): NetworkResult<List<SavingGoal>> =
+        repository.getGroupSavingGoals(groupId)
 }

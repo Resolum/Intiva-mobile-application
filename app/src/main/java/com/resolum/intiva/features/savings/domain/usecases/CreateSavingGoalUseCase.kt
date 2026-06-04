@@ -6,28 +6,28 @@ import com.resolum.intiva.features.savings.domain.repositories.SavingGoalReposit
 import java.math.BigDecimal
 import javax.inject.Inject
 
-/**
- * Creates a new saving goal and returns the created entity with its server-assigned ID.
- */
+/** Creates a new saving goal via POST /saving-goals. */
 class CreateSavingGoalUseCase @Inject constructor(
     private val repository: SavingGoalRepository
 ) {
     suspend operator fun invoke(
-        userId: Long,
+        ownerType: String,
+        actorUserId: Long,
+        ownerId: String,
         title: String,
         targetAmount: BigDecimal,
         currencyCode: String,
         deadline: String,
-        ownerType: String,
         categoryId: Long,
         description: String = ""
     ): NetworkResult<SavingGoal> = repository.createSavingGoal(
-        userId = userId,
+        ownerType = ownerType,
+        actorUserId = actorUserId,
+        ownerId = ownerId,
         title = title,
         targetAmount = targetAmount,
         currencyCode = currencyCode,
         deadline = deadline,
-        ownerType = ownerType,
         categoryId = categoryId,
         description = description
     )

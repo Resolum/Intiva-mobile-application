@@ -147,4 +147,16 @@ private fun InAppNotificationType.visualStyle(): NotificationVisualStyle =
             backgroundColor = IntivaColors.StatusError.copy(alpha = 0.14f),
             contentColor = IntivaColors.StatusError
         )
+
+        InAppNotificationType.Urgent -> NotificationVisualStyle(
+            icon = Icons.Default.Warning,
+            backgroundColor = IntivaColors.StatusError.copy(alpha = 0.14f),
+            contentColor = IntivaColors.StatusError
+        )
+
+        InAppNotificationType.Remembering -> NotificationVisualStyle(
+            icon = Icons.Default.NotificationsNone,
+            backgroundColor = IntivaColors.StatusInfo.copy(alpha = 0.14f),
+            contentColor = IntivaColors.StatusInfo
+        )
     }

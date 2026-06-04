@@ -92,13 +92,15 @@ class SavingsGoalCreateViewModel @Inject constructor(
 
             when (
                 val result = createSavingGoalUseCase(
-                    userId = accountId,
+                    ownerType = ownerType,
+                    actorUserId = accountId,
+                    ownerId = if (state.isFamilyGoal) (state.selectedGroupId?.toString() ?: "") else accountId.toString(),
                     title = state.title.trim(),
                     targetAmount = targetAmount,
                     currencyCode = state.currencyCode,
                     deadline = deadlineIso,
-                    ownerType = ownerType,
-                    categoryId = state.categoryId
+                    categoryId = state.categoryId,
+                    description = ""
                 )
             ) {
                 is NetworkResult.Success -> _uiState.update {
@@ -184,12 +186,9 @@ class SavingsGoalCreateViewModel @Inject constructor(
             when (val result = getCategoriesUseCase()) {
                 is NetworkResult.Success -> {
                     val groups = result.data
-                        .mapNotNull { category ->
-                            category.groupId?.let { id ->
-                                FamilyGroupOption(groupId = id, label = category.name)
-                            }
-                        }
-                        .distinctBy { it.groupId }
+                        .filter { it.ownerType.equals("family", ignoreCase = true) }
+                        .distinctBy { it.ownerId }
+                        .map { category -> FamilyGroupOption(groupId = category.ownerId, label = category.name) }
                     _uiState.update { state ->
                         state.copy(
                             availableGroups = groups,
@@ -214,7 +213,8 @@ class SavingsGoalCreateViewModel @Inject constructor(
             currencyCode = _uiState.value.currencyCode,
             deadline = "",
             status = "INPROGRESS",
-            categoryId = 0
+            categoryId = 0,
+            description = ""
         )
 
     override fun handleError(throwable: Throwable) {
@@ -224,6 +224,6 @@ class SavingsGoalCreateViewModel @Inject constructor(
     }
 
     companion object {
-        private val ISO_DEADLINE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        private val ISO_DEADLINE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
     }
 }

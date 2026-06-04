@@ -3,10 +3,15 @@ package com.resolum.intiva.features.savings.presentation.completion
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.resolum.intiva.R
+import com.resolum.intiva.features.communications.presentation.notifications.InAppNotificationType
+import com.resolum.intiva.features.communications.presentation.notifications.InAppNotificationUiState
+import com.resolum.intiva.features.savings.domain.models.SavingGoal
 import com.resolum.intiva.features.savings.domain.models.SavingGoalStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -79,7 +84,22 @@ class GoalCompletionNotificationHelper @Inject constructor(
       .setAutoCancel(true)
       .build()
 
-    notificationManager.notify(notificationId, notification)
+    val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      ContextCompat.checkSelfPermission(
+        context,
+        android.Manifest.permission.POST_NOTIFICATIONS
+      ) == PackageManager.PERMISSION_GRANTED
+    } else {
+      true
+    }
+
+    if (!hasPermission) return
+
+    try {
+      notificationManager.notify(notificationId, notification)
+    } catch (e: SecurityException) {
+      // Permission was revoked between check and notify call — silently ignore
+    }
   }
 
   private fun createNotificationChannel() {
@@ -112,5 +132,28 @@ class GoalCompletionNotificationHelper @Inject constructor(
     private const val CHANNEL_ID_UNCOMPLETED = "saving_goal_uncompleted"
     private const val NOTIFICATION_ID_COMPLETED = 2001
     private const val NOTIFICATION_ID_UNCOMPLETED = 2002
+
+    fun buildCompletedNotification(goal: SavingGoal): InAppNotificationUiState {
+      return InAppNotificationUiState(
+        id = NOTIFICATION_ID_COMPLETED.toLong(),
+        title = "¡Meta cumplida! 🎉",
+        message = "Felicitaciones, lograste tu meta '${goal.title}' de ${goal.currencyCode} ${goal.targetAmount.toPlainString()}",
+        type = InAppNotificationType.Success,
+        createdAt = "",
+        isRead = true
+      )
+    }
+
+    fun buildUncompletedNotification(goal: SavingGoal): InAppNotificationUiState {
+      val missing = goal.targetAmount.subtract(goal.currentAmount)
+      return InAppNotificationUiState(
+        id = NOTIFICATION_ID_UNCOMPLETED.toLong(),
+        title = "Meta no cumplida",
+        message = "Te faltó ${goal.currencyCode} ${missing.toPlainString()} para cumplir tu meta '${goal.title}'",
+        type = InAppNotificationType.Urgent,
+        createdAt = "",
+        isRead = true
+      )
+    }
   }
 }

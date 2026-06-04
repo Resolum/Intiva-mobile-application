@@ -2,6 +2,7 @@ package com.resolum.intiva.features.savings.presentation
 
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
+import com.resolum.intiva.features.savings.domain.usecases.DeleteSavingGoalUseCase
 import com.resolum.intiva.features.savings.domain.usecases.GetFamilyGroupIdUseCase
 import com.resolum.intiva.features.savings.domain.usecases.GetGroupGoalsUseCase
 import com.resolum.intiva.features.savings.domain.usecases.GetSavingGoalsUseCase
@@ -24,7 +25,8 @@ class SavingsGoalsViewModel @Inject constructor(
     private val getSavingsAccountIdUseCase: GetSavingsAccountIdUseCase,
     private val getFamilyGroupIdUseCase: GetFamilyGroupIdUseCase,
     private val getSavingGoalsUseCase: GetSavingGoalsUseCase,
-    private val getGroupGoalsUseCase: GetGroupGoalsUseCase
+    private val getGroupGoalsUseCase: GetGroupGoalsUseCase,
+    private val deleteGoalUseCase: DeleteSavingGoalUseCase
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(SavingsGoalsScreenState())
@@ -94,6 +96,18 @@ class SavingsGoalsViewModel @Inject constructor(
         loadGoalsForTab(_uiState.value.selectedTab)
     }
 
+    /**
+     * Deletes the goal with the given ID and refreshes the list on success.
+     */
+    fun deleteGoal(goalId: Long) {
+        safeLaunch {
+            when (deleteGoalUseCase(goalId)) {
+                is NetworkResult.Success -> refresh()
+                is NetworkResult.Error -> Unit
+            }
+        }
+    }
+
     /** Resolves and persists [SavingsGoalsScreenState.accountId]; returns null on failure. */
     private suspend fun resolveAccountIdSync(): Long? {
         val currentAccountId = _uiState.value.accountId
@@ -150,7 +164,7 @@ class SavingsGoalsViewModel @Inject constructor(
             is NetworkResult.Success -> {
                 val groupId = groupResult.data
                 _uiState.update { it.copy(groupId = groupId) }
-                when (val goalsResult = getGroupGoalsUseCase(accountId, groupId)) {
+                when (val goalsResult = getGroupGoalsUseCase(groupId.toString())) {
                     is NetworkResult.Success -> _uiState.update {
                         it.copy(goalsState = SavingsGoalsUiState.Success(goalsResult.data))
                     }

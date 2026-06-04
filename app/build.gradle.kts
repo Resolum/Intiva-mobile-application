@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 
 plugins {
     alias(libs.plugins.android.application)
@@ -13,6 +14,9 @@ plugins {
 
     // Firebase plugin for using Firebase services in the app
     id("com.google.gms.google-services")
+
+    // Firebase plugin for using Firebase services in the app
+    id("com.google.firebase.appdistribution")
 }
 
 android {
@@ -55,7 +59,17 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "BASE_URL", "\"https://stocksip-back-end.azurewebsites.net/api/v1/\"")
+
+            firebaseAppDistribution {
+                // Specifices the release notes file.
+                artifactType = "APK"
+                // The email address of the person responsible for the release.
+                testers = "faridce14@gmail.com, sdiaz4519@gmail.com, didier.sebas80@gmail.com, juarezleonn2000@gmail.com, smithtorresapolinario@gmail.com"
+                // Notes for the release.
+                releaseNotes = "Testing Build for Intiva App"
+            }
         }
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
