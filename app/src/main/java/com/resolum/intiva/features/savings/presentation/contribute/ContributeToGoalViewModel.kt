@@ -18,9 +18,6 @@ import kotlinx.coroutines.flow.update
 import java.math.BigDecimal
 import javax.inject.Inject
 
-/**
- * ViewModel for [ContributeToGoalScreen].
- */
 @HiltViewModel
 class ContributeToGoalViewModel @Inject constructor(
     private val registerContributionUseCase: RegisterContributionUseCase,
@@ -33,14 +30,10 @@ class ContributeToGoalViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ContributeToGoalUiState())
     val uiState: StateFlow<ContributeToGoalUiState> = _uiState.asStateFlow()
 
-    private var currentAccountId: Long = 0L
     private var currentGoalId: Long = 0L
 
-    init {
-        loadContributorId()
-    }
+    init { loadContributorId() }
 
-    /** Loads the authenticated user ID from session to use as [contributorId] in the API. */
     private fun loadContributorId() {
         safeLaunch {
             _uiState.update { it.copy(isContributorIdLoading = true) }
@@ -49,9 +42,8 @@ class ContributeToGoalViewModel @Inject constructor(
                 it.copy(
                     contributorId = userId,
                     isContributorIdLoading = false,
-                    inputError = if (userId == null) {
-                        "No se pudo identificar al usuario. Inicia sesión nuevamente."
-                    } else null
+                    inputError = if (userId == null)
+                        "No se pudo identificar al usuario. Inicia sesión nuevamente." else null
                 )
             }
         }
@@ -72,11 +64,10 @@ class ContributeToGoalViewModel @Inject constructor(
     }
 
     fun loadGoal(accountId: Long, goalId: Long) {
-        currentAccountId = accountId
         currentGoalId = goalId
         safeLaunch {
             _uiState.update { it.copy(goalState = UiState.Loading) }
-            when (val result = getSavingGoalUseCase(accountId, goalId)) {
+            when (val result = getSavingGoalUseCase(goalId)) {
                 is NetworkResult.Success -> _uiState.update {
                     it.copy(goal = result.data, goalState = UiState.Success(result.data))
                 }
@@ -91,19 +82,13 @@ class ContributeToGoalViewModel @Inject constructor(
         currencyCode: String,
         onCompleted: () -> Unit,
         onUncompleted: () -> Unit,
-        onSuccess: (com.resolum.intiva.features.savings.domain.models.GoalContribution) -> Unit = {}
+        onSuccess: (SavingGoal) -> Unit = {}
     ) {
-        val contributorId = _uiState.value.contributorId
-        if (contributorId == null) {
-            _uiState.update {
-                it.copy(inputError = "No se pudo identificar al usuario. Inicia sesión nuevamente.")
-            }
+        val contributorId = _uiState.value.contributorId ?: run {
+            _uiState.update { it.copy(inputError = "No se pudo identificar al usuario. Inicia sesión nuevamente.") }
             return
         }
-
-        val amountStr = _uiState.value.amountInput
-        val amount = amountStr.toBigDecimalOrNull()
-
+        val amount = _uiState.value.amountInput.toBigDecimalOrNull()
         if (amount == null || amount <= BigDecimal.ZERO) {
             _uiState.update { it.copy(inputError = "Ingresa un monto válido mayor a 0.") }
             return
@@ -111,28 +96,19 @@ class ContributeToGoalViewModel @Inject constructor(
 
         safeLaunch {
             _uiState.update { it.copy(goalState = UiState.Loading) }
-
-            when (
-                val result = registerContributionUseCase(
-                    userId = currentAccountId,
-                    savingGoalId = currentGoalId,
-                    amount = amount,
-                    currencyCode = currencyCode,
-                    contributorId = contributorId
-                )
-            ) {
+            when (val result = registerContributionUseCase(
+                savingGoalId = currentGoalId,
+                amount = amount,
+                currencyCode = currencyCode,
+                contributorId = contributorId
+            )) {
                 is NetworkResult.Success -> {
-                    val updatedGoal = result.data.updatedGoal
+                    val updatedGoal = result.data
                     _uiState.update {
-                        it.copy(
-                            goal = updatedGoal,
-                            goalState = UiState.Success(updatedGoal),
-                            amountInput = ""
-                        )
+                        it.copy(goal = updatedGoal, goalState = UiState.Success(updatedGoal), amountInput = "")
                     }
-                    onSuccess(result.data.contribution)
-
-                    when (goalCompletionEvaluator.evaluate(currentAccountId, updatedGoal)) {
+                    val completionResult = goalCompletionEvaluator.evaluate(updatedGoal)
+                    when (completionResult) {
                         is GoalCompletionEvaluator.CompletionResult.Completed -> {
                             notificationHelper.notifyStatusChange(updatedGoal.title, SavingGoalStatus.COMPLETED)
                             onCompleted()
@@ -141,7 +117,9 @@ class ContributeToGoalViewModel @Inject constructor(
                             notificationHelper.notifyStatusChange(updatedGoal.title, SavingGoalStatus.UNCOMPLETED)
                             onUncompleted()
                         }
-                        is GoalCompletionEvaluator.CompletionResult.NoChange -> Unit
+                        is GoalCompletionEvaluator.CompletionResult.NoChange -> {
+                            onSuccess(updatedGoal)
+                        }
                     }
                 }
                 is NetworkResult.Error -> _uiState.update {
@@ -158,12 +136,7 @@ class ContributeToGoalViewModel @Inject constructor(
 
     override fun handleError(throwable: Throwable) {
         _uiState.update {
-            it.copy(
-                goalState = UiState.Error(
-                    message = throwable.message ?: "An unexpected error occurred.",
-                    throwable = throwable
-                )
-            )
+            it.copy(goalState = UiState.Error(message = throwable.message ?: "An unexpected error occurred.", throwable = throwable))
         }
     }
 }

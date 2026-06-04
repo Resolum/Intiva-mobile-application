@@ -130,12 +130,17 @@ fun MainShell() {
                 SavingsGoalEditScreen(
                     goalId = id,
                     onNavigateBack = { shellNavController.popBackStack() },
-                    onGoalUpdated = { shellNavController.popBackStack() }
+                    onGoalUpdated = { shellNavController.popBackStack() },
+                    onGoalCompleted = { goalId ->
+                        shellNavController.navigate("savings_goal_completed/0/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    }
                 )
             }
-
             /**
-             * The contribute screen is shown when a user selects a savings goal to contribute to. It allows them to enter an amount and confirm the contribution.
+             * The detail screen allows users to view the details of a specific savings goal.
+             * It allows them to enter an amount and confirm the contribution.
              * If the contribution is successful, they are navigated to the completion screen. If it fails (e.g. due to insufficient funds), they are navigated to the uncompleted screen.
              */
             composable(NavRoutes.SAVINGS_GOAL_DETAIL) { backStackEntry ->
@@ -202,8 +207,9 @@ fun MainShell() {
                         }
                     },
                     onBack = {
-                        shellNavController.navigate(NavRoutes.SAVINGS_GOALS) {
-                            popUpTo(NavRoutes.SAVINGS_GOALS) { inclusive = true }
+                        shellNavController.navigate(NavRoutes.HOME) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 )

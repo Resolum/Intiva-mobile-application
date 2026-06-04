@@ -13,5 +13,7 @@ enum class InAppNotificationType {
     Info,
     Warning,
     Success,
-    Error
+    Error,
+    Urgent,
+    Remembering
 }

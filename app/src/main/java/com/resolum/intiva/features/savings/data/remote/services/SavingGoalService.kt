@@ -1,106 +1,87 @@
 package com.resolum.intiva.features.savings.data.remote.services
 
 import com.resolum.intiva.features.savings.data.remote.models.ContributionRequestDto
-import com.resolum.intiva.features.savings.data.remote.models.ContributionResponseDto
+import com.resolum.intiva.features.savings.data.remote.models.CreateSavingGoalRequestDto
 import com.resolum.intiva.features.savings.data.remote.models.SavingGoalResponseDto
+import com.resolum.intiva.features.savings.data.remote.models.UpdateSavingGoalRequestDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * Retrofit service interface for saving goal related API endpoints.
  *
- * Covers:
- * - GET  a specific saving goal by userId and goalId
- * - POST a monetary contribution to a saving goal
- * - PATCH to mark a goal as completed or uncompleted
+ * All paths are relative to the base URL (which already includes /api/v1/).
  */
 interface SavingGoalService {
 
-    /**
-     * Fetches all saving goals for a user.
-     */
-    @GET("users/{userId}/saving-goals")
+    /** GET /api/v1/saving-goals?userId={userId} */
+    @GET("saving-goals")
     suspend fun getSavingGoals(
-        @Path("userId") userId: Long
+        @Query("userId") userId: Long
     ): List<SavingGoalResponseDto>
 
-    /**
-     * Fetches only completed saving goals for a user.
-     */
-    @GET("users/{userId}/saving-goals/completed")
+    /** GET /api/v1/saving-goals/completed?userId={userId} */
+    @GET("saving-goals/completed")
     suspend fun getCompletedSavingGoals(
-        @Path("userId") userId: Long
+        @Query("userId") userId: Long
     ): List<SavingGoalResponseDto>
 
-    /**
-     * Fetches saving goals belonging to a family group.
-     */
-    @GET("users/{userId}/saving-goals/group/{groupId}")
+    /** GET /api/v1/saving-goals/group/{groupId} */
+    @GET("saving-goals/group/{groupId}")
     suspend fun getGroupSavingGoals(
-        @Path("userId") userId: Long,
-        @Path("groupId") groupId: Long
+        @Path("groupId") groupId: String
     ): List<SavingGoalResponseDto>
 
-    /**
-     * Creates a new saving goal.
-     */
-    @POST("users/{userId}/saving-goals")
-    suspend fun createSavingGoal(
-        @Path("userId") userId: Long,
-        @Body request: com.resolum.intiva.features.savings.data.remote.models.CreateSavingGoalRequestDto
-    ): SavingGoalResponseDto
-
-    /**
-     * Fetches the details of a single saving goal.
-     *
-     * @param userId       The ID of the user that owns the goal.
-     * @param savingGoalId The ID of the saving goal to fetch.
-     * @return A [SavingGoalResponseDto] with current progress, status and metadata.
-     */
-    @GET("users/{userId}/saving-goals/{savingGoalId}")
+    /** GET /api/v1/saving-goals/{savingGoalId} */
+    @GET("saving-goals/{savingGoalId}")
     suspend fun getSavingGoal(
-        @Path("userId") userId: Long,
         @Path("savingGoalId") savingGoalId: Long
     ): SavingGoalResponseDto
 
-    /**
-     * Registers a monetary contribution to a saving goal.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal to contribute to.
-     * @param request      The contribution details (amount, currency, contributorId).
-     */
-    @POST("users/{userId}/saving-goals/{savingGoalId}/contributions")
-    suspend fun registerContribution(
-        @Path("userId") userId: Long,
-        @Path("savingGoalId") savingGoalId: Long,
-        @Body request: ContributionRequestDto
-    ): ContributionResponseDto
+    /** POST /api/v1/saving-goals */
+    @POST("saving-goals")
+    suspend fun createSavingGoal(
+        @Body request: CreateSavingGoalRequestDto
+    ): SavingGoalResponseDto
 
     /**
-     * Marks a saving goal as COMPLETED.
+     * POST /api/v1/saving-goals/{savingGoalId}/contributions
      *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal to complete.
+     * Returns 201 with empty body on success; we use Unit since the response schema is {}.
      */
-    @PATCH("users/{userId}/saving-goals/{savingGoalId}/complete")
+    @POST("saving-goals/{savingGoalId}/contributions")
+    suspend fun registerContribution(
+        @Path("savingGoalId") savingGoalId: Long,
+        @Body request: ContributionRequestDto
+    )
+
+    /** PATCH /api/v1/saving-goals/{savingGoalId}/complete */
+    @PATCH("saving-goals/{savingGoalId}/complete")
     suspend fun completeGoal(
-        @Path("userId") userId: Long,
         @Path("savingGoalId") savingGoalId: Long
     )
 
-    /**
-     * Reverts a saving goal from COMPLETED back to UNCOMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal to uncomplete.
-     */
-    @PATCH("users/{userId}/saving-goals/{savingGoalId}/uncomplete")
+    /** PATCH /api/v1/saving-goals/{savingGoalId}/uncomplete */
+    @PATCH("saving-goals/{savingGoalId}/uncomplete")
     suspend fun uncompleteGoal(
-        @Path("userId") userId: Long,
         @Path("savingGoalId") savingGoalId: Long
+    )
+
+    /** DELETE /api/v1/saving-goals/{savingGoalId} */
+    @DELETE("saving-goals/{savingGoalId}")
+    suspend fun deleteSavingGoal(
+        @Path("savingGoalId") savingGoalId: Long
+    )
+
+    /** PATCH /api/v1/saving-goals/{savingGoalId} — updates title, description and/or targetAmount */
+    @PATCH("saving-goals/{savingGoalId}")
+    suspend fun updateSavingGoal(
+        @Path("savingGoalId") savingGoalId: Long,
+        @Body request: UpdateSavingGoalRequestDto
     )
 }
