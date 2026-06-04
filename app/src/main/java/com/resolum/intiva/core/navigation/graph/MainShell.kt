@@ -24,6 +24,7 @@ import com.resolum.intiva.features.savings.presentation.SavingsGoalsScreen
 import com.resolum.intiva.features.savings.presentation.completion.GoalCompletedScreen
 import com.resolum.intiva.features.savings.presentation.completion.GoalUncompletedScreen
 import com.resolum.intiva.features.savings.presentation.contribute.ContributeToGoalScreen
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 
 /**
  * Main shell of the app, containing the bottom navigation and root-level destinations.
@@ -244,7 +245,8 @@ fun MainShell() {
                 TransactionFormScreen(
                     transactionType = TransactionType.INCOME,
                     onDismiss = { shellNavController.popBackStack() },
-                    navController = shellNavController
+                    navController = shellNavController,
+                    ownerType = OwnerType.INDIVIDUAL
                 )
             }
 
@@ -256,7 +258,8 @@ fun MainShell() {
                 TransactionFormScreen(
                     transactionType = TransactionType.EXPENSE,
                     onDismiss = { shellNavController.popBackStack() },
-                    navController = shellNavController
+                    navController = shellNavController,
+                    ownerType = OwnerType.INDIVIDUAL
                 )
             }
         }

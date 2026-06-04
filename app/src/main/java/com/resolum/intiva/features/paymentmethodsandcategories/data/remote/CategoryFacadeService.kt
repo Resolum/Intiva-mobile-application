@@ -13,11 +13,6 @@ import javax.inject.Inject
 class CategoryFacadeService @Inject constructor(
     private val categoryService: CategoryService
 ) {
-    /**
-     * Retrieves a list of categories associated with the specified [userId].
-     *
-     * @param userId The ID of the user for whom to fetch categories.
-     * @return A list of categories associated with the specified user ID.
-     */
-    suspend fun getCategoriesByUserId(userId: Long) = categoryService.getCategoriesByUserId(userId)
+
+    suspend fun getCategoriesByOwnerId(ownerType: String, ownerId: Long, type: String) = categoryService.getCategoriesByOwnerId(ownerType, ownerId, type)
 }

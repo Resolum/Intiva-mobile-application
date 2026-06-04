@@ -9,8 +9,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.resolum.intiva.core.common.state.UiState
+import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.spendinglimits.components.SpendingLimitCreateContent
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.CategoryViewModel
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 
 @Composable
 fun SpendingLimitScreen(
@@ -23,8 +25,11 @@ fun SpendingLimitScreen(
     var showCreate by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        categoryViewModel.getCategories(
+            ownerType = OwnerType.INDIVIDUAL.name,
+            type = TransactionType.EXPENSE.name
+        )
         viewModel.loadSpendingLimits()
-        categoryViewModel.getCategories()
     }
 
     LaunchedEffect(uiState.createState) {

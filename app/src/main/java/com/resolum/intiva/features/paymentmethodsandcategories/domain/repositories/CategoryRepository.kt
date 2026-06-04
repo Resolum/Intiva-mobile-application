@@ -11,5 +11,5 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Cat
  */
 interface CategoryRepository {
 
-    suspend fun getCategoriesByUserId(): NetworkResult<List<Category>>
+    suspend fun getCategoriesByOwnerId(ownerType: String, type: String): NetworkResult<List<Category>>
 }

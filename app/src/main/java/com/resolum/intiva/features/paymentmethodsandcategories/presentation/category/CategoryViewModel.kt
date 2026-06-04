@@ -25,10 +25,10 @@ class CategoryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CategoryUiState())
     val uiState: StateFlow<CategoryUiState> = _uiState.asStateFlow()
 
-    fun getCategories() {
+    fun getCategories(ownerType: String, type: String) {
         safeLaunch {
             _uiState.update { it.copy(categoriesState = UiState.Loading) }
-            when (val result = getCategoriesUseCase()) {
+            when (val result = getCategoriesUseCase(ownerType, type)) {
                 is NetworkResult.Success -> _uiState.update {
                     it.copy(
                         categories = result.data,
