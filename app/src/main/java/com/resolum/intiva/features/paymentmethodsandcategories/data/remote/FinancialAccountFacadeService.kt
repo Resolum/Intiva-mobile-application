@@ -29,5 +29,11 @@ class FinancialAccountFacadeService @Inject constructor(
         userId = userId,
         request = request
     )
-
+    suspend fun disableFinancialAccount(
+        userId: Long,
+        accountId: Long
+    ) = financialAccountService.disableFinancialAccount(
+        userId = userId,
+        accountId = accountId
+    )
 }

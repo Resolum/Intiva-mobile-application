@@ -68,4 +68,12 @@ class FinancialAccountRepositoryImpl @Inject constructor(
                 )
                 .toDomain()
         }
+    override suspend fun disableFinancialAccount(accountId: Long): NetworkResult<FinancialAccount> =
+        safeCall {
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("User ID not found in session")
+            financialAccountFacadeService
+                .disableFinancialAccount(userId = userId, accountId = accountId)
+                .toDomain()
+        }
 }
