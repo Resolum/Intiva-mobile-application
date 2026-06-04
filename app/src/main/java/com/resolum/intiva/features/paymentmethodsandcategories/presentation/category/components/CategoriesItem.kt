@@ -19,10 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
+import androidx.core.graphics.toColorInt
 
 /**
  * Composable function to display a single category item in a grid or list.
@@ -33,15 +35,22 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Cat
 @Composable
 fun CategoryItem(
     category: Category,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
+
+    val dynamicBackgroundColor = runCatching {
+        Color(category.color.toColorInt())
+    }.getOrElse {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
     Card(
         onClick = onClick,
         modifier = Modifier.aspectRatio(1f),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors = if (isSelected) CardDefaults.cardColors(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+        else CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
@@ -53,12 +62,12 @@ fun CategoryItem(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        color = dynamicBackgroundColor,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                CategoryIcon(iconName = category.icon)
+                CategoryIcon(iconName = category.icon, tintColor = Color.White)
             }
 
             Spacer(modifier = Modifier.height(8.dp))

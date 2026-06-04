@@ -6,6 +6,7 @@ package com.resolum.intiva.core.navigation.routes
 object NavRoutes {
     const val HOME                        = "home"
     const val TRANSACTIONS                = "transactions"
+    const val SPENDING_LIMIT_ALERT        = "spending_limit_alert"
     const val SAVINGS_GOALS               = "savings_goals"
     const val SAVINGS_GOAL_CREATE         = "savings_goal_create/{accountId}"
     const val SAVINGS_GOAL_EDIT           = "savings_goal_edit/{id}"

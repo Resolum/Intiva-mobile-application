@@ -1,16 +1,14 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.components
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,16 +24,16 @@ import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.CategoryViewModel
 
-/**
- * Composable function to display a grid of categories with loading and error states.
- *
- * @param viewModel The ViewModel that provides the UI state for the categories.
- * @param onCategorySelected Callback function to be invoked when a category is selected.
- */
+
+private const val PAGE_SIZE = 6
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CategoryGrid(
+    selectedCategory: Category?,
     viewModel: CategoryViewModel = hiltViewModel(),
-    onCategorySelected: (Category) -> Unit
+    onCategorySelected: (Category) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -43,11 +41,9 @@ fun CategoryGrid(
         viewModel.getCategories()
     }
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "CATEGORÍA",
+            text = "SELECCIONA UNA CATEGORÍA",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -57,7 +53,9 @@ fun CategoryGrid(
 
             is UiState.Loading -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -67,7 +65,9 @@ fun CategoryGrid(
             is UiState.Success -> {
                 if (uiState.categories.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -77,38 +77,57 @@ fun CategoryGrid(
                         )
                     }
                 } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)
-                    ) {
-                        items(uiState.categories) { category ->
-                            CategoryItem(
-                                category = category,
-                                onClick = { onCategorySelected(category) }
+                    val categories = uiState.categories
+                    val pages = categories.chunked(PAGE_SIZE)
+                    val usePager = pages.size > 1
+
+                    if (usePager) {
+                        val pagerState = rememberPagerState(pageCount = { pages.size })
+
+                        Column {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxWidth()
+                            ) { pageIndex ->
+                                CategoryPageGrid(
+                                    categories = pages[pageIndex],
+                                    selectedCategory = selectedCategory,
+                                    onCategorySelected = onCategorySelected
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            PagerIndicator(
+                                pageCount = pages.size,
+                                currentPage = pagerState.currentPage,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                         }
+                    } else {
+                        CategoryPageGrid(
+                            categories = categories,
+                            selectedCategory = selectedCategory,
+                            onCategorySelected = onCategorySelected
+                        )
                     }
                 }
             }
 
             is UiState.Error -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(100.dp),
-                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Error al cargar categorías.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-
                         Spacer(modifier = Modifier.height(8.dp))
-
                         Text(
                             text = state.message,
                             style = MaterialTheme.typography.bodySmall,

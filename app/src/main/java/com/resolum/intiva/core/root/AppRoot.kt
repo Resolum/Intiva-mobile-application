@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.resolum.intiva.core.fcm.permissions.NotificationPermissionEffect
 import com.resolum.intiva.core.navigation.graph.AppNavGraph
 import com.resolum.intiva.core.ui.theme.IntivaTheme
 
@@ -21,6 +22,8 @@ fun AppRoot() {
     val snackBarHostState = remember { SnackbarHostState() }
 
     IntivaTheme {
+        NotificationPermissionEffect()
+
         Box(modifier = Modifier.fillMaxSize()) {
             AppNavGraph(navController = navController)
 

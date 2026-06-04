@@ -4,6 +4,7 @@ import com.resolum.intiva.core.data.local.datastore.TokenDataStore
 import com.resolum.intiva.core.data.repository.BaseRepository
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.core.network.model.map
+import com.resolum.intiva.features.communications.domain.repositories.NotificationDeviceRepository
 import com.resolum.intiva.features.iam.data.remote.AuthFacadeService
 import com.resolum.intiva.features.iam.data.remote.mappers.toDomain
 import com.resolum.intiva.features.iam.data.remote.models.SignInRequestDto
@@ -25,7 +26,8 @@ import javax.inject.Inject
  */
 class AuthRepositoryImpl @Inject constructor(
     private val authFacadeService: AuthFacadeService,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val notificationDeviceRepository: NotificationDeviceRepository
 ) : BaseRepository(), AuthRepository {
 
     /**
@@ -69,6 +71,7 @@ class AuthRepositoryImpl @Inject constructor(
 
         if (result is NetworkResult.Success) {
             sessionRepository.saveToken(result.data.accessToken, result.data.userId)
+            notificationDeviceRepository.registerCurrentDevice(result.data.userId)
         }
 
         return result
