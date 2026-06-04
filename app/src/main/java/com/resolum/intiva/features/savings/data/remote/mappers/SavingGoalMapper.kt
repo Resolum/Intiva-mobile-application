@@ -20,6 +20,7 @@ fun SavingGoalResponseDto.toDomain() = SavingGoal(
     actorUserId = actorUserId,
     ownerId = ownerId ?: "",
     title = title ?: "",
+    description = description ?: "",
     currentAmount = currentAmount ?: java.math.BigDecimal.ZERO,
     targetAmount = targetAmount ?: java.math.BigDecimal.ONE,
     currencyCode = currencyCode ?: "PEN",

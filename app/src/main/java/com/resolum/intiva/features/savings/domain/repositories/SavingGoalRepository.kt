@@ -1,7 +1,6 @@
 package com.resolum.intiva.features.savings.domain.repositories
 
 import com.resolum.intiva.core.network.model.NetworkResult
-import com.resolum.intiva.features.savings.domain.models.GoalContribution
 import com.resolum.intiva.features.savings.domain.models.SavingGoal
 import java.math.BigDecimal
 
@@ -13,79 +12,61 @@ import java.math.BigDecimal
  */
 interface SavingGoalRepository {
 
-    /** Fetches all saving goals for the given user. */
+    /** GET /saving-goals?userId={userId} — personal goals for the given user. */
     suspend fun getSavingGoals(userId: Long): NetworkResult<List<SavingGoal>>
 
-    /** Fetches only completed saving goals. */
+    /** GET /saving-goals/completed?userId={userId} */
     suspend fun getCompletedSavingGoals(userId: Long): NetworkResult<List<SavingGoal>>
 
-    /** Fetches saving goals for a family group. */
-    suspend fun getGroupSavingGoals(userId: Long, groupId: Long): NetworkResult<List<SavingGoal>>
+    /** GET /saving-goals/group/{groupId} */
+    suspend fun getGroupSavingGoals(groupId: String): NetworkResult<List<SavingGoal>>
 
-    /** Creates a new saving goal. */
+    /** GET /saving-goals/{savingGoalId} */
+    suspend fun getSavingGoal(savingGoalId: Long): NetworkResult<SavingGoal>
+
+    /** POST /saving-goals */
     suspend fun createSavingGoal(
-        userId: Long,
+        ownerType: String,
+        actorUserId: Long,
+        ownerId: String,
         title: String,
-        targetAmount: java.math.BigDecimal,
+        targetAmount: BigDecimal,
         currencyCode: String,
         deadline: String,
-        ownerType: String,
         categoryId: Long,
         description: String = ""
     ): NetworkResult<SavingGoal>
 
     /**
-     * Fetches the details of a saving goal.
+     * POST /saving-goals/{savingGoalId}/contributions
      *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the saving goal.
-     * @return A [NetworkResult] wrapping the [SavingGoal] domain model.
-     */
-    suspend fun getSavingGoal(
-        userId: Long,
-        savingGoalId: Long
-    ): NetworkResult<SavingGoal>
-
-    /**
-     * Registers a monetary contribution to a saving goal.
-     * Performs validation: amount must be greater than zero.
-     *
-     * @param userId        The ID of the user.
-     * @param savingGoalId  The ID of the goal to contribute to.
-     * @param amount        The contribution amount (must be > 0).
-     * @param currencyCode  ISO 4217 code (e.g. "USD", "PEN").
-     * @param contributorId The ID of the contributing user.
-     * @return A [NetworkResult] wrapping the created [GoalContribution] on success.
+     * The API returns 201 with an empty body; after posting we re-fetch the goal
+     * so the UI can reflect the updated [currentAmount] and [status].
      */
     suspend fun registerContribution(
-        userId: Long,
         savingGoalId: Long,
         amount: BigDecimal,
         currencyCode: String,
         contributorId: Long
-    ): NetworkResult<GoalContribution>
+    ): NetworkResult<SavingGoal>
+
+    /** PATCH /saving-goals/{savingGoalId}/complete */
+    suspend fun completeGoal(savingGoalId: Long): NetworkResult<Unit>
+
+    /** PATCH /saving-goals/{savingGoalId}/uncomplete */
+    suspend fun uncompleteGoal(savingGoalId: Long): NetworkResult<Unit>
+
+    /** DELETE /saving-goals/{savingGoalId} */
+    suspend fun deleteSavingGoal(savingGoalId: Long): NetworkResult<Unit>
 
     /**
-     * Marks a saving goal as COMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     * @return A [NetworkResult] wrapping [Unit] on success.
+     * PATCH /saving-goals/{savingGoalId}
+     * Updates title, description and/or targetAmount. Only non-null fields are sent.
      */
-    suspend fun completeGoal(
-        userId: Long,
-        savingGoalId: Long
-    ): NetworkResult<Unit>
-
-    /**
-     * Reverts a saving goal from COMPLETED to UNCOMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     * @return A [NetworkResult] wrapping [Unit] on success.
-     */
-    suspend fun uncompleteGoal(
-        userId: Long,
-        savingGoalId: Long
+    suspend fun updateSavingGoal(
+        savingGoalId: Long,
+        title: String?,
+        description: String?,
+        newTargetAmount: BigDecimal?
     ): NetworkResult<Unit>
 }

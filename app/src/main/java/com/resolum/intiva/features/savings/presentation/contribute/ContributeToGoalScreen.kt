@@ -39,7 +39,7 @@ fun ContributeToGoalScreen(
     onNavigateBack: () -> Unit,
     onGoalCompleted: () -> Unit,
     onGoalUncompleted: () -> Unit,
-    onContributionSuccess: (com.resolum.intiva.features.savings.domain.models.GoalContribution) -> Unit = {},
+    onContributionSuccess: (com.resolum.intiva.features.savings.domain.models.SavingGoal) -> Unit = {},
     viewModel: ContributeToGoalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()

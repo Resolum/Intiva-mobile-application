@@ -40,6 +40,8 @@ fun SavingsGoalsScreen(
     val screenState by viewModel.uiState.collectAsState()
     val accountId = screenState.accountId
 
+    var goalToDelete by remember { mutableStateOf<com.resolum.intiva.features.savings.domain.models.SavingGoal?>(null) }
+
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
@@ -192,7 +194,8 @@ fun SavingsGoalsScreen(
                                     },
                                     onEditClick = {
                                         accountId?.let { onNavigateToEdit(it, goal.id) }
-                                    }
+                                    },
+                                    onDeleteClick = { goalToDelete = goal }
                                 )
                             }
                         }
@@ -200,6 +203,29 @@ fun SavingsGoalsScreen(
                 }
             }
         }
+    }
+
+    goalToDelete?.let { goal ->
+        AlertDialog(
+            onDismissRequest = { goalToDelete = null },
+            title = { Text("Eliminar meta", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Estás seguro de que deseas eliminar \"${goal.title}\"? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteGoal(goal.id)
+                        goalToDelete = null
+                    }
+                ) {
+                    Text("Eliminar", color = IntivaColors.StatusError, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { goalToDelete = null }) {
+                    Text("Cancelar", color = IntivaColors.TextSecondary)
+                }
+            }
+        )
     }
 }
 
@@ -224,7 +250,7 @@ fun TabItem(title: String, isSelected: Boolean, onClick: () -> Unit, modifier: M
 }
 
 @Composable
-fun GoalCard(goal: SavingGoal, onClick: () -> Unit, onEditClick: () -> Unit) {
+fun GoalCard(goal: SavingGoal, onClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val progress = goal.progressPercent()
     val savedFormatted = goal.formatAmount(goal.currentAmount)
@@ -283,7 +309,10 @@ fun GoalCard(goal: SavingGoal, onClick: () -> Unit, onEditClick: () -> Unit) {
                         )
                         DropdownMenuItem(
                             text = { Text("Eliminar meta", color = IntivaColors.StatusError, fontSize = 16.sp) },
-                            onClick = { expanded = false }
+                            onClick = {
+                                expanded = false
+                                onDeleteClick()
+                            }
                         )
                     }
                 }

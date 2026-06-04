@@ -6,7 +6,6 @@ import com.resolum.intiva.features.savings.data.remote.SavingGoalFacadeService
 import com.resolum.intiva.features.savings.data.remote.mappers.toDomain
 import com.resolum.intiva.features.savings.data.remote.models.ContributionRequestDto
 import com.resolum.intiva.features.savings.data.remote.models.CreateSavingGoalRequestDto
-import com.resolum.intiva.features.savings.domain.models.GoalContribution
 import com.resolum.intiva.features.savings.domain.models.SavingGoal
 import com.resolum.intiva.features.savings.domain.repositories.SavingGoalRepository
 import java.math.BigDecimal
@@ -14,9 +13,6 @@ import javax.inject.Inject
 
 /**
  * Implementation of [SavingGoalRepository] that delegates all remote calls to [SavingGoalFacadeService].
- *
- * Uses [BaseRepository.safeCall] to wrap every network call in a [NetworkResult], providing
- * consistent error handling across the feature (HTTP errors, IO errors, unknown exceptions).
  */
 class SavingGoalRepositoryImpl @Inject constructor(
     private val savingGoalFacadeService: SavingGoalFacadeService
@@ -30,31 +26,34 @@ class SavingGoalRepositoryImpl @Inject constructor(
         savingGoalFacadeService.getCompletedSavingGoals(userId).map { it.toDomain() }
     }
 
-    override suspend fun getGroupSavingGoals(
-        userId: Long,
-        groupId: Long
-    ): NetworkResult<List<SavingGoal>> = safeCall {
-        savingGoalFacadeService.getGroupSavingGoals(userId, groupId).map { it.toDomain() }
+    override suspend fun getGroupSavingGoals(groupId: String): NetworkResult<List<SavingGoal>> = safeCall {
+        savingGoalFacadeService.getGroupSavingGoals(groupId).map { it.toDomain() }
+    }
+
+    override suspend fun getSavingGoal(savingGoalId: Long): NetworkResult<SavingGoal> = safeCall {
+        savingGoalFacadeService.getSavingGoal(savingGoalId).toDomain()
     }
 
     override suspend fun createSavingGoal(
-        userId: Long,
+        ownerType: String,
+        actorUserId: Long,
+        ownerId: String,
         title: String,
         targetAmount: BigDecimal,
         currencyCode: String,
         deadline: String,
-        ownerType: String,
         categoryId: Long,
         description: String
     ): NetworkResult<SavingGoal> = safeCall {
         savingGoalFacadeService.createSavingGoal(
-            userId = userId,
-            request = CreateSavingGoalRequestDto(
+            CreateSavingGoalRequestDto(
+                ownerType = ownerType,
+                actorUserId = actorUserId,
+                ownerId = ownerId,
                 title = title,
                 targetAmount = targetAmount,
                 currencyCode = currencyCode,
                 deadline = deadline,
-                ownerType = ownerType,
                 categoryId = categoryId,
                 description = description
             )
@@ -62,72 +61,44 @@ class SavingGoalRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Fetches a saving goal from the remote API and maps it to the domain model.
-     *
-     * @param userId       The ID of the user that owns the goal.
-     * @param savingGoalId The ID of the saving goal to fetch.
-     * @return A [NetworkResult] containing the [SavingGoal] domain model on success.
-     */
-    override suspend fun getSavingGoal(
-        userId: Long,
-        savingGoalId: Long
-    ): NetworkResult<SavingGoal> = safeCall {
-        savingGoalFacadeService.getSavingGoal(userId, savingGoalId).toDomain()
-    }
-
-    /**
-     * Registers a contribution to a saving goal. The amount must be validated as > 0
-     * before reaching this layer (enforced in [RegisterContributionUseCase]).
-     *
-     * @param userId        The ID of the user.
-     * @param savingGoalId  The ID of the goal.
-     * @param amount        The monetary amount to contribute.
-     * @param currencyCode  ISO 4217 currency code.
-     * @param contributorId ID of the contributing user.
-     * @return A [NetworkResult] wrapping [Unit] on success.
+     * Posts the contribution, then re-fetches the goal so the UI gets the updated state.
+     * The contributions endpoint returns 201 with an empty body ({}).
      */
     override suspend fun registerContribution(
-        userId: Long,
         savingGoalId: Long,
         amount: BigDecimal,
         currencyCode: String,
         contributorId: Long
-    ): NetworkResult<GoalContribution> = safeCall {
-        val requestDto = ContributionRequestDto(
-            amount = amount,
-            currencyCode = currencyCode,
-            contributorId = contributorId
+    ): NetworkResult<SavingGoal> = safeCall {
+        savingGoalFacadeService.registerContribution(
+            savingGoalId,
+            ContributionRequestDto(
+                amount = amount,
+                currencyCode = currencyCode,
+                contributorId = contributorId
+            )
         )
-        savingGoalFacadeService
-            .registerContribution(userId, savingGoalId, requestDto)
-            .toDomain()
+        savingGoalFacadeService.getSavingGoal(savingGoalId).toDomain()
     }
 
-    /**
-     * Calls the PATCH /complete endpoint to mark the goal as COMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     * @return A [NetworkResult] wrapping [Unit] on success.
-     */
-    override suspend fun completeGoal(
-        userId: Long,
-        savingGoalId: Long
-    ): NetworkResult<Unit> = safeCall {
-        savingGoalFacadeService.completeGoal(userId, savingGoalId)
+    override suspend fun completeGoal(savingGoalId: Long): NetworkResult<Unit> = safeCall {
+        savingGoalFacadeService.completeGoal(savingGoalId)
     }
 
-    /**
-     * Calls the PATCH /uncomplete endpoint to revert the goal to UNCOMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     * @return A [NetworkResult] wrapping [Unit] on success.
-     */
-    override suspend fun uncompleteGoal(
-        userId: Long,
-        savingGoalId: Long
+    override suspend fun uncompleteGoal(savingGoalId: Long): NetworkResult<Unit> = safeCall {
+        savingGoalFacadeService.uncompleteGoal(savingGoalId)
+    }
+
+    override suspend fun deleteSavingGoal(savingGoalId: Long): NetworkResult<Unit> = safeCall {
+        savingGoalFacadeService.deleteSavingGoal(savingGoalId)
+    }
+
+    override suspend fun updateSavingGoal(
+        savingGoalId: Long,
+        title: String?,
+        description: String?,
+        newTargetAmount: BigDecimal?
     ): NetworkResult<Unit> = safeCall {
-        savingGoalFacadeService.uncompleteGoal(userId, savingGoalId)
+        savingGoalFacadeService.updateSavingGoal(savingGoalId, title, description, newTargetAmount)
     }
 }
