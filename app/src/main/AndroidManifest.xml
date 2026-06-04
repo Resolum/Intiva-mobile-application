@@ -30,7 +30,7 @@
         </activity>
 
         <service
-            android:name=".core.notifications.IntivaFirebaseMessagingService"
+            android:name=".core.fcm.services.IntivaFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -40,6 +40,10 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/intiva_notification_logo" />
     </application>
 
 </manifest>
