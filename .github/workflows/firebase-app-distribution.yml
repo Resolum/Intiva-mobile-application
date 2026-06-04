@@ -1,9 +1,14 @@
 name: Intiva Firebase App Distribution
+
 on:
   push:
     branches:
-      - 'release/**'
       - main
+      - 'release/**'
+  release:
+    types:
+      - published
+  workflow_dispatch:
 
 jobs:
   distribute:
@@ -19,16 +24,27 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
       - name: Create Firebase service account file
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > firebase-service-account.json
 
       - name: Set Firebase credentials
         run: |
-          export "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> $GITHUB_ENV
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> $GITHUB_ENV
 
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease
 
       - name: Upload release to Firebase App Distribution
         run: ./gradlew appDistributionUploadRelease
