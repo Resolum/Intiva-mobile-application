@@ -12,4 +12,7 @@ plugins {
 
     // Google Services plugin for Firebase
     id("com.google.gms.google-services") version "4.4.4" apply false
+
+    // Firebase App Distribution plugin for Firebase App Distribution
+    id("com.google.firebase.appdistribution") version "5.2.1" apply false
 }
