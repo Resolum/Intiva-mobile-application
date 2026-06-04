@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Intiva</string>
+    <string name="default_notification_channel_id">intiva_notifications</string>
+    <string name="default_notification_channel_name">Notificaciones de Intiva</string>
+    <string name="default_notification_channel_description">Alertas y avisos importantes de Intiva.</string>
 </resources>
