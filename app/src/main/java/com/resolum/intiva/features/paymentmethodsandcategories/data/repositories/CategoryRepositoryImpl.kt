@@ -32,9 +32,9 @@ class CategoryRepositoryImpl @Inject constructor(
      *
      * @return A [NetworkResult] containing a list of [Category] objects on success, or an error message on failure.
      */
-    override suspend fun getCategoriesByUserId(): NetworkResult<List<Category>> =
+    override suspend fun getCategoriesByOwnerId(ownerType: String, type: String): NetworkResult<List<Category>> =
         safeCall {
             val userId = sessionRepository.getUserId() ?: throw IllegalStateException("No active session found")
-            categoryFacadeService.getCategoriesByUserId(userId).map { it.toDomain() }
+            categoryFacadeService.getCategoriesByOwnerId(ownerType, userId, type).map { it.toDomain() }
         }
 }

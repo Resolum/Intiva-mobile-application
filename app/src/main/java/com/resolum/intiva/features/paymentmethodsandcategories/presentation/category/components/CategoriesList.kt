@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.CategoryViewModel
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 
 
 private const val PAGE_SIZE = 6
@@ -33,12 +34,14 @@ fun CategoryGrid(
     selectedCategory: Category?,
     viewModel: CategoryViewModel = hiltViewModel(),
     onCategorySelected: (Category) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    ownerType: String,
+    type: String
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.getCategories()
+        viewModel.getCategories(ownerType, type)
     }
 
     Column(modifier = modifier.fillMaxWidth()) {

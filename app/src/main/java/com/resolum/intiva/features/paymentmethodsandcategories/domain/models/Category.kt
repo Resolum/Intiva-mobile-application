@@ -6,7 +6,7 @@ package com.resolum.intiva.features.paymentmethodsandcategories.domain.models
  * @property id Unique identifier for the category.
  * @property name Name of the category.
  * @property ownerType Type of the owner (e.g., "user", "group").
- * @property userId ID of the user who owns the category.
+ * @property ownerId ID of the user who owns the category.
  * @property groupId Optional ID of the group associated with the category, if applicable.
  * @property isActive Indicates whether the category is active or not.
  * @property description Description of the category.
@@ -17,7 +17,7 @@ data class Category(
     val id: Long,
     val name: String,
     val ownerType: String,
-    val userId: Long,
+    val ownerId: Long,
     val groupId: Long?,
     val isActive: Boolean,
     val description: String,
