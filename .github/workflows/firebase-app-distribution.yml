@@ -28,13 +28,23 @@ jobs:
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Missing GOOGLE_SERVICES_JSON repository secret."
+            exit 1
+          fi
           echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          jq empty app/google-services.json
 
       - name: Create Firebase service account file
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > firebase-service-account.json
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "Missing FIREBASE_SERVICE_ACCOUNT repository secret."
+            exit 1
+          fi
+          echo "$FIREBASE_SERVICE_ACCOUNT" > firebase-service-account.json
+          jq empty firebase-service-account.json
 
       - name: Set Firebase credentials
         run: |
