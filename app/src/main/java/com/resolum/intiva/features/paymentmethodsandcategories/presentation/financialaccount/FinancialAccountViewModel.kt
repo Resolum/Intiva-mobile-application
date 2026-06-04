@@ -3,8 +3,10 @@ package com.resolum.intiva.features.paymentmethodsandcategories.presentation.fin
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
-import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.GetFinancesAccountUseCase
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.CreateFinancialAccountUseCase
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.DisableFinancialAccountUseCase
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.GetFinancesAccountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FinancialAccountViewModel @Inject constructor(
     private val getFinancialAccountsUseCase: GetFinancesAccountUseCase,
-    private val createFinancialAccountUseCase: CreateFinancialAccountUseCase
+    private val createFinancialAccountUseCase: CreateFinancialAccountUseCase,
+    private val disableFinancialAccountUseCase: DisableFinancialAccountUseCase
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(FinancialAccountUiState())
@@ -30,7 +33,6 @@ class FinancialAccountViewModel @Inject constructor(
     fun getFinancialAccounts() {
         safeLaunch {
             _uiState.update { it.copy(accountsState = UiState.Loading) }
-
             when (val result = getFinancialAccountsUseCase()) {
                 is NetworkResult.Success -> _uiState.update {
                     it.copy(
@@ -38,7 +40,6 @@ class FinancialAccountViewModel @Inject constructor(
                         accountsState = UiState.Success(result.data)
                     )
                 }
-
                 is NetworkResult.Error -> _uiState.update {
                     it.copy(
                         accountsState = UiState.Error(
@@ -61,55 +62,103 @@ class FinancialAccountViewModel @Inject constructor(
     ) {
         safeLaunch {
             _uiState.update { it.copy(createAccountState = UiState.Loading) }
-
-            when (
-                val result = createFinancialAccountUseCase(
-                    name = name,
-                    accountType = accountType,
-                    currencyCode = currencyCode,
-                    currentAmount = currentAmount,
-                    institution = institution,
-                    creditLimit = creditLimit
-                )
-            ) {
-                is NetworkResult.Success -> {
-                    _uiState.update {
-                        it.copy(
-                            createAccountState = UiState.Success(result.data),
-                            accounts = it.accounts + result.data
-                        )
-                    }
+            when (val result = createFinancialAccountUseCase(
+                name = name,
+                accountType = accountType,
+                currencyCode = currencyCode,
+                currentAmount = currentAmount,
+                institution = institution,
+                creditLimit = creditLimit
+            )) {
+                is NetworkResult.Success -> _uiState.update {
+                    it.copy(
+                        createAccountState = UiState.Success(result.data),
+                        accounts = it.accounts + result.data
+                    )
                 }
-
-                is NetworkResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            createAccountState = UiState.Error(
-                                message = result.message,
-                                throwable = result.throwable
-                            )
+                is NetworkResult.Error -> _uiState.update {
+                    it.copy(
+                        createAccountState = UiState.Error(
+                            message = result.message,
+                            throwable = result.throwable
                         )
-                    }
+                    )
+                }
+            }
+        }
+    }
+
+    fun onDisableAccountClick(account: FinancialAccount) {
+        _uiState.update {
+            it.copy(
+                accountToDisable = account,
+                showDisableConfirmDialog = true
+            )
+        }
+    }
+
+    fun onDismissDisableDialog() {
+        _uiState.update {
+            it.copy(
+                accountToDisable = null,
+                showDisableConfirmDialog = false
+            )
+        }
+    }
+
+    fun confirmDisableAccount() {
+        val account = _uiState.value.accountToDisable ?: return
+        safeLaunch {
+            _uiState.update {
+                it.copy(
+                    disableAccountState = UiState.Loading,
+                    showDisableConfirmDialog = false
+                )
+            }
+            when (val result = disableFinancialAccountUseCase(account.id)) {
+                is NetworkResult.Success -> _uiState.update { state ->
+                    state.copy(
+                        disableAccountState = UiState.Success(result.data),
+                        accounts = state.accounts.map {
+                            if (it.id == result.data.id) result.data else it
+                        },
+                        accountToDisable = null
+                    )
+                }
+                is NetworkResult.Error -> _uiState.update {
+                    it.copy(
+                        disableAccountState = UiState.Error(
+                            message = result.message,
+                            throwable = result.throwable
+                        ),
+                        accountToDisable = null
+                    )
                 }
             }
         }
     }
 
     fun resetCreateAccountState() {
-        _uiState.update {
-            it.copy(createAccountState = UiState.Idle)
-        }
+        _uiState.update { it.copy(createAccountState = UiState.Idle) }
+    }
+
+    fun resetDisableAccountState() {
+        _uiState.update { it.copy(disableAccountState = UiState.Idle) }
     }
 
     override fun handleError(throwable: Throwable) {
         _uiState.update {
             it.copy(
                 accountsState = UiState.Error(
-                    message = throwable.message ?: "An error occurred while fetching financial accounts",
+                    message = throwable.message ?: "Error al cargar las cuentas",
                     throwable = throwable
                 ),
                 createAccountState = UiState.Error(
-                    message = throwable.message ?: "An error occurred while creating financial account",
+                    message = throwable.message ?: "Error al crear la cuenta",
+                    throwable = throwable
+                ),
+                disableAccountState = UiState.Error(
+                    message = throwable.message ?: "Error al inhabilitar la cuenta",
                     throwable = throwable
                 )
             )
