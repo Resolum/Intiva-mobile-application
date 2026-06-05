@@ -13,7 +13,7 @@ data class CategoryResponseDto(
     @SerializedName("id") val id: Long,
     @SerializedName("name") val name: String,
     @SerializedName("ownerType") val ownerType: String,
-    @SerializedName("userId") val userId: Long,
+    @SerializedName("ownerId") val ownerId: Long,
     @SerializedName("groupId") val groupId: Long?,
     @SerializedName("isActive") val isActive: Boolean,
     @SerializedName("description") val description: String,

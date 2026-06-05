@@ -5,6 +5,7 @@ import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.FinancialAccountFacadeService
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.mappers.toDomain
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateFinancialAccountRequestDto
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services.FinancialAccountService
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.repositories.FinancialAccountRepository
@@ -36,5 +37,43 @@ class FinancialAccountRepositoryImpl @Inject constructor(
         safeCall {
             val userId = sessionRepository.getUserId() ?: throw IllegalStateException("User ID not found in session")
             financialAccountFacadeService.getFinancialAccountsByUserId(userId).map { it.toDomain() }
+        }
+
+    override suspend fun createFinancialAccount(
+        name: String,
+        accountType: String,
+        currencyCode: String,
+        currentAmount: Double,
+        institution: String?,
+        creditLimit: Double?
+    ): NetworkResult<FinancialAccount> =
+        safeCall {
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("User ID not found in session")
+
+            val request = CreateFinancialAccountRequestDto(
+                name = name,
+                accountType = accountType,
+                currencyCode = currencyCode,
+                currentAmount = currentAmount,
+                institution = institution,
+                creditLimit = creditLimit,
+                isActive = true
+            )
+
+            financialAccountFacadeService
+                .createFinancialAccount(
+                    userId = userId,
+                    request = request
+                )
+                .toDomain()
+        }
+    override suspend fun disableFinancialAccount(accountId: Long): NetworkResult<FinancialAccount> =
+        safeCall {
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("User ID not found in session")
+            financialAccountFacadeService
+                .disableFinancialAccount(userId = userId, accountId = accountId)
+                .toDomain()
         }
 }

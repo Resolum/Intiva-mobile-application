@@ -26,10 +26,12 @@ data class SavingGoal(
     val actorUserId: Long,
     val ownerId: String,
     val title: String,
+    val description: String,
     val currentAmount: BigDecimal,
     val targetAmount: BigDecimal,
     val currencyCode: String,
     val deadline: String,
     val status: String,
     val categoryId: Long
-)
+) {
+}

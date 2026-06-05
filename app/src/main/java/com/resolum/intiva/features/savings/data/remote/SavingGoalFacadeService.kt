@@ -1,18 +1,17 @@
 package com.resolum.intiva.features.savings.data.remote
 
 import com.resolum.intiva.features.savings.data.remote.models.ContributionRequestDto
-import com.resolum.intiva.features.savings.data.remote.models.ContributionResponseDto
 import com.resolum.intiva.features.savings.data.remote.models.CreateSavingGoalRequestDto
 import com.resolum.intiva.features.savings.data.remote.models.SavingGoalResponseDto
+import com.resolum.intiva.features.savings.data.remote.models.UpdateSavingGoalRequestDto
 import com.resolum.intiva.features.savings.data.remote.services.SavingGoalService
 import javax.inject.Inject
 
 /**
  * Facade service for saving goal operations.
  *
- * This class abstracts the underlying Retrofit service and provides a clean interface
- * for repository classes to interact with. It delegates all network calls to [SavingGoalService],
- * mirroring the pattern used by [CategoryFacadeService].
+ * Delegates all network calls to [SavingGoalService], following the same pattern
+ * used by [CategoryFacadeService].
  */
 class SavingGoalFacadeService @Inject constructor(
     private val savingGoalService: SavingGoalService
@@ -24,53 +23,35 @@ class SavingGoalFacadeService @Inject constructor(
     suspend fun getCompletedSavingGoals(userId: Long): List<SavingGoalResponseDto> =
         savingGoalService.getCompletedSavingGoals(userId)
 
-    suspend fun getGroupSavingGoals(userId: Long, groupId: Long): List<SavingGoalResponseDto> =
-        savingGoalService.getGroupSavingGoals(userId, groupId)
+    /** [groupId] is a String to match the API path parameter type. */
+    suspend fun getGroupSavingGoals(groupId: String): List<SavingGoalResponseDto> =
+        savingGoalService.getGroupSavingGoals(groupId)
 
-    suspend fun createSavingGoal(
-        userId: Long,
-        request: CreateSavingGoalRequestDto
-    ): SavingGoalResponseDto = savingGoalService.createSavingGoal(userId, request)
+    suspend fun getSavingGoal(savingGoalId: Long): SavingGoalResponseDto =
+        savingGoalService.getSavingGoal(savingGoalId)
 
-    /**
-     * Retrieves the details of a saving goal.
-     *
-     * @param userId       The ID of the user that owns the goal.
-     * @param savingGoalId The ID of the saving goal.
-     * @return A [SavingGoalResponseDto] with the goal's current data.
-     */
-    suspend fun getSavingGoal(userId: Long, savingGoalId: Long): SavingGoalResponseDto =
-        savingGoalService.getSavingGoal(userId, savingGoalId)
+    suspend fun createSavingGoal(request: CreateSavingGoalRequestDto): SavingGoalResponseDto =
+        savingGoalService.createSavingGoal(request)
 
-    /**
-     * Registers a monetary contribution to the specified saving goal.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     * @param request      The contribution details.
-     */
-    suspend fun registerContribution(
-        userId: Long,
+    suspend fun registerContribution(savingGoalId: Long, request: ContributionRequestDto) =
+        savingGoalService.registerContribution(savingGoalId, request)
+
+    suspend fun completeGoal(savingGoalId: Long) =
+        savingGoalService.completeGoal(savingGoalId)
+
+    suspend fun uncompleteGoal(savingGoalId: Long) =
+        savingGoalService.uncompleteGoal(savingGoalId)
+
+    suspend fun deleteSavingGoal(savingGoalId: Long) =
+        savingGoalService.deleteSavingGoal(savingGoalId)
+
+    suspend fun updateSavingGoal(
         savingGoalId: Long,
-        request: ContributionRequestDto
-    ): ContributionResponseDto =
-        savingGoalService.registerContribution(userId, savingGoalId, request)
-
-    /**
-     * Marks a saving goal as COMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     */
-    suspend fun completeGoal(userId: Long, savingGoalId: Long) =
-        savingGoalService.completeGoal(userId, savingGoalId)
-
-    /**
-     * Reverts a saving goal to UNCOMPLETED.
-     *
-     * @param userId       The ID of the user.
-     * @param savingGoalId The ID of the goal.
-     */
-    suspend fun uncompleteGoal(userId: Long, savingGoalId: Long) =
-        savingGoalService.uncompleteGoal(userId, savingGoalId)
+        title: String?,
+        description: String?,
+        newTargetAmount: java.math.BigDecimal?
+    ) = savingGoalService.updateSavingGoal(
+        savingGoalId,
+        UpdateSavingGoalRequestDto(title, description, newTargetAmount)
+    )
 }

@@ -11,4 +11,17 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Fin
  */
 interface FinancialAccountRepository {
     suspend fun getFinancialAccountsByUserId(): NetworkResult<List<FinancialAccount>>
+
+
+    suspend fun createFinancialAccount(
+        name: String,
+        accountType: String,
+        currencyCode: String,
+        currentAmount: Double,
+        institution: String?,
+        creditLimit: Double?
+    ): NetworkResult<FinancialAccount>
+
+    suspend fun disableFinancialAccount(accountId: Long): NetworkResult<FinancialAccount>
+
 }
