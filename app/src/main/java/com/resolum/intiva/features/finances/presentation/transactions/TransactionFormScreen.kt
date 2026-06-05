@@ -56,6 +56,7 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Cat
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.components.CategoryGrid
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.components.FinancialAccountSelector
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 import kotlinx.coroutines.flow.collectLatest
 
 /**
@@ -72,6 +73,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun TransactionFormScreen(
     transactionType: TransactionType,
+    ownerType: OwnerType,
     onDismiss: () -> Unit,
     navController: NavController,
     viewModel: TransactionViewModel = hiltViewModel(),
@@ -250,7 +252,9 @@ fun TransactionFormScreen(
                                     showLocalEnterAmountStep = true
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            ownerType = ownerType.name,
+                            type = transactionType.name
                         )
                     }
 

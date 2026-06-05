@@ -1,8 +1,10 @@
 package com.resolum.intiva.features.savings.domain.usecases
 
 import com.resolum.intiva.core.network.model.NetworkResult
+import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.repositories.CategoryRepository
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 import javax.inject.Inject
 
 /**
@@ -21,7 +23,12 @@ class GetFamilyGroupIdUseCase @Inject constructor(
     suspend operator fun invoke(): NetworkResult<Long> {
         sessionRepository.getGroupId()?.let { return NetworkResult.Success(it) }
 
-        return when (val result = categoryRepository.getCategoriesByUserId()) {
+        return when (
+            val result = categoryRepository.getCategoriesByOwnerId(
+                ownerType = OwnerType.FAMILY.name,
+                type = TransactionType.EXPENSE.name
+            )
+        ) {
             is NetworkResult.Success -> {
                 val groupId = result.data
                     .firstOrNull { it.ownerType.equals("family", ignoreCase = true) }

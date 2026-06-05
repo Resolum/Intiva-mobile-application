@@ -13,7 +13,6 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Laptop
 import androidx.compose.material.icons.outlined.MedicalServices
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.School
@@ -33,25 +32,25 @@ fun CategoryIcon(
     iconName: String,
     tintColor: Color = Color.White
 ) {
-    val icon = when (iconName) {
-        "briefcase"     -> Icons.Outlined.BusinessCenter
-        "laptop"        -> Icons.Outlined.Laptop
-        "store"         -> Icons.Outlined.Store
-        "trending_up"   -> Icons.AutoMirrored.Outlined.TrendingUp
-        "home"          -> Icons.Outlined.Home
-        "shield"        -> Icons.Outlined.Shield
-        "more_horiz"    -> Icons.Outlined.MoreHoriz
-        "wallet"        -> Icons.Outlined.AccountBalanceWallet
+    val icon = when (iconName.normalizedCategoryIconName()) {
+        "briefcase" -> Icons.Outlined.BusinessCenter
+        "laptop" -> Icons.Outlined.Laptop
+        "store" -> Icons.Outlined.Store
+        "trending_up" -> Icons.AutoMirrored.Outlined.TrendingUp
+        "home" -> Icons.Outlined.Home
+        "shield" -> Icons.Outlined.Shield
+        "more_horiz" -> Icons.Outlined.MoreHoriz
+        "wallet" -> Icons.Outlined.AccountBalanceWallet
         "shopping-cart" -> Icons.Outlined.ShoppingCart
-        "car"           -> Icons.Outlined.DirectionsCar
-        "heart"         -> Icons.Outlined.FavoriteBorder
-        "book"          -> Icons.AutoMirrored.Outlined.MenuBook
-        "food"          -> Icons.Outlined.Restaurant
-        "clothes"       -> Icons.Outlined.Checkroom
-        "movie"         -> Icons.Outlined.Slideshow
-        "education"     -> Icons.Outlined.School
-        "health"        -> Icons.Outlined.MedicalServices
-        else            -> Icons.Outlined.Category
+        "car" -> Icons.Outlined.DirectionsCar
+        "heart" -> Icons.Outlined.FavoriteBorder
+        "book" -> Icons.AutoMirrored.Outlined.MenuBook
+        "food" -> Icons.Outlined.Restaurant
+        "clothes" -> Icons.Outlined.Checkroom
+        "movie" -> Icons.Outlined.Slideshow
+        "education" -> Icons.Outlined.School
+        "health" -> Icons.Outlined.MedicalServices
+        else -> Icons.Outlined.Category
     }
 
     Icon(
@@ -60,4 +59,20 @@ fun CategoryIcon(
         tint = tintColor, // <-- Usamos el parámetro dinámico aquí
         modifier = Modifier.size(24.dp)
     )
+}
+
+private fun String.normalizedCategoryIconName(): String {
+    val key = trim().lowercase().replace("-", "_")
+    return when (key) {
+        "restaurant", "local_restaurant", "fastfood" -> "food"
+        "directions_car", "commute" -> "car"
+        "local_hospital", "medical_services" -> "health"
+        "shopping_bag", "shopping_cart" -> "shopping-cart"
+        "school" -> "education"
+        "menu_book" -> "book"
+        "account_balance_wallet" -> "wallet"
+        "business_center" -> "briefcase"
+        "category" -> "more_horiz"
+        else -> key
+    }
 }

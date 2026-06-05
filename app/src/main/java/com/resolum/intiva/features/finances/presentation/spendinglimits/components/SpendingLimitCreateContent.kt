@@ -41,7 +41,6 @@ import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitFrequency
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
-import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.components.CategoryGrid
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.time.LocalDate
@@ -137,7 +136,7 @@ fun SpendingLimitCreateContent(
                 StepLabel(text = "PASO 1: SELECCIONA UN OBJETIVO")
                 SelectedCategoryCard(selectedCategory = selectedCategory)
                 Spacer(modifier = Modifier.height(12.dp))
-                CategoryGrid(
+                SpendingLimitCategorySelector(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it }
                 )

@@ -5,6 +5,7 @@ import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.CategoryFacadeService
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.mappers.toDomain
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateCategoryRequestDto
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services.CategoryService
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.repositories.CategoryRepository
@@ -32,9 +33,33 @@ class CategoryRepositoryImpl @Inject constructor(
      *
      * @return A [NetworkResult] containing a list of [Category] objects on success, or an error message on failure.
      */
-    override suspend fun getCategoriesByUserId(): NetworkResult<List<Category>> =
+    override suspend fun getCategoriesByOwnerId(ownerType: String, type: String): NetworkResult<List<Category>> =
         safeCall {
             val userId = sessionRepository.getUserId() ?: throw IllegalStateException("No active session found")
-            categoryFacadeService.getCategoriesByUserId(userId).map { it.toDomain() }
+            categoryFacadeService.getCategoriesByOwnerId(ownerType, userId, type).map { it.toDomain() }
+        }
+
+
+
+    override suspend fun createCategory(
+        name: String,
+        description: String,
+        color: String,
+        icon: String
+    ): NetworkResult<Category> =
+        safeCall {
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("No active session found")
+
+            val request = CreateCategoryRequestDto(
+                name = name,
+                ownerType = "USER",
+                description = description,
+                color = color,
+                icon = icon,
+                isActive = true
+            )
+
+            categoryFacadeService.createCategory(userId, request).toDomain()
         }
 }

@@ -78,6 +78,7 @@ fun TransactionsScreen(
     }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = {
@@ -108,7 +109,7 @@ fun TransactionsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = IntivaColors.BackgroundLavender
+                    containerColor = Color.White
                 )
             )
         }
@@ -117,8 +118,8 @@ fun TransactionsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .background(Color.White)
+                .padding(innerPadding)
         ) {
             Row(
                 modifier = Modifier
@@ -143,7 +144,7 @@ fun TransactionsScreen(
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = Color.Transparent,
                             labelColor = IntivaColors.UnselectedChipText,
-                            selectedContainerColor = IntivaColors.SelectedChip,
+                            selectedContainerColor = IntivaColors.PrimaryBrand,
                             selectedLabelColor = IntivaColors.SelectedChipText
                         ),
                         border = FilterChipDefaults.filterChipBorder(
