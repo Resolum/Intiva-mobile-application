@@ -1,6 +1,9 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services
 
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CategoryResponseDto
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateCategoryRequestDto
+import retrofit2.http.Body
+import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -19,4 +22,10 @@ interface CategoryService {
         @Query("ownerId") ownerId: Long,
         @Query("type") type: String? = null
     ) : List<CategoryResponseDto>
+
+    @POST("users/{userId}/categories")
+    suspend fun createCategory(
+        @Path("userId") userId: Long,
+        @Body request: CreateCategoryRequestDto
+    ): CategoryResponseDto
 }

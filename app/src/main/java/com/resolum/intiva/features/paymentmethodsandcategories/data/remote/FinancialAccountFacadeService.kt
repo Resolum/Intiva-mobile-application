@@ -1,5 +1,6 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.data.remote
 
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateFinancialAccountRequestDto
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services.FinancialAccountService
 import javax.inject.Inject
 
@@ -20,4 +21,19 @@ class FinancialAccountFacadeService @Inject constructor(
      * @return A list of financial accounts associated with the specified user ID.
      */
     suspend fun getFinancialAccountsByUserId(userId: Long) = financialAccountService.getFinancialAccountsByUserId(userId)
+
+    suspend fun createFinancialAccount(
+        userId: Long,
+        request: CreateFinancialAccountRequestDto
+    ) = financialAccountService.createFinancialAccount(
+        userId = userId,
+        request = request
+    )
+    suspend fun disableFinancialAccount(
+        userId: Long,
+        accountId: Long
+    ) = financialAccountService.disableFinancialAccount(
+        userId = userId,
+        accountId = accountId
+    )
 }
