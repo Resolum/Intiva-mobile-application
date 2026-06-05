@@ -70,6 +70,16 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
+          if [ -z "$KEYSTORE_PATH" ]; then
+            echo "Missing KEYSTORE_PATH environment variable."
+            exit 1
+          fi
+
+          if [ ! -f "$KEYSTORE_PATH" ]; then
+            echo "Keystore file was not created at $KEYSTORE_PATH."
+            exit 1
+          fi
+
           for secret_name in KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
             if [ -z "${!secret_name}" ]; then
               echo "Missing $secret_name repository secret."
@@ -77,10 +87,15 @@ jobs:
             fi
           done
 
-          keytool -list \
+          if ! keytool -list \
             -keystore "$KEYSTORE_PATH" \
             -storepass "$KEYSTORE_PASSWORD" \
-            -alias "$KEY_ALIAS" > /dev/null
+            -alias "$KEY_ALIAS" > /dev/null; then
+            echo "Could not read the release key from the keystore."
+            echo "Check KEYSTORE_BASE, KEYSTORE_PASSWORD and KEY_ALIAS."
+            echo "If your key password is different from the store password, also check KEY_PASSWORD."
+            exit 1
+          fi
 
       - name: Set app version
         run: |
