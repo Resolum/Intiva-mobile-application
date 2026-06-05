@@ -82,7 +82,7 @@ fun AppNavGraph(
             SignUpScreen(
                 onSignUpSuccess = {
                     navController.navigateAndClearBackStack(
-                        route = Screen.MainShell.route,
+                        route = Screen.SignIn.route,
                         popUpTo = Screen.SignUp.route,
                     )
                 },

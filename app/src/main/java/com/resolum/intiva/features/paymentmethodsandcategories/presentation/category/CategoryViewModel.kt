@@ -22,29 +22,23 @@ class CategoryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CategoryUiState())
     val uiState: StateFlow<CategoryUiState> = _uiState.asStateFlow()
 
-    fun getCategories() {
+    fun getCategories(ownerType: String = "", type: String = "") {
         safeLaunch {
             _uiState.update { it.copy(categoriesState = UiState.Loading) }
-
-            when (val result = getCategoriesUseCase()) {
-                is NetworkResult.Success -> {
-                    _uiState.update {
-                        it.copy(
-                            categories = result.data,
-                            categoriesState = UiState.Success(result.data)
-                        )
-                    }
+            when (val result = getCategoriesUseCase(ownerType, type)) {
+                is NetworkResult.Success -> _uiState.update {
+                    it.copy(
+                        categories = result.data,
+                        categoriesState = UiState.Success(result.data)
+                    )
                 }
-
-                is NetworkResult.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            categoriesState = UiState.Error(
-                                message = result.message,
-                                throwable = result.throwable
-                            )
+                is NetworkResult.Error -> _uiState.update {
+                    it.copy(
+                        categoriesState = UiState.Error(
+                            message = result.message,
+                            throwable = result.throwable
                         )
-                    }
+                    )
                 }
             }
         }
@@ -60,21 +54,15 @@ class CategoryViewModel @Inject constructor(
     }
 
     fun onDescriptionChange(value: String) {
-        _uiState.update {
-            it.copy(description = value)
-        }
+        _uiState.update { it.copy(description = value) }
     }
 
     fun onIconSelected(icon: String) {
-        _uiState.update {
-            it.copy(selectedIcon = icon)
-        }
+        _uiState.update { it.copy(selectedIcon = icon) }
     }
 
     fun onColorSelected(color: String) {
-        _uiState.update {
-            it.copy(selectedColor = color)
-        }
+        _uiState.update { it.copy(selectedColor = color) }
     }
 
     fun resetCreateForm() {
@@ -101,9 +89,7 @@ class CategoryViewModel @Inject constructor(
         }
 
         safeLaunch {
-            _uiState.update {
-                it.copy(createCategoryState = UiState.Loading)
-            }
+            _uiState.update { it.copy(createCategoryState = UiState.Loading) }
 
             when (
                 val result = createCategoryUseCase(
@@ -124,11 +110,9 @@ class CategoryViewModel @Inject constructor(
                             nameError = null
                         )
                     }
-
                     getCategories()
                     onSuccess()
                 }
-
                 is NetworkResult.Error -> {
                     _uiState.update {
                         it.copy(

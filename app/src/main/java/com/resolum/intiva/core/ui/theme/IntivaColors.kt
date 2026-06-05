@@ -37,4 +37,10 @@ object IntivaColors {
     // Borders
     val FieldBorderError   = StatusError
     val FieldBorderFocused = PrimaryBrand
+
+    // Transactions
+    val SelectedChip = Color(0xFF5A469D)
+    val SelectedChipText = Color.White
+    val UnselectedChipText = Color(0xFF49454F)
+    val UnselectedChipBorder = Color(0xFF79747E)
 }

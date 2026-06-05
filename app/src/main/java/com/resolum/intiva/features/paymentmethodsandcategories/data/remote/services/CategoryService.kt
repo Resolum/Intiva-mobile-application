@@ -6,6 +6,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * Retrofit service interface for fetching category data from the API.
@@ -15,15 +16,11 @@ import retrofit2.http.Path
  */
 interface CategoryService {
 
-    /**
-     * Fetches a list of categories associated with a specific user ID.
-     *
-     * @param userId The ID of the user whose categories are to be retrieved.
-     * @return A list of [CategoryResponseDto] objects representing the user's categories.
-     */
-    @GET("users/{userId}/categories")
-    suspend fun getCategoriesByUserId(
-        @Path("userId") userId: Long
+    @GET("categories")
+    suspend fun getCategoriesByOwnerId(
+        @Query("ownerType") ownerType: String,
+        @Query("ownerId") ownerId: Long,
+        @Query("type") type: String? = null
     ) : List<CategoryResponseDto>
 
     @POST("users/{userId}/categories")

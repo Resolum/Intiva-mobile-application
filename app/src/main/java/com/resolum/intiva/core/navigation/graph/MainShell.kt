@@ -6,15 +6,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.resolum.intiva.core.navigation.components.IntivaBottomNavBar
 import com.resolum.intiva.core.navigation.routes.NavRoutes
-import com.resolum.intiva.features.finances.domain.model.TransactionType
+import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.HomeScreen
-import com.resolum.intiva.features.finances.presentation.TransactionFormScreen
+import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitScreen
+import com.resolum.intiva.features.finances.presentation.transactions.TransactionFormScreen
+import com.resolum.intiva.features.finances.presentation.transactions.TransactionsScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.ManageCategoriesScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.CreateFinancialAccountScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.FinancialAccountScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
@@ -22,9 +28,7 @@ import com.resolum.intiva.features.savings.presentation.SavingsGoalsScreen
 import com.resolum.intiva.features.savings.presentation.completion.GoalCompletedScreen
 import com.resolum.intiva.features.savings.presentation.completion.GoalUncompletedScreen
 import com.resolum.intiva.features.savings.presentation.contribute.ContributeToGoalScreen
-import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.ManageCategoriesScreen
-import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.CreateFinancialAccountScreen
-import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.FinancialAccountScreen
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 
 /**
  * Main shell of the app, containing the bottom navigation and root-level destinations.
@@ -37,6 +41,7 @@ fun MainShell() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
+        containerColor = Color.White,
         bottomBar = {
             IntivaBottomNavBar(
                 currentRoute = currentRoute,
@@ -58,19 +63,30 @@ fun MainShell() {
             composable(NavRoutes.HOME) {
                 HomeScreen(
                     onNavigateToNewExpense = { shellNavController.navigate(NavRoutes.NEW_EXPENSE) },
-                    onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) }
+                    onNavigateToNewIncome = { shellNavController.navigate(NavRoutes.NEW_INCOME) },
+                    navController = shellNavController,
+                    onNavigateToTransactions = { shellNavController.navigate(NavRoutes.TRANSACTIONS) },
+                    onNavigateToSpendingLimitAlert = {
+                        shellNavController.navigate(NavRoutes.SPENDING_LIMIT_ALERT)
+                    },
                 )
             }
 
-            composable(NavRoutes.TRANSACTIONS) { }
+            composable(NavRoutes.TRANSACTIONS) {
+                TransactionsScreen()
+            }
+
+            composable(NavRoutes.SPENDING_LIMIT_ALERT) {
+                SpendingLimitScreen(onNavigateBack = { shellNavController.popBackStack() })
+            }
+
             composable(NavRoutes.FAMILY) { }
             composable(NavRoutes.PROFILE) { }
 
+            // Payment methods and categories
             composable(NavRoutes.MANAGE_CATEGORIES) {
                 ManageCategoriesScreen(
-                    onNavigateBack = {
-                        shellNavController.popBackStack()
-                    }
+                    onNavigateBack = { shellNavController.popBackStack() }
                 )
             }
 
@@ -84,15 +100,14 @@ fun MainShell() {
 
             composable(NavRoutes.CREATE_FINANCIAL_ACCOUNT) {
                 CreateFinancialAccountScreen(
-                    onAccountCreated = {
-                        shellNavController.popBackStack()
-                    },
-                    onBackClick = {
-                        shellNavController.popBackStack()
-                    }
+                    onAccountCreated = { shellNavController.popBackStack() },
+                    onBackClick = { shellNavController.popBackStack() }
                 )
             }
 
+            /**
+             * Savings Goals feature navigation.
+             */
             composable(NavRoutes.SAVINGS_GOALS) {
                 SavingsGoalsScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
@@ -108,6 +123,9 @@ fun MainShell() {
                 )
             }
 
+            /**
+             * The create screen requires the account ID to know which account the goal belongs to.
+             */
             composable(NavRoutes.SAVINGS_GOAL_CREATE) { backStackEntry ->
                 val accountId = backStackEntry.arguments?.getString("accountId")?.toLongOrNull()
                     ?: return@composable
@@ -127,7 +145,12 @@ fun MainShell() {
                 SavingsGoalEditScreen(
                     goalId = id,
                     onNavigateBack = { shellNavController.popBackStack() },
-                    onGoalUpdated = { shellNavController.popBackStack() }
+                    onGoalUpdated = { shellNavController.popBackStack() },
+                    onGoalCompleted = { goalId ->
+                        shellNavController.navigate("savings_goal_completed/0/$goalId") {
+                            popUpTo(NavRoutes.SAVINGS_GOALS)
+                        }
+                    }
                 )
             }
 
@@ -187,8 +210,9 @@ fun MainShell() {
                         }
                     },
                     onBack = {
-                        shellNavController.navigate(NavRoutes.SAVINGS_GOALS) {
-                            popUpTo(NavRoutes.SAVINGS_GOALS) { inclusive = true }
+                        shellNavController.navigate(NavRoutes.HOME) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 )
@@ -215,9 +239,8 @@ fun MainShell() {
                 TransactionFormScreen(
                     transactionType = TransactionType.INCOME,
                     onDismiss = { shellNavController.popBackStack() },
-                    onSave = { amount, categoryId, accountId ->
-                        shellNavController.popBackStack()
-                    }
+                    navController = shellNavController,
+                    ownerType = OwnerType.INDIVIDUAL
                 )
             }
 
@@ -225,9 +248,8 @@ fun MainShell() {
                 TransactionFormScreen(
                     transactionType = TransactionType.EXPENSE,
                     onDismiss = { shellNavController.popBackStack() },
-                    onSave = { amount, categoryId, accountId ->
-                        shellNavController.popBackStack()
-                    }
+                    navController = shellNavController,
+                    ownerType = OwnerType.INDIVIDUAL
                 )
             }
         }

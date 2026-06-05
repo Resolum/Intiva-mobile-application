@@ -18,49 +18,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.resolum.intiva.core.ui.theme.IntivaColors
-
-/**
- * Data class representing a savings goal item.
- */
-data class SavingsGoal(
-    val id: String,
-    val title: String,
-    val savedAmount: String,
-    val totalAmount: String,
-    val progress: Int,
-    val iconResId: Int // Placeholder for icon selection
-)
+import com.resolum.intiva.features.savings.domain.models.SavingGoal
 
 /**
  * Primary savings goals dashboard list screen.
- *
- * @param onNavigateBack Callback to go back to the previous screen.
- * @param onNavigateToCreate Callback to navigate to the goal creation screen.
- * @param onNavigateToDetail Callback to view details for a specific goal.
- * @param onNavigateToEdit Callback to navigate to the goal editing screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavingsGoalsScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToCreate: () -> Unit,
-    onNavigateToDetail: (String) -> Unit,
-    onNavigateToEdit: (String) -> Unit
+    onNavigateToCreate: (accountId: Long) -> Unit,
+    onNavigateToDetail: (accountId: Long, goalId: Long) -> Unit,
+    onNavigateToEdit: (accountId: Long, goalId: Long) -> Unit,
+    viewModel: SavingsGoalsViewModel = hiltViewModel()
 ) {
-    var selectedTab by remember { mutableStateOf(0) } 
-    
-    val goals = listOf(
-        SavingsGoal("1", "Fondo de emergencia", "2,250", "3,000", 75, 0),
-        SavingsGoal("2", "Viaje familiar", "2,000", "5,000", 40, 0)
-    )
+    val screenState by viewModel.uiState.collectAsState()
+    val accountId = screenState.accountId
+
+    var goalToDelete by remember { mutableStateOf<com.resolum.intiva.features.savings.domain.models.SavingGoal?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
@@ -69,12 +58,22 @@ fun SavingsGoalsScreen(
                                 .background(Color.LightGray)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Intiva", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = IntivaColors.TextPrimary)
+                        Text(
+                            "Intiva",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            color = IntivaColors.TextPrimary
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.NotificationsNone, contentDescription = "Notifications", tint = IntivaColors.IconPurple, modifier = Modifier.size(28.dp))
+                    IconButton(onClick = { /* notifications */ }) {
+                        Icon(
+                            Icons.Default.NotificationsNone,
+                            contentDescription = "Notifications",
+                            tint = IntivaColors.IconPurple,
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = IntivaColors.BackgroundLavender)
@@ -82,11 +81,11 @@ fun SavingsGoalsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToCreate,
+                onClick = { viewModel.navigateToCreate(onNavigateToCreate) },
                 containerColor = IntivaColors.PrimaryGreen,
                 contentColor = IntivaColors.TextPrimary,
                 shape = CircleShape,
-                modifier = Modifier.size(64.dp) 
+                modifier = Modifier.size(64.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Goal", modifier = Modifier.size(32.dp))
             }
@@ -97,24 +96,23 @@ fun SavingsGoalsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 20.dp) 
+                .padding(horizontal = 20.dp)
         ) {
             Text(
                 text = "Mis Metas",
-                fontSize = 32.sp, 
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = IntivaColors.TextPrimary
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Mantén el control de tus ahorros y alcanza tus objetivos financieros.",
-                fontSize = 16.sp, 
+                fontSize = 16.sp,
                 color = IntivaColors.TextSecondary,
                 lineHeight = 24.sp
             )
             Spacer(modifier = Modifier.height(24.dp))
-            
-       
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,39 +121,114 @@ fun SavingsGoalsScreen(
             ) {
                 TabItem(
                     title = "Personales",
-                    isSelected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
+                    isSelected = screenState.selectedTab == 0,
+                    onClick = { viewModel.onTabSelected(0) },
                     modifier = Modifier.weight(1f)
                 )
                 TabItem(
                     title = "Familiares",
-                    isSelected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
+                    isSelected = screenState.selectedTab == 1,
+                    onClick = { viewModel.onTabSelected(1) },
                     modifier = Modifier.weight(1f)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                contentPadding = PaddingValues(bottom = 100.dp) 
-            ) {
-                items(goals) { goal ->
-                    GoalCard(
-                        goal = goal, 
-                        onClick = { onNavigateToDetail(goal.id) },
-                        onEditClick = { onNavigateToEdit(goal.id) }
-                    )
+
+            when (val goalsState = screenState.goalsState) {
+                is SavingsGoalsUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(top = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = IntivaColors.PrimaryBrand)
+                    }
+                }
+                is SavingsGoalsUiState.Error -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = goalsState.message,
+                            color = IntivaColors.TextSecondary,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        TextButton(onClick = { viewModel.refresh() }) {
+                            Text("Reintentar", color = IntivaColors.PrimaryBrand)
+                        }
+                    }
+                }
+                is SavingsGoalsUiState.Success -> {
+                    val filteredGoals = remember(goalsState.goals, screenState.selectedTab) {
+                        goalsState.goals.filter { goal ->
+                            if (screenState.selectedTab == 0) {
+                                goal.ownerType.equals("Individual", ignoreCase = true)
+                            } else {
+                                goal.ownerType.equals("Group", ignoreCase = true)
+                            }
+                        }
+                    }
+
+                    if (filteredGoals.isEmpty()) {
+                        Text(
+                            text = if (screenState.selectedTab == 0) {
+                                "No tienes metas personales aún."
+                            } else {
+                                "No hay metas familiares en este grupo."
+                            },
+                            color = IntivaColors.TextSecondary,
+                            modifier = Modifier.padding(top = 24.dp)
+                        )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(20.dp),
+                            contentPadding = PaddingValues(bottom = 100.dp)
+                        ) {
+                            items(filteredGoals, key = { it.id }) { goal ->
+                                GoalCard(
+                                    goal = goal,
+                                    onClick = {
+                                        accountId?.let { onNavigateToDetail(it, goal.id) }
+                                    },
+                                    onEditClick = {
+                                        accountId?.let { onNavigateToEdit(it, goal.id) }
+                                    },
+                                    onDeleteClick = { goalToDelete = goal }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
+
+    goalToDelete?.let { goal ->
+        AlertDialog(
+            onDismissRequest = { goalToDelete = null },
+            title = { Text("Eliminar meta", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Estás seguro de que deseas eliminar \"${goal.title}\"? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteGoal(goal.id)
+                        goalToDelete = null
+                    }
+                ) {
+                    Text("Eliminar", color = IntivaColors.StatusError, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { goalToDelete = null }) {
+                    Text("Cancelar", color = IntivaColors.TextSecondary)
+                }
+            }
+        )
+    }
 }
 
-/**
- * Tab item used in the selector tab row.
- */
 @Composable
 fun TabItem(title: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
@@ -163,7 +236,7 @@ fun TabItem(title: String, isSelected: Boolean, onClick: () -> Unit, modifier: M
             .clip(RoundedCornerShape(8.dp))
             .background(if (isSelected) Color.White else Color.Transparent)
             .clickable(onClick = onClick)
-            .height(48.dp) 
+            .height(48.dp)
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -176,24 +249,23 @@ fun TabItem(title: String, isSelected: Boolean, onClick: () -> Unit, modifier: M
     }
 }
 
-/**
- * Goal item card representing a single savings goal with circular and horizontal progress bars.
- */
 @Composable
-fun GoalCard(goal: SavingsGoal, onClick: () -> Unit, onEditClick: () -> Unit) {
+fun GoalCard(goal: SavingGoal, onClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val progress = goal.progressPercent()
+    val savedFormatted = goal.formatAmount(goal.currentAmount)
+    val targetFormatted = goal.formatAmount(goal.targetAmount)
+    val currencyPrefix = if (goal.currencyCode == "PEN") "S/." else goal.currencyCode
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp), 
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp) 
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -239,29 +311,43 @@ fun GoalCard(goal: SavingsGoal, onClick: () -> Unit, onEditClick: () -> Unit) {
                             text = { Text("Eliminar meta", color = IntivaColors.StatusError, fontSize = 16.sp) },
                             onClick = {
                                 expanded = false
-                                // TODO: Delete action implementation
+                                onDeleteClick()
                             }
                         )
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(text = "Ahorrado", fontSize = 14.sp, color = IntivaColors.TextSecondary, fontWeight = FontWeight.Medium)
+                    Text(
+                        text = "Ahorrado",
+                        fontSize = 14.sp,
+                        color = IntivaColors.TextSecondary,
+                        fontWeight = FontWeight.Medium
+                    )
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Text(text = "S/. ", fontSize = 18.sp, color = IntivaColors.TextPrimary)
-                        Text(text = goal.savedAmount, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = IntivaColors.TextPrimary)
+                        Text(text = "$currencyPrefix ", fontSize = 18.sp, color = IntivaColors.TextPrimary)
+                        Text(
+                            text = savedFormatted,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = IntivaColors.TextPrimary
+                        )
                     }
-                    Text(text = "de S/. ${goal.totalAmount}", fontSize = 14.sp, color = IntivaColors.TextSecondary)
+                    Text(
+                        text = "de $currencyPrefix $targetFormatted",
+                        fontSize = 14.sp,
+                        color = IntivaColors.TextSecondary
+                    )
                 }
-                
+
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(70.dp)) {
                     CircularProgressIndicator(
                         progress = { 1f },
@@ -270,25 +356,25 @@ fun GoalCard(goal: SavingsGoal, onClick: () -> Unit, onEditClick: () -> Unit) {
                         strokeWidth = 7.dp
                     )
                     CircularProgressIndicator(
-                        progress = { goal.progress / 100f },
+                        progress = { progress / 100f },
                         modifier = Modifier.fillMaxSize(),
                         color = IntivaColors.PrimaryGreen,
                         strokeWidth = 7.dp,
                         trackColor = Color.Transparent
                     )
                     Text(
-                        text = "${goal.progress}%",
+                        text = "$progress%",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                         color = IntivaColors.TextPrimary
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             LinearProgressIndicator(
-                progress = { goal.progress / 100f },
+                progress = { progress / 100f },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)

@@ -1,21 +1,27 @@
 package com.resolum.intiva.core.ui.snackbar
 
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import kotlinx.coroutines.flow.collectLatest
-
-/** A composable that hosts a Snackbar and listens for messages from [SnackBarBus]. */
+/** A custom SnackbarHost that displays snack bars with different background colors based on their type (success, error, normal). */
 @Composable
-fun IntivaSnackBarHost() {
+fun IntivaSnackBarHost(hostState: SnackbarHostState) {
+    SnackbarHost(hostState = hostState) { data ->
+        val visuals = data.visuals as? SnackBarVisualsWithType
 
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(Unit) {
-        SnackBarBus.messages.collect { message ->
-            snackBarHostState.showSnackbar(message)
+        val backgroundColor = when (visuals?.type) {
+            SnackBarType.Success -> Color(0xFF3B6D11)
+            SnackBarType.Error   -> Color(0xFFA32D2D)
+            else                 -> Color(0xFF2C2C2A)
         }
-    }
 
-    SnackbarHost(hostState = snackBarHostState)
+        Snackbar(
+            snackbarData = data,
+            containerColor = backgroundColor,
+            contentColor = Color.White
+        )
+    }
 }

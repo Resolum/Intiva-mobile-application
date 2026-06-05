@@ -9,7 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.resolum.intiva.core.fcm.permissions.NotificationPermissionEffect
 import com.resolum.intiva.core.navigation.graph.AppNavGraph
+import com.resolum.intiva.core.ui.theme.IntivaTheme
 
 /**
  * Root composable of the application. It sets up the main scaffold, including the navigation graph and global UI elements like the snackbar host.
@@ -19,12 +21,16 @@ fun AppRoot() {
     val navController = rememberNavController()
     val snackBarHostState = remember { SnackbarHostState() }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AppNavGraph(navController = navController)
+    IntivaTheme {
+        NotificationPermissionEffect()
 
-        SnackbarHost(
-            hostState = snackBarHostState,
-            modifier  = Modifier.align(Alignment.BottomCenter)
-        )
+        Box(modifier = Modifier.fillMaxSize()) {
+            AppNavGraph(navController = navController)
+
+            SnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
     }
 }
