@@ -37,6 +37,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    /*
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "keystore.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }*/
+
     buildTypes {
         debug {
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/v1/\"")
@@ -52,13 +62,15 @@ android {
 
             matchingFallbacks += listOf("debug")
         }
+
         release {
+            //signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://stocksip-back-end.azurewebsites.net/api/v1/\"")
+            buildConfigField("String", "BASE_URL", "\"https://intiva-api.azurewebsites.net/api/v1/\"")
 
             firebaseAppDistribution {
                 // Specifices the release notes file.
