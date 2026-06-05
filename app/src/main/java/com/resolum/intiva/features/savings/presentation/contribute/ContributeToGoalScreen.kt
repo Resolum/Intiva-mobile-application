@@ -69,65 +69,20 @@ fun ContributeToGoalScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = BrandPurple
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            GoalProgressHeader(
-                title = goalTitle,
-                currentAmount = currentAmount,
-                targetAmount = targetAmount,
-                currencyCode = currencyCode,
-                progress = progress,
-                onNavigateBack = onNavigateBack
-            )
+        containerColor = BrandPurple,
+        bottomBar = {
+            val isLoading = uiState.goalState is UiState.Loading ||
+                    uiState.isContributorIdLoading
+            val canContribute = uiState.contributorId != null &&
+                    uiState.amountInput.isNotEmpty() &&
+                    !isLoading
 
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                color = Color.White,
-                shadowElevation = 8.dp
-            ) {
-                Column(
+            Surface(color = Color.White) {
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 24.dp, vertical = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
                 ) {
-                    ContributeAccountSelector(
-                        onAccountSelected = { account: FinancialAccount ->
-                            selectedAccountId = account.id
-                        }
-                    )
-
-                    HorizontalDivider(color = BackgroundGray)
-
-                    AmountDisplay(
-                        amountInput = uiState.amountInput,
-                        currencyCode = currencyCode,
-                        inputError = uiState.inputError
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    NumericKeypad(
-                        onDigitClick = { viewModel.appendDigit(it) },
-                        onDeleteClick = { viewModel.deleteLastDigit() }
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val isLoading = uiState.goalState is UiState.Loading ||
-                            uiState.isContributorIdLoading
-                    val canContribute = uiState.contributorId != null &&
-                            uiState.amountInput.isNotEmpty() &&
-                            !isLoading
                     Button(
                         onClick = {
                             viewModel.contribute(
@@ -163,6 +118,61 @@ fun ContributeToGoalScreen(
                             )
                         }
                     }
+                }
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            GoalProgressHeader(
+                title = goalTitle,
+                currentAmount = currentAmount,
+                targetAmount = targetAmount,
+                currencyCode = currencyCode,
+                progress = progress,
+                onNavigateBack = onNavigateBack
+            )
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                color = Color.White,
+                shadowElevation = 8.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp, vertical = 28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ContributeAccountSelector(
+                        onAccountSelected = { account: FinancialAccount ->
+                            selectedAccountId = account.id
+                        }
+                    )
+
+                    HorizontalDivider(color = BackgroundGray)
+
+                    AmountDisplay(
+                        amountInput = uiState.amountInput,
+                        currencyCode = currencyCode,
+                        inputError = uiState.inputError
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    NumericKeypad(
+                        onDigitClick = { viewModel.appendDigit(it) },
+                        onDeleteClick = { viewModel.deleteLastDigit() }
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }
