@@ -52,13 +52,13 @@ jobs:
 
       - name: Decode and create keystore
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_BASE: ${{ secrets.KEYSTORE_BASE }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "Missing KEYSTORE_BASE64 repository secret."
+          if [ -z "$KEYSTORE_BASE" ]; then
+            echo "Missing KEYSTORE_BASE repository secret."
             exit 1
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > $HOME/intiva-release.jks
+          echo "$KEYSTORE_BASE" | base64 --decode > $HOME/intiva-release.jks
           echo "KEYSTORE_FILE_PATH=$HOME/intiva-release.jks" >> $GITHUB_ENV
 
       - name: Grant execute permission to gradlew
