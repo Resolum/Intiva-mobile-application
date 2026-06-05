@@ -166,11 +166,11 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = IntivaColors.BackgroundLavender
+                    containerColor = Color.White
                 )
             )
         },
-        containerColor = IntivaColors.BackgroundLavender,
+        containerColor = Color.White,
         snackbarHost = { IntivaSnackBarHost(hostState = snackBarHostState) }
     ) { padding ->
 

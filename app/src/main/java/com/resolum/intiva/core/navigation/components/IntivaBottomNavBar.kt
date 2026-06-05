@@ -1,12 +1,14 @@
 // IntivaBottomNavBar.kt
 package com.resolum.intiva.core.navigation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.TrackChanges
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resolum.intiva.core.navigation.model.NavItem
 import com.resolum.intiva.core.navigation.routes.NavRoutes
@@ -43,7 +46,7 @@ fun IntivaBottomNavBar(
             NavItem(NavRoutes.HOME, "INICIO", Icons.Default.Home, "Home"),
             NavItem(
                 NavRoutes.TRANSACTIONS,
-                "TRANSACCIONES.",
+                "TRANSACCIONES",
                 Icons.Default.Receipt,
                 "Transactions"
             ),
@@ -62,32 +65,37 @@ fun IntivaBottomNavBar(
         indicatorColor      = Color.White
     )
 
-    /** Render the bottom navigation bar with the defined items and colors. */
-    NavigationBar(
-        modifier       = modifier,
-        containerColor = Color.White,
-        contentColor   = IntivaColors.TextSecondary
+    Surface(
+        modifier = modifier,
+        color = Color.White,
+        border = BorderStroke(1.dp, Color(0xFFE8E8EF))
     ) {
-        navItems.forEach { item ->
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        imageVector        = item.icon,
-                        contentDescription = item.contentDescription
-                    )
-                },
-                label = {
-                    Text(
-                        text     = item.label,
-                        fontSize = 9.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Clip
-                    )
-                },
-                selected = currentRoute == item.route,
-                onClick  = { onNavigate(item.route) },
-                colors   = itemColors
-            )
+        /** Render the bottom navigation bar with the defined items and colors. */
+        NavigationBar(
+            containerColor = Color.White,
+            contentColor   = IntivaColors.TextSecondary
+        ) {
+            navItems.forEach { item ->
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            imageVector        = item.icon,
+                            contentDescription = item.contentDescription
+                        )
+                    },
+                    label = {
+                        Text(
+                            text     = item.label,
+                            fontSize = 8.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Clip
+                        )
+                    },
+                    selected = currentRoute == item.route,
+                    onClick  = { onNavigate(item.route) },
+                    colors   = itemColors
+                )
+            }
         }
     }
 }
