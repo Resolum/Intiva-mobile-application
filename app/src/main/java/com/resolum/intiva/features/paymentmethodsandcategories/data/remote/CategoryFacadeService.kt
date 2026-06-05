@@ -10,14 +10,22 @@ import javax.inject.Inject
 class CategoryFacadeService @Inject constructor(
     private val categoryService: CategoryService
 ) {
-    suspend fun getCategoriesByUserId(userId: Long) =
-        categoryService.getCategoriesByUserId(userId)
+
+    suspend fun getCategoriesByOwnerId(
+        ownerType: String,
+        ownerId: Long,
+        type: String? = null
+    ) = categoryService.getCategoriesByOwnerId(
+        ownerType = ownerType,
+        ownerId = ownerId,
+        type = type
+    )
 
     suspend fun createCategory(
         userId: Long,
         request: CreateCategoryRequestDto
-    ) = categoryService.createCategory(userId, request)
-
-    suspend fun getCategoriesByOwnerId(ownerType: String, ownerId: Long, type: String) =
-        categoryService.getCategoriesByOwnerId(ownerType, ownerId, type)
+    ) = categoryService.createCategory(
+        userId = userId,
+        request = request
+    )
 }
