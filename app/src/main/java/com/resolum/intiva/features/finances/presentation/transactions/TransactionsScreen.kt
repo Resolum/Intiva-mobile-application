@@ -41,14 +41,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.transactions.components.EmptyTransactionsContent
+import com.resolum.intiva.features.profiles.presentation.ProfileViewModel
 
 enum class FilterOption(val title: String, val type: TransactionType?) {
     ALL("Todos", null),
@@ -66,9 +69,11 @@ enum class FilterOption(val title: String, val type: TransactionType?) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(
-    viewModel: TransactionViewModel = hiltViewModel()
+    viewModel: TransactionViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val profileUiState by profileViewModel.uiState.collectAsState()
     var selectedFilter by remember { mutableStateOf(FilterOption.ALL) }
 
     LaunchedEffect(selectedFilter) {
@@ -77,23 +82,31 @@ fun TransactionsScreen(
         )
     }
 
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile()
+    }
+
     Scaffold(
         containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
+                        val profile = (profileUiState.profileState as? UiState.Success)?.data
+                        val avatarUrl = profile?.avatarUrl?.ifEmpty { null }
+                        AsyncImage(
+                            model = avatarUrl ?: "https://res.cloudinary.com/dcppsmlzd/image/upload/v1781121388/avatar_default_kf0yvc.png",
+                            contentDescription = "Avatar",
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(Color.LightGray)
+                                .size(32.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Intiva",
+                            text = profile?.name?.split(" ")?.firstOrNull() ?: "Intiva",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp,
+                            fontSize = 20.sp,
                             color = IntivaColors.TextPrimary
                         )
                     }
