@@ -29,13 +29,23 @@ import com.resolum.intiva.features.savings.presentation.completion.GoalCompleted
 import com.resolum.intiva.features.savings.presentation.completion.GoalUncompletedScreen
 import com.resolum.intiva.features.savings.presentation.contribute.ContributeToGoalScreen
 import com.resolum.intiva.features.shared.domain.model.OwnerType
+import com.resolum.intiva.features.profiles.presentation.ProfileScreen
+import com.resolum.intiva.features.profiles.presentation.EditProfileScreen
+import com.resolum.intiva.features.profiles.presentation.ConfiguracionScreen
+import com.resolum.intiva.features.profiles.presentation.PrivacidadSeguridadScreen
+import com.resolum.intiva.features.profiles.presentation.CentroAyudaScreen
+import com.resolum.intiva.features.profiles.presentation.NotificacionesScreen
+import com.resolum.intiva.features.profiles.presentation.AparienciaScreen
+
 
 /**
  * Main shell of the app, containing the bottom navigation and root-level destinations.
  * Each feature's main screen should be registered here, with deeper navigation handled within the feature's own nav graph.
  */
 @Composable
-fun MainShell() {
+fun MainShell(
+    onLogout: () -> Unit = {}
+) {
     val shellNavController = rememberNavController()
     val navBackStackEntry by shellNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -81,7 +91,55 @@ fun MainShell() {
             }
 
             composable(NavRoutes.FAMILY) { }
-            composable(NavRoutes.PROFILE) { }
+
+            composable(NavRoutes.PROFILE) {
+                ProfileScreen(
+                    onNavigateToEdit = { shellNavController.navigate(NavRoutes.EDIT_PROFILE) },
+                    onNavigateToConfig = { shellNavController.navigate(NavRoutes.CONFIG) },
+                    onPrivacyClick = { shellNavController.navigate(NavRoutes.PRIVACY) },
+                    onHelpClick = { shellNavController.navigate(NavRoutes.HELP) },
+                    onLogoutClick = onLogout
+                )
+            }
+
+            composable(NavRoutes.EDIT_PROFILE) {
+                EditProfileScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.CONFIG) {
+                ConfiguracionScreen(
+                    onNavigateToPersonalDetails = { shellNavController.navigate(NavRoutes.EDIT_PROFILE) },
+                    onNavigateToNotifications = { shellNavController.navigate(NavRoutes.NOTIFICATIONS) },
+                    onNavigateToAppearance = { shellNavController.navigate(NavRoutes.APPEARANCE) },
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.PRIVACY) {
+                PrivacidadSeguridadScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.HELP) {
+                CentroAyudaScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.NOTIFICATIONS) {
+                NotificacionesScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.APPEARANCE) {
+                AparienciaScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
 
             // Payment methods and categories
             composable(NavRoutes.MANAGE_CATEGORIES) {

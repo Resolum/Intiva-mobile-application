@@ -97,7 +97,14 @@ fun AppNavGraph(
         }
 
         composable(Screen.MainShell.route) {
-            MainShell()
+            MainShell(
+                onLogout = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.SignIn.route,
+                        popUpTo = Screen.MainShell.route,
+                    )
+                }
+            )
         }
     }
 }

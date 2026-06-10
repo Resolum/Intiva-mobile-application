@@ -16,6 +16,12 @@ object NavRoutes {
     const val SAVINGS_GOAL_UNCOMPLETED    = "savings_goal_uncompleted/{accountId}/{goalId}"
     const val FAMILY                      = "family"
     const val PROFILE                     = "profile"
+    const val EDIT_PROFILE                = "edit_profile"
+    const val CONFIG                      = "config"
+    const val PRIVACY                     = "privacy"
+    const val HELP                        = "help"
+    const val NOTIFICATIONS               = "notifications"
+    const val APPEARANCE                  = "appearance"
 
     const val NEW_INCOME           = "transactions/new_income"
     const val NEW_EXPENSE          = "transaction/new_expense"
