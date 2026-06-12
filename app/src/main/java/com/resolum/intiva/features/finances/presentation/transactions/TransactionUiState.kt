@@ -14,5 +14,6 @@ import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
 data class TransactionUiState(
     val state: UiState<Transaction> = UiState.Idle,
     val transactionsState: UiState<List<TransactionGroupByDate>> = UiState.Idle,
+    val transactionDetailState: UiState<Transaction> = UiState.Idle,
     val navigateBack: Boolean = false
 )

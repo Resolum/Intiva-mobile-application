@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -67,6 +68,9 @@ import com.resolum.intiva.features.finances.presentation.transactions.components
 import com.resolum.intiva.features.iam.domain.models.FirstTransactionTutorialStep
 import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingViewModel
 import com.resolum.intiva.features.iam.presentation.onboarding.components.SpotlightOverlay
+import com.resolum.intiva.features.profiles.presentation.ProfileViewModel
+import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 /**
  * HomeScreen.kt
@@ -92,12 +96,15 @@ fun HomeScreen(
     navController: NavController,
     viewModel: TransactionViewModel = hiltViewModel(),
     spendingLimitViewModel: SpendingLimitViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel(),
     onNavigateToTransactions: () -> Unit,
-    onNavigateToSpendingLimitAlert: () -> Unit = {}
+    onNavigateToSpendingLimitAlert: () -> Unit = {},
+    onNavigateToTransactionDetail: (Long) -> Unit = {}
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
     val spendingLimitUiState by spendingLimitViewModel.uiState.collectAsState()
+    val profileUiState by profileViewModel.uiState.collectAsState()
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
     val onboardingState by onboardingViewModel.state.collectAsState()
     var incomeButtonRect by remember { mutableStateOf<Rect?>(null) }
@@ -108,6 +115,7 @@ fun HomeScreen(
         onboardingViewModel.loadStatus()
         viewModel.getTransactionsByOwnerId(onlyLatest = true)
         spendingLimitViewModel.loadMonthlySpendingLimit()
+        profileViewModel.loadProfile()
 
         val success = navController.currentBackStackEntry
             ?.savedStateHandle
@@ -141,15 +149,19 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
+                        val profile = (profileUiState.profileState as? UiState.Success)?.data
+                        val avatarUrl = profile?.avatarUrl?.ifEmpty { null }
+                        AsyncImage(
+                            model = avatarUrl ?: "https://res.cloudinary.com/dcppsmlzd/image/upload/v1781121388/avatar_default_kf0yvc.png",
+                            contentDescription = "Avatar",
                             modifier = Modifier
                                 .size(32.dp)
-                                    .clip(CircleShape)
-                                .background(Color.LightGray)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Intiva",
+                            text = profile?.name?.split(" ")?.firstOrNull() ?: "Intiva",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = IntivaColors.TextPrimary
@@ -186,9 +198,11 @@ fun HomeScreen(
             ) {
 
                 item {
+                    val profile = (profileUiState.profileState as? UiState.Success)?.data
+                    val firstName = profile?.name?.split(" ")?.firstOrNull() ?: "Usuario"
                     Column {
                         Text(
-                            text = "Hola, Jennifer 👋",
+                            text = "Hola, $firstName 👋",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = IntivaColors.TextPrimary
@@ -379,7 +393,12 @@ fun HomeScreen(
                             } else {
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                     allTransactions.forEach { transaction ->
-                                        TransactionItem(transaction = transaction)
+                                        TransactionItem(
+                                            transaction = transaction,
+                                            onClick = { selectedTransaction ->
+                                                onNavigateToTransactionDetail(selectedTransaction.id)
+                                            }
+                                        )
                                     }
                                 }
                             }

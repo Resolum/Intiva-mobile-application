@@ -72,6 +72,14 @@ class TransactionRepositoryImpl @Inject constructor(
         return result
     }
 
+    override suspend fun getTransactionById(id: Long): NetworkResult<Transaction> {
+        val result = safeCall {
+            transactionFacadeService.getTransactionById(id).toDomain()
+        }
+
+        return result
+    }
+
     /**
      * Retrieves the latest transactions for a specific owner by making an API call through the [TransactionFacadeService].
      *

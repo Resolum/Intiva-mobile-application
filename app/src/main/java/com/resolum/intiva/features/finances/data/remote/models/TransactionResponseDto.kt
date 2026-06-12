@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.finances.data.remote.models
 
 import com.google.gson.annotations.SerializedName
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.FinancialAccountResponseDto
 
 /**
  * Data Transfer Object (DTO) representing a financial transaction response from the API.
@@ -35,6 +36,9 @@ data class TransactionResponseDto(
     @SerializedName("financialAccountId")
     val financialAccountId: Long,
 
+    @SerializedName("financialAccountName")
+    val financialAccountName: String? = null,
+
     @SerializedName("actorUserId")
     val actorUserId: Long,
 
@@ -43,4 +47,10 @@ data class TransactionResponseDto(
 
     @SerializedName("categoryId")
     val categoryId: Long?,
+
+    @SerializedName("registeredAt")
+    val registeredAt: String? = null,
+
+    @SerializedName(value = "financialAccount", alternate = ["account"])
+    val financialAccount: FinancialAccountResponseDto? = null,
 )
