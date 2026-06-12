@@ -110,10 +110,21 @@ fun MainShell(
 
             composable(NavRoutes.CONFIG) {
                 ConfiguracionScreen(
-                    onNavigateToPersonalDetails = { shellNavController.navigate(NavRoutes.EDIT_PROFILE) },
-                    onNavigateToNotifications = { shellNavController.navigate(NavRoutes.NOTIFICATIONS) },
-                    onNavigateToAppearance = { shellNavController.navigate(NavRoutes.APPEARANCE) },
-                    onNavigateBack = { shellNavController.popBackStack() }
+                    onNavigateToPersonalDetails = {
+                        shellNavController.navigate(NavRoutes.EDIT_PROFILE)
+                    },
+                    onNavigateToCategories = {
+                        shellNavController.navigate(NavRoutes.MANAGE_CATEGORIES)
+                    },
+                    onNavigateToNotifications = {
+                        shellNavController.navigate(NavRoutes.NOTIFICATIONS)
+                    },
+                    onNavigateToAppearance = {
+                        shellNavController.navigate(NavRoutes.APPEARANCE)
+                    },
+                    onNavigateBack = {
+                        shellNavController.popBackStack()
+                    }
                 )
             }
 
