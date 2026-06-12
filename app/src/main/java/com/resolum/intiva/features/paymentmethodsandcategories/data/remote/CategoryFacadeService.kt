@@ -22,10 +22,8 @@ class CategoryFacadeService @Inject constructor(
     )
 
     suspend fun createCategory(
-        userId: Long,
         request: CreateCategoryRequestDto
     ) = categoryService.createCategory(
-        userId = userId,
         request = request
     )
 }
