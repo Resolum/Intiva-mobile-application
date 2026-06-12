@@ -37,6 +37,10 @@ import com.resolum.intiva.features.profiles.presentation.PrivacidadSeguridadScre
 import com.resolum.intiva.features.profiles.presentation.CentroAyudaScreen
 import com.resolum.intiva.features.profiles.presentation.NotificacionesScreen
 import com.resolum.intiva.features.profiles.presentation.AparienciaScreen
+import com.resolum.intiva.features.household.presentation.family.FamilyScreen
+import com.resolum.intiva.features.household.presentation.invite.InviteMemberScreen
+import com.resolum.intiva.features.household.presentation.invitation.InvitationDetailScreen
+import com.resolum.intiva.features.household.presentation.roles.FamilyRolesScreen
 
 
 /**
@@ -112,7 +116,24 @@ fun MainShell(
                 SpendingLimitScreen(onNavigateBack = { shellNavController.popBackStack() })
             }
 
-            composable(NavRoutes.FAMILY) { }
+            composable(NavRoutes.FAMILY) {
+                FamilyScreen(
+                    onInviteClick = { shellNavController.navigate(NavRoutes.INVITE_MEMBER) },
+                    onViewAllActivity = { shellNavController.navigate(NavRoutes.FAMILY_ROLES) }
+                )
+            }
+
+            composable(NavRoutes.INVITE_MEMBER) {
+                InviteMemberScreen()
+            }
+
+            composable(NavRoutes.FAMILY_ROLES) {
+                FamilyRolesScreen()
+            }
+
+            composable(NavRoutes.INVITATION_DETAIL) {
+                InvitationDetailScreen()
+            }
 
             composable(NavRoutes.PROFILE) {
                 ProfileScreen(

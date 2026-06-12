@@ -3,11 +3,16 @@ package com.resolum.intiva.core.navigation.graph
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.resolum.intiva.core.navigation.extensions.navigateAndClearBackStack
 import com.resolum.intiva.core.navigation.extensions.navigateSingleTop
+import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.core.navigation.routes.Screen
+import com.resolum.intiva.features.household.presentation.invitation.InvitationDetailScreen
 import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
@@ -103,6 +108,36 @@ fun AppNavGraph(
                         route = Screen.SignIn.route,
                         popUpTo = Screen.MainShell.route,
                     )
+                }
+            )
+        }
+
+        composable(
+            route = NavRoutes.INVITATION_DEEP_LINK,
+            arguments = listOf(navArgument("token") { type = NavType.StringType }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "https://intiva.vercel.app/lander?token={token}" },
+                navDeepLink { uriPattern = "https://intiva.vercel.app/join?token={token}" },
+                navDeepLink { uriPattern = "https://intiva-1406c.web.app/lander?token={token}" },
+                navDeepLink { uriPattern = "intiva://lander?token={token}" },
+                navDeepLink { uriPattern = "intiva://join?token={token}" }
+            )
+        ) {
+            InvitationDetailScreen(
+                onAccepted = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.MainShell.route,
+                        popUpTo = NavRoutes.INVITATION_DEEP_LINK,
+                    )
+                },
+                onDeclined = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.MainShell.route,
+                        popUpTo = NavRoutes.INVITATION_DEEP_LINK,
+                    )
+                },
+                onGoToLanding = {
+                    navController.popBackStack()
                 }
             )
         }
