@@ -29,6 +29,8 @@ interface TransactionRepository {
      */
     suspend fun getTransactionsByOwnerId(transactionType: String?) : NetworkResult<List<TransactionGroupByDate>>
 
+    suspend fun getTransactionById(id: Long): NetworkResult<Transaction>
+
     /**
      * Retrieves the latest transactions for a specific owner.
      *

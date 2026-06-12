@@ -1,5 +1,7 @@
 package com.resolum.intiva.features.finances.domain.models
 
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
+
 /**
  * Represents a financial transaction resource with all its details.
  *
@@ -20,7 +22,10 @@ data class Transaction(
     val description: String,
     val ownerId: Long,
     val financialAccountId: Long,
+    val financialAccountName: String? = null,
     val actorUserId: Long,
     val transactionType: String,
-    val categoryId: Long?
+    val categoryId: Long?,
+    val registeredAt: String? = null,
+    val financialAccount: FinancialAccount? = null
 )

@@ -33,6 +33,8 @@ class TransactionFacadeService @Inject constructor(
      */
     suspend fun getTransactionsByOwnerId(ownerId: Long, transactionType: String?) = transactionService.getTransactionsByOwnerId(ownerId, transactionType)
 
+    suspend fun getTransactionById(id: Long) = transactionService.getTransactionById(id)
+
     /**
      * Retrieves the latest transactions for a specific owner.
      *

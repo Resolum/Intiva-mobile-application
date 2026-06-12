@@ -43,6 +43,11 @@ interface TransactionService {
         @Query("transactionType") transactionType: String? = null,
     ) : ResponseWrapperDto<List<TransactionGroupByDateResponseDto>>
 
+    @GET("transactions/{id}")
+    suspend fun getTransactionById(
+        @Path("id") id: Long,
+    ) : TransactionResponseDto
+
     /**
      * Makes a GET request to the "transactions/lastest" endpoint to retrieve the latest transactions for a specific owner.
      *

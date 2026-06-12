@@ -98,7 +98,8 @@ fun HomeScreen(
     spendingLimitViewModel: SpendingLimitViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel(),
     onNavigateToTransactions: () -> Unit,
-    onNavigateToSpendingLimitAlert: () -> Unit = {}
+    onNavigateToSpendingLimitAlert: () -> Unit = {},
+    onNavigateToTransactionDetail: (Long) -> Unit = {}
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
@@ -392,7 +393,12 @@ fun HomeScreen(
                             } else {
                                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                     allTransactions.forEach { transaction ->
-                                        TransactionItem(transaction = transaction)
+                                        TransactionItem(
+                                            transaction = transaction,
+                                            onClick = { selectedTransaction ->
+                                                onNavigateToTransactionDetail(selectedTransaction.id)
+                                            }
+                                        )
                                     }
                                 }
                             }

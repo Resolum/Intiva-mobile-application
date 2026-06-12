@@ -3,6 +3,7 @@ package com.resolum.intiva.features.finances.data.remote.mappers
 import com.resolum.intiva.features.finances.data.remote.models.TransactionResponseDto
 import com.resolum.intiva.features.finances.data.remote.models.TransactionWithDesignResponseDto
 import com.resolum.intiva.features.finances.domain.models.Transaction
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.mappers.toDomain
 
 /**
  * Extension function to map a [Transaction] domain model to a [TransactionWithDesignResponseDto].
@@ -19,8 +20,11 @@ fun TransactionResponseDto.toDomain(): Transaction {
         description = description,
         ownerId = ownerId,
         financialAccountId = financialAccountId,
+        financialAccountName = financialAccountName,
         actorUserId = actorUserId,
         transactionType = transactionType,
         categoryId = categoryId,
+        registeredAt = registeredAt,
+        financialAccount = financialAccount?.toDomain(),
     )
 }
