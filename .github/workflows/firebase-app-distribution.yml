@@ -3,11 +3,7 @@ name: Intiva Firebase App Distribution
 on:
   push:
     branches:
-      - main
       - 'release/**'
-  release:
-    types:
-      - published
   workflow_dispatch:
 
 jobs:
@@ -84,17 +80,7 @@ jobs:
 
       - name: Set app version
         run: |
-          RAW_VERSION=""
-
-          if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
-            RAW_VERSION="${{ github.event.release.tag_name }}"
-          elif [[ "${GITHUB_REF_NAME}" == release/* ]]; then
-            RAW_VERSION="${GITHUB_REF_NAME#release/}"
-          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            RAW_VERSION="$(git describe --tags --abbrev=0 2>/dev/null || true)"
-          else
-            RAW_VERSION="1.0.0"
-          fi
+          RAW_VERSION="${GITHUB_REF_NAME#release/}"
 
           if [[ -z "$RAW_VERSION" ]]; then
             RAW_VERSION="1.0.0"

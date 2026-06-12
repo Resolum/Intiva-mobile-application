@@ -9,6 +9,7 @@ import com.resolum.intiva.core.ui.snackbar.SnackBarType
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.domain.usecase.GetTransactionsByOwnerIdUseCase
+import com.resolum.intiva.features.finances.domain.usecase.GetTransactionByIdUseCase
 import com.resolum.intiva.features.finances.domain.usecase.RegisterIndividualTransactionUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
@@ -31,6 +32,7 @@ import kotlinx.coroutines.launch
 class TransactionViewModel @Inject constructor(
     private val registerIndividualTransactionUseCase: RegisterIndividualTransactionUseCase,
     private val getTransactionsByOwnerIdUseCase: GetTransactionsByOwnerIdUseCase,
+    private val getTransactionByIdUseCase: GetTransactionByIdUseCase,
 ) : BaseViewModel() {
 
     /** Backing property for the UI state, initialized with a default TransactionUiState. */
@@ -200,6 +202,33 @@ class TransactionViewModel @Inject constructor(
                         SnackBarBus.send(
                             "Error al obtener transacciones: ${result.message}",
                             SnackBarType.Error
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun getTransactionById(id: Long) {
+        safeLaunch {
+            _uiState.update {
+                it.copy(transactionDetailState = UiState.Loading)
+            }
+
+            when (val result = getTransactionByIdUseCase(id)) {
+                is NetworkResult.Success -> {
+                    _uiState.update {
+                        it.copy(transactionDetailState = UiState.Success(result.data))
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            transactionDetailState = UiState.Error(
+                                message = result.message,
+                                throwable = result.throwable
+                            )
                         )
                     }
                 }

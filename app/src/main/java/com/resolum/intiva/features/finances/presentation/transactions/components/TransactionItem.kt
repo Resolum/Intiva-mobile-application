@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.finances.presentation.transactions.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +38,8 @@ import com.resolum.intiva.core.utils.date.toRelativeDateTime
  */
 @Composable
 fun TransactionItem(
-    transaction: TransactionWithDesignResponse
+    transaction: TransactionWithDesignResponse,
+    onClick: (TransactionWithDesignResponse) -> Unit = {}
 ) {
     val isIncome = transaction.transactionType == TransactionType.INCOME.name
 
@@ -54,7 +56,9 @@ fun TransactionItem(
 
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(transaction) },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
