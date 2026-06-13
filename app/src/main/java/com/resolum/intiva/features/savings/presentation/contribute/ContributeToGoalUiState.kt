@@ -21,5 +21,6 @@ data class ContributeToGoalUiState(
     val inputError: String? = null,
     /** Logged-in user ID from [SessionRepository]; required for the contribution POST body. */
     val contributorId: Long? = null,
-    val isContributorIdLoading: Boolean = true
+    val isContributorIdLoading: Boolean = true,
+    val successMessage: String? = null
 )
