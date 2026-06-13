@@ -165,6 +165,12 @@ dependencies {
     // Firebase dependencies for using Firebase services in the app
     implementation(platform(libs.firebase.bom))
 
+    // ML Kit Barcode Scanning dependency for QR code scanning
+    implementation(libs.mlkit.barcode.scanning)
+
+    // Guava (required by CameraX ProcessCameraProvider)
+    implementation(libs.guava.android)
+
     // Firebase Cloud Messaging dependency for handling push notifications
     implementation(libs.firebase.messaging)
 }

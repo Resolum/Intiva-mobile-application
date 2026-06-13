@@ -116,6 +116,12 @@ androidx-camera-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision",
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
+# ML Kit
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version = "17.2.0" }
+
+# Guava (required for CameraX ProcessCameraProvider)
+guava-android = { module = "com.google.guava:guava", version = "31.0.1-android" }
+
 # Firebase Boom
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 
