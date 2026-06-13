@@ -63,12 +63,37 @@ fun ContributeToGoalScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = (uiState.goalState as? UiState.Error)?.message
+        ?: uiState.inputError
     LaunchedEffect(errorMessage) {
-        if (errorMessage != null) snackbarHostState.showSnackbar(errorMessage)
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Long
+            )
+        }
+    }
+    val successMessage = uiState.successMessage
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            snackbarHostState.showSnackbar(
+                message = successMessage,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearSuccessMessage()
+        }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                val isSuccess = data.visuals.message.contains("éxito", ignoreCase = true)
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = if (isSuccess) Color(0xFF4CAF50) else Color(0xFFB00020),
+                    contentColor = Color.White
+                )
+            }
+        },
         containerColor = BrandPurple,
         bottomBar = {
             val isLoading = uiState.goalState is UiState.Loading ||
