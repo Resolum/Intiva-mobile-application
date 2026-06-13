@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.household.data.repositories
 
 import com.resolum.intiva.core.data.repository.BaseRepository
+import com.resolum.intiva.core.deeplink.DeepLinkData
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.household.data.remote.FamilyFacadeService
 import com.resolum.intiva.features.household.data.remote.mappers.toDomain
@@ -40,6 +41,25 @@ class InvitationRepositoryImpl @Inject constructor(
         val userId = sessionRepository.getUserId() ?: throw IllegalStateException("User ID not found in session")
         familyFacadeService.rejectInvitation(userId, invitationId).toDomain()
     }
+
+    override suspend fun getDeferredInvitation(installId: String): NetworkResult<DeepLinkData> = safeCall {
+        val dto = familyFacadeService.getDeferredInvitation(installId)
+        DeepLinkData(
+            token = dto.token,
+            groupName = dto.groupName ?: "",
+            inviterName = dto.inviterName ?: ""
+        )
+    }
+
+    override suspend fun acceptInvitationByToken(token: String): NetworkResult<Unit> = safeCall {
+        familyFacadeService.acceptInvitationByToken(token)
+        Unit
+    }
+
+    override suspend fun rejectInvitationByToken(token: String): NetworkResult<String> = safeCall {
+        familyFacadeService.rejectInvitationByToken(token).invitedByName
+    }
+
     override suspend fun getInvitationQr(familyId: Long): NetworkResult<QrCodeResult> = safeCall {
         val dto = familyFacadeService.getInvitationQr(familyId)
         QrCodeResult(

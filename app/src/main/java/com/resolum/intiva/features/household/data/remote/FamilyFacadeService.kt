@@ -3,8 +3,10 @@ package com.resolum.intiva.features.household.data.remote
 import com.resolum.intiva.features.household.data.remote.models.AssignRoleRequestDto
 import com.resolum.intiva.features.household.data.remote.models.CreateFamilyRequestDto
 import com.resolum.intiva.features.household.data.remote.models.CreateQrInvitationRequestDto
+import com.resolum.intiva.features.household.data.remote.models.DeferredInvitationResponseDto
 import com.resolum.intiva.features.household.data.remote.models.FamilyMemberResponseDto
 import com.resolum.intiva.features.household.data.remote.models.FamilyResponseDto
+import com.resolum.intiva.features.household.data.remote.models.InvitationRejectResponseDto
 import com.resolum.intiva.features.household.data.remote.models.InvitationResponseDto
 import com.resolum.intiva.features.household.data.remote.models.QrCodeResponseDto
 import com.resolum.intiva.features.household.data.remote.models.SendInvitationRequestDto
@@ -55,6 +57,15 @@ class FamilyFacadeService @Inject constructor(
 
     suspend fun rejectInvitation(userId: Long, invitationId: Long): InvitationResponseDto =
         invitationService.rejectInvitation(userId, invitationId)
+
+    suspend fun acceptInvitationByToken(token: String): InvitationResponseDto =
+        invitationService.acceptInvitationByToken(token)
+
+    suspend fun rejectInvitationByToken(token: String): InvitationRejectResponseDto =
+        invitationService.rejectInvitationByToken(token)
+
+    suspend fun getDeferredInvitation(installId: String): DeferredInvitationResponseDto =
+        invitationService.getDeferredInvitation(installId)
 
     suspend fun getInvitationQr(familyId: Long): QrCodeResponseDto =
         invitationService.getInvitationQr(familyId)

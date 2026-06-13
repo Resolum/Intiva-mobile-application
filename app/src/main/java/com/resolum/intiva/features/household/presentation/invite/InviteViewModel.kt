@@ -3,7 +3,12 @@ package com.resolum.intiva.features.household.presentation.invite
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
+import com.resolum.intiva.features.household.domain.models.InvitationDetail
+import com.resolum.intiva.features.household.domain.usecase.AcceptInvitationUseCase
+import com.resolum.intiva.features.household.domain.usecase.GetDeferredInvitationUseCase
+import com.resolum.intiva.features.household.domain.usecase.GetInvitationByTokenUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetInvitationQrUseCase
+import com.resolum.intiva.features.household.domain.usecase.RejectInvitationByTokenUseCase
 import com.resolum.intiva.features.household.domain.usecase.SendInvitationUseCase
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +22,10 @@ import javax.inject.Inject
 class InviteViewModel @Inject constructor(
     private val getInvitationQrUseCase: GetInvitationQrUseCase,
     private val sendInvitationUseCase: SendInvitationUseCase,
+    private val acceptInvitationUseCase: AcceptInvitationUseCase,
+    private val getInvitationByTokenUseCase: GetInvitationByTokenUseCase,
+    private val rejectInvitationByTokenUseCase: RejectInvitationByTokenUseCase,
+    private val getDeferredInvitationUseCase: GetDeferredInvitationUseCase,
     private val sessionRepository: SessionRepository
 ) : BaseViewModel() {
 
@@ -106,12 +115,78 @@ class InviteViewModel @Inject constructor(
 
     fun shareInvitation() {
         val link = getInvitationLink()
-        // Handled by the UI layer (intent / share sheet)
+
     }
 
     fun copyInvitationLink() {
         val link = getInvitationLink()
-        // Handled by the UI layer (clipboard manager)
+
+    }
+
+    fun loadInvitationByToken(token: String) {
+        safeLaunch {
+            _uiState.update { it.copy(invitationDetail = UiState.Loading) }
+
+            when (val result = getInvitationByTokenUseCase(token)) {
+                is NetworkResult.Success -> {
+                    _uiState.update { it.copy(invitationDetail = UiState.Success(result.data)) }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update { it.copy(invitationDetail = UiState.Error(message = result.message)) }
+                }
+            }
+        }
+    }
+
+    fun rejectInvite(token: String) {
+        safeLaunch {
+            _uiState.update { it.copy(actionState = UiState.Loading) }
+
+            when (val result = rejectInvitationByTokenUseCase(token)) {
+                is NetworkResult.Success -> {
+                    _uiState.update { it.copy(actionState = UiState.Success("Invitación rechazada")) }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update { it.copy(actionState = UiState.Error(message = result.message)) }
+                }
+            }
+        }
+    }
+
+    fun loadDeferredInvitation(installId: String) {
+        safeLaunch {
+            _uiState.update { it.copy(deferredState = UiState.Loading) }
+
+            when (val result = getDeferredInvitationUseCase(installId)) {
+                is NetworkResult.Success -> {
+                    _uiState.update { it.copy(deferredState = UiState.Success(result.data)) }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update { it.copy(deferredState = UiState.Error(message = result.message)) }
+                }
+            }
+        }
+    }
+
+    fun acceptInvite(token: String) {
+        safeLaunch {
+            val detail = (_uiState.value.invitationDetail as? UiState.Success)?.data
+            if (detail == null) {
+                _uiState.update { it.copy(actionState = UiState.Error("No se encontró la invitación")) }
+                return@safeLaunch
+            }
+
+            _uiState.update { it.copy(actionState = UiState.Loading) }
+
+            when (val result = acceptInvitationUseCase(detail.id)) {
+                is NetworkResult.Success -> {
+                    _uiState.update { it.copy(actionState = UiState.Success("Invitación aceptada")) }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update { it.copy(actionState = UiState.Error(message = result.message)) }
+                }
+            }
+        }
     }
 
     override fun handleError(throwable: Throwable) {
