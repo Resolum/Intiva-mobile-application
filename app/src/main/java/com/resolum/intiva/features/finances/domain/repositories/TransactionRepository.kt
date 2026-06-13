@@ -4,7 +4,8 @@ import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
 import com.resolum.intiva.features.finances.domain.models.Transaction
 import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
-import com.resolum.intiva.features.finances.domain.models.TransactionType
+import com.resolum.intiva.features.finances.domain.models.SyncStatusSummary
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for managing financial transactions.
@@ -37,4 +38,6 @@ interface TransactionRepository {
         * @return A [NetworkResult] containing a list of [TransactionGroupByDate] representing the latest transactions if successful, or an error if the operation fails.
      */
     suspend fun getLastestTransactionsByOwnerId() : NetworkResult<List<TransactionGroupByDate>>
+
+    fun observeSyncStatusSummary(): Flow<SyncStatusSummary>
 }

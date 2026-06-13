@@ -10,6 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.Response
 
 /**
  * Retrofit service interface for transaction-related API calls.
@@ -28,7 +29,7 @@ interface TransactionService {
     suspend fun registerIndividualTransaction(
         @Path("userId") userId: Long,
         @Body body: RegisterTransactionRequestDto,
-    ) : TransactionResponseDto
+    ) : Response<TransactionResponseDto>
 
     /**
      * Makes a GET request to the "transactions" endpoint to retrieve a list of transactions for a specific owner, optionally filtered by transaction type.

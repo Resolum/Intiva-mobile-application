@@ -1,15 +1,26 @@
 package com.resolum.intiva.features.finances.data.repositories
 
 import com.resolum.intiva.core.data.repository.BaseRepository
+import com.resolum.intiva.core.network.ConnectivityChecker
 import com.resolum.intiva.core.network.model.NetworkResult
+import com.resolum.intiva.features.finances.data.local.dao.PendingTransactionDao
+import com.resolum.intiva.features.finances.data.local.mappers.toAccountType
+import com.resolum.intiva.features.finances.data.local.mappers.toDomainTransaction
+import com.resolum.intiva.features.finances.data.local.mappers.toPendingEntity
 import com.resolum.intiva.features.finances.data.remote.TransactionFacadeService
 import com.resolum.intiva.features.finances.data.remote.mappers.toDomain
-import com.resolum.intiva.features.finances.data.remote.mappers.toDto
+import com.resolum.intiva.features.finances.data.sync.SyncItemResult
+import com.resolum.intiva.features.finances.data.sync.TransactionOutboxSyncer
+import com.resolum.intiva.features.finances.data.sync.TransactionSyncScheduler
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
+import com.resolum.intiva.features.finances.domain.models.SyncStatus
+import com.resolum.intiva.features.finances.domain.models.SyncStatusSummary
 import com.resolum.intiva.features.finances.domain.models.Transaction
 import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
 import com.resolum.intiva.features.finances.domain.repositories.TransactionRepository
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 /**
@@ -20,7 +31,11 @@ import javax.inject.Inject
  */
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionFacadeService: TransactionFacadeService,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val pendingTransactionDao: PendingTransactionDao,
+    private val connectivityChecker: ConnectivityChecker,
+    private val transactionOutboxSyncer: TransactionOutboxSyncer,
+    private val transactionSyncScheduler: TransactionSyncScheduler
 ) : BaseRepository(), TransactionRepository {
 
     /**
@@ -30,23 +45,33 @@ class TransactionRepositoryImpl @Inject constructor(
      * @return A [NetworkResult] containing the registered [Transaction] if successful, or an error if not.
      */
     override suspend fun registerIndividualTransaction(request: RegisterTransactionRequest): NetworkResult<Transaction> {
-        val result = safeCall {
+        return safeCall {
+            val userId = sessionRepository.getUserId()
+                ?: throw IllegalStateException("User ID not found in session")
 
-            val userId = sessionRepository.getUserId() ?: throw IllegalStateException("User ID not found in session")
-
-            val requestDto = request.toDto(
-                performedByUserId = userId
-            )
-
-            val response = transactionFacadeService.registerIndividualTransaction(
+            val pendingTransaction = request.toPendingEntity(
                 userId = userId,
-                request = requestDto
+                accountType = request.ownerType.toAccountType()
             )
+            val pendingId = pendingTransactionDao.insert(pendingTransaction)
+            val savedTransaction = pendingTransaction.copy(id = pendingId)
 
-            response.toDomain()
+            transactionSyncScheduler.enqueue()
+
+            if (!connectivityChecker.isConnected()) {
+                return@safeCall savedTransaction.toDomainTransaction()
+            }
+
+            when (val syncResult = transactionOutboxSyncer.syncById(pendingId)) {
+                SyncItemResult.Synced -> savedTransaction.toDomainTransaction()
+
+                is SyncItemResult.FailedConflict -> {
+                    throw IllegalStateException(syncResult.reason)
+                }
+
+                SyncItemResult.RetryLater -> savedTransaction.toDomainTransaction()
+            }
         }
-
-        return result
     }
 
     /**
@@ -99,6 +124,20 @@ class TransactionRepositoryImpl @Inject constructor(
         }
 
         return result
+    }
+
+    override fun observeSyncStatusSummary(): Flow<SyncStatusSummary> {
+        return combine(
+            pendingTransactionDao.observeCountByStatus(SyncStatus.PENDING),
+            pendingTransactionDao.observeCountByStatus(SyncStatus.FAILED),
+            pendingTransactionDao.observeLatestConflictReason()
+        ) { pendingCount, failedCount, latestConflictReason ->
+            SyncStatusSummary(
+                pendingCount = pendingCount,
+                failedCount = failedCount,
+                latestConflictReason = latestConflictReason
+            )
+        }
     }
 
 }
