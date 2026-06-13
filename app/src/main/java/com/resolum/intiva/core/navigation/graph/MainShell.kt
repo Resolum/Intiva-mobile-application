@@ -17,6 +17,7 @@ import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.HomeScreen
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionFormScreen
+import com.resolum.intiva.features.finances.presentation.transactions.TransactionDetailScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionsScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.ManageCategoriesScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.CreateFinancialAccountScreen
@@ -57,16 +58,19 @@ fun MainShell(
     Scaffold(
         containerColor = Color.White,
         bottomBar = {
-            IntivaBottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    shellNavController.navigate(route) {
-                        popUpTo(NavRoutes.HOME) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                },
-            )
-        }, contentWindowInsets = WindowInsets(0)
+            if (currentRoute in NavRoutes.BOTTOM_NAV_ROUTES) {
+                IntivaBottomNavBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        shellNavController.navigate(route) {
+                            popUpTo(NavRoutes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+        },
+        contentWindowInsets = WindowInsets(0)
     ) { padding ->
         NavHost(
             navController = shellNavController,
@@ -83,11 +87,29 @@ fun MainShell(
                     onNavigateToSpendingLimitAlert = {
                         shellNavController.navigate(NavRoutes.SPENDING_LIMIT_ALERT)
                     },
+                    onNavigateToTransactionDetail = { transactionId ->
+                        shellNavController.navigate(NavRoutes.transactionDetail(transactionId))
+                    },
                 )
             }
 
             composable(NavRoutes.TRANSACTIONS) {
-                TransactionsScreen()
+                TransactionsScreen(
+                    onNavigateToTransactionDetail = { transactionId ->
+                        shellNavController.navigate(NavRoutes.transactionDetail(transactionId))
+                    }
+                )
+            }
+
+            composable(NavRoutes.TRANSACTION_DETAIL) { backStackEntry ->
+                val transactionId = backStackEntry.arguments
+                    ?.getString("transactionId")
+                    ?.toLongOrNull()
+                    ?: return@composable
+                TransactionDetailScreen(
+                    transactionId = transactionId,
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
             }
 
             composable(NavRoutes.SPENDING_LIMIT_ALERT) {
@@ -131,10 +153,21 @@ fun MainShell(
 
             composable(NavRoutes.CONFIG) {
                 ConfiguracionScreen(
-                    onNavigateToPersonalDetails = { shellNavController.navigate(NavRoutes.EDIT_PROFILE) },
-                    onNavigateToNotifications = { shellNavController.navigate(NavRoutes.NOTIFICATIONS) },
-                    onNavigateToAppearance = { shellNavController.navigate(NavRoutes.APPEARANCE) },
-                    onNavigateBack = { shellNavController.popBackStack() }
+                    onNavigateToPersonalDetails = {
+                        shellNavController.navigate(NavRoutes.EDIT_PROFILE)
+                    },
+                    onNavigateToCategories = {
+                        shellNavController.navigate(NavRoutes.MANAGE_CATEGORIES)
+                    },
+                    onNavigateToNotifications = {
+                        shellNavController.navigate(NavRoutes.NOTIFICATIONS)
+                    },
+                    onNavigateToAppearance = {
+                        shellNavController.navigate(NavRoutes.APPEARANCE)
+                    },
+                    onNavigateBack = {
+                        shellNavController.popBackStack()
+                    }
                 )
             }
 
@@ -331,6 +364,7 @@ fun MainShell(
                     ownerType = OwnerType.INDIVIDUAL
                 )
             }
+
         }
     }
 }

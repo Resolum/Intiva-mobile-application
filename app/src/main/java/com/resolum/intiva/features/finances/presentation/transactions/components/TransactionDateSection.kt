@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
+import com.resolum.intiva.features.finances.domain.models.TransactionWithDesignResponse
 import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionItem
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -22,7 +23,8 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun TransactionDateSection(
-    group: TransactionGroupByDate
+    group: TransactionGroupByDate,
+    onTransactionClick: (TransactionWithDesignResponse) -> Unit = {}
 ) {
     Column {
         Text(
@@ -38,7 +40,10 @@ fun TransactionDateSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             group.transactions.forEach { transaction ->
-                TransactionItem(transaction = transaction)
+                TransactionItem(
+                    transaction = transaction,
+                    onClick = onTransactionClick
+                )
             }
         }
     }
@@ -57,7 +62,7 @@ private fun formatDate(date: String): String {
         parsedDate.format(
             DateTimeFormatter.ofPattern(
                 "dd 'de' MMMM, yyyy",
-                java.util.Locale("es")
+                java.util.Locale.forLanguageTag("es-PE")
             )
         )
 
