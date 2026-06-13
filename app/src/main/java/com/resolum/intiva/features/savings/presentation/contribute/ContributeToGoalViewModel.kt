@@ -105,7 +105,7 @@ class ContributeToGoalViewModel @Inject constructor(
                 is NetworkResult.Success -> {
                     val updatedGoal = result.data
                     _uiState.update {
-                        it.copy(goal = updatedGoal, goalState = UiState.Success(updatedGoal), amountInput = "")
+                        it.copy(goal = updatedGoal, goalState = UiState.Success(updatedGoal), amountInput = "", successMessage = "¡Aporte registrado con éxito!")
                     }
                     val completionResult = goalCompletionEvaluator.evaluate(updatedGoal)
                     when (completionResult) {
@@ -133,7 +133,9 @@ class ContributeToGoalViewModel @Inject constructor(
     }
 
     fun currentGoal(): SavingGoal? = _uiState.value.goal
-
+    fun clearSuccessMessage() {
+        _uiState.update { it.copy(successMessage = null) }
+    }
     override fun handleError(throwable: Throwable) {
         _uiState.update {
             it.copy(goalState = UiState.Error(message = throwable.message ?: "An unexpected error occurred.", throwable = throwable))
