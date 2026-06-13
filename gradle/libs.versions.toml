@@ -56,6 +56,9 @@ animation = "1.11.1"
 # Firebase
 firebaseBom = "34.14.0"
 
+# WorkManager
+workRuntimeKtx = "2.11.0"
+
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -103,6 +106,8 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 
 # Hilt Navigation Compose
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltNavigationCompose" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltNavigationCompose" }
 
 # Room
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -128,6 +133,9 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 # Firebase Messaging
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 
+# WorkManager
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
@@ -138,4 +146,3 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
 
 # Hilt plugin
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
-
