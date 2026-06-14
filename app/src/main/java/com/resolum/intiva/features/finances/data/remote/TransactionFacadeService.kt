@@ -24,6 +24,11 @@ class TransactionFacadeService @Inject constructor(
      */
     suspend fun registerIndividualTransaction(request: RegisterTransactionRequestDto, userId: Long)  = transactionService.registerIndividualTransaction(userId, request)
 
+    suspend fun registerIndividualTransactionResponse(
+        request: RegisterTransactionRequestDto,
+        userId: Long
+    ) = transactionService.registerIndividualTransaction(userId, request)
+
     /**
      * Retrieves a list of transactions for a specific owner, optionally filtered by transaction type.
      *

@@ -17,5 +17,16 @@ fun FinancialAccountResponseDto.toDomain() = FinancialAccount(
     currentAmount = currentAmount,
     institution = institution,
     creditLimit = creditLimit,
-    isActive = isActive
+    isActive = isActive ?: status.toIsActive()
 )
+
+private fun String?.toIsActive(): Boolean {
+    return when {
+        isNullOrBlank() -> true
+        equals("ACTIVE", ignoreCase = true) -> true
+        equals("ENABLED", ignoreCase = true) -> true
+        equals("INACTIVE", ignoreCase = true) -> false
+        equals("DISABLED", ignoreCase = true) -> false
+        else -> true
+    }
+}

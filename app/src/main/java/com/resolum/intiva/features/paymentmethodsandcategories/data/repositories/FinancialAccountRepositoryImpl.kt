@@ -3,10 +3,12 @@ package com.resolum.intiva.features.paymentmethodsandcategories.data.repositorie
 import com.resolum.intiva.core.data.repository.BaseRepository
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
+import com.resolum.intiva.features.paymentmethodsandcategories.data.local.dao.FinancialAccountDao
+import com.resolum.intiva.features.paymentmethodsandcategories.data.local.mappers.toDomain
+import com.resolum.intiva.features.paymentmethodsandcategories.data.local.mappers.toEntity
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.FinancialAccountFacadeService
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.mappers.toDomain
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateFinancialAccountRequestDto
-import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services.FinancialAccountService
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.repositories.FinancialAccountRepository
 import javax.inject.Inject
@@ -23,7 +25,8 @@ import javax.inject.Inject
  */
 class FinancialAccountRepositoryImpl @Inject constructor(
     private val financialAccountFacadeService: FinancialAccountFacadeService,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val financialAccountDao: FinancialAccountDao
 ) : BaseRepository(), FinancialAccountRepository {
 
     /**
@@ -33,11 +36,41 @@ class FinancialAccountRepositoryImpl @Inject constructor(
      *
      * @return A [NetworkResult] containing a list of [FinancialAccount] objects on success, or an error message on failure.
      */
-    override suspend fun getFinancialAccountsByUserId(): NetworkResult<List<FinancialAccount>> =
-        safeCall {
-            val userId = sessionRepository.getUserId() ?: throw IllegalStateException("User ID not found in session")
-            financialAccountFacadeService.getFinancialAccountsByUserId(userId).map { it.toDomain() }
+    override suspend fun getFinancialAccountsByUserId(): NetworkResult<List<FinancialAccount>> {
+        val userId = sessionRepository.getUserId()
+            ?: return NetworkResult.Error("User ID not found in session")
+
+        val localFinancialAccounts = financialAccountDao.getActiveAccounts(userId).map { it.toDomain() }
+
+        val remoteResult = safeCall {
+            val remoteFinancialAccounts = financialAccountFacadeService.getFinancialAccountsByUserId(userId)
+            val remoteDomainAccounts = remoteFinancialAccounts.map { it.toDomain() }
+
+            financialAccountDao.deleteByUserId(userId)
+            financialAccountDao.insertAll(remoteFinancialAccounts.map { it.toEntity(userId) })
+
+            val storedActiveAccounts = financialAccountDao.getActiveAccounts(userId).map { it.toDomain() }
+            storedActiveAccounts.ifEmpty {
+                remoteDomainAccounts
+            }
         }
+
+        return when (remoteResult) {
+            is NetworkResult.Success -> remoteResult
+            is NetworkResult.Error -> {
+                val localFallbackAccounts = localFinancialAccounts.ifEmpty {
+                    financialAccountDao.getAccountsByUserId(userId).map { it.toDomain() }
+                }
+
+                if (localFallbackAccounts.isNotEmpty()) {
+                    NetworkResult.Success(localFallbackAccounts)
+                } else {
+                    remoteResult
+                }
+            }
+        }
+    }
+
 
     override suspend fun createFinancialAccount(
         name: String,
@@ -46,11 +79,11 @@ class FinancialAccountRepositoryImpl @Inject constructor(
         currentAmount: Double,
         institution: String?,
         creditLimit: Double?
-    ): NetworkResult<FinancialAccount> =
-        safeCall {
-            val userId = sessionRepository.getUserId()
-                ?: throw IllegalStateException("User ID not found in session")
+    ): NetworkResult<FinancialAccount> {
+        val userId = sessionRepository.getUserId()
+            ?: return NetworkResult.Error("User ID not found in session")
 
+        return safeCall {
             val request = CreateFinancialAccountRequestDto(
                 name = name,
                 accountType = accountType,
@@ -61,19 +94,29 @@ class FinancialAccountRepositoryImpl @Inject constructor(
                 isActive = true
             )
 
-            financialAccountFacadeService
+            val financialAccount = financialAccountFacadeService
                 .createFinancialAccount(
                     userId = userId,
                     request = request
                 )
                 .toDomain()
+
+            financialAccountDao.insert(financialAccount.toEntity(userId))
+            financialAccount
         }
-    override suspend fun disableFinancialAccount(accountId: Long): NetworkResult<FinancialAccount> =
-        safeCall {
-            val userId = sessionRepository.getUserId()
-                ?: throw IllegalStateException("User ID not found in session")
-            financialAccountFacadeService
+    }
+
+    override suspend fun disableFinancialAccount(accountId: Long): NetworkResult<FinancialAccount> {
+        val userId = sessionRepository.getUserId()
+            ?: return NetworkResult.Error("User ID not found in session")
+
+        return safeCall {
+            val financialAccount = financialAccountFacadeService
                 .disableFinancialAccount(userId = userId, accountId = accountId)
                 .toDomain()
+
+            financialAccountDao.insert(financialAccount.toEntity(userId))
+            financialAccount
         }
+    }
 }

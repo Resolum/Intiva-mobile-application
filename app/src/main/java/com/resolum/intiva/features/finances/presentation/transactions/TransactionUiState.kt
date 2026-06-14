@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.finances.presentation.transactions
 
 import com.resolum.intiva.core.common.state.UiState
+import com.resolum.intiva.features.finances.domain.models.SyncStatusSummary
 import com.resolum.intiva.features.finances.domain.models.Transaction
 import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
 
@@ -15,5 +16,6 @@ data class TransactionUiState(
     val state: UiState<Transaction> = UiState.Idle,
     val transactionsState: UiState<List<TransactionGroupByDate>> = UiState.Idle,
     val transactionDetailState: UiState<Transaction> = UiState.Idle,
+    val syncStatusSummary: SyncStatusSummary = SyncStatusSummary(),
     val navigateBack: Boolean = false
 )
