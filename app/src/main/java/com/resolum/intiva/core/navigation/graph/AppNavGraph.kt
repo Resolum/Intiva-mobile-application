@@ -13,6 +13,8 @@ import com.resolum.intiva.core.navigation.extensions.navigateSingleTop
 import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.core.navigation.routes.Screen
 import com.resolum.intiva.features.household.presentation.invitation.InvitationDetailScreen
+import com.resolum.intiva.features.iam.presentation.PrivacyPolicyScreen
+import com.resolum.intiva.features.iam.presentation.TermsAndConditionsScreen
 import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
@@ -91,13 +93,38 @@ fun AppNavGraph(
                         popUpTo = Screen.SignUp.route,
                     )
                 },
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToTermsAndConditions = {
+                    navController.navigate(Screen.TermsAndConditions.route)
+                },
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate(Screen.PrivacyPolicy.route)
+                },
                 onNavigateToLogin = {
                     navController.navigateAndClearBackStack(
                         route = Screen.SignIn.route,
                         popUpTo = Screen.SignUp.route,
                     )
                 },
+            )
+        }
+
+
+        composable(Screen.TermsAndConditions.route) {
+            TermsAndConditionsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
 

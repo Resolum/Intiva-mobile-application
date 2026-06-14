@@ -5,7 +5,7 @@ import com.resolum.intiva.features.household.domain.models.InvitationDetail
 import com.resolum.intiva.features.household.domain.repositories.InvitationRepository
 import jakarta.inject.Inject
 
-class GetInvitationByTokenUseCase @Inject constructor(
+class GetPublicInvitationUseCase @Inject constructor(
     private val invitationRepository: InvitationRepository
 ) {
     suspend operator fun invoke(token: String): NetworkResult<InvitationDetail> {

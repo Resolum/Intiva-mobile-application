@@ -39,6 +39,7 @@ fun SavingsGoalsScreen(
     onNavigateToCreate: (accountId: Long) -> Unit,
     onNavigateToDetail: (accountId: Long, goalId: Long) -> Unit,
     onNavigateToEdit: (accountId: Long, goalId: Long) -> Unit,
+    selectFamilyTab: Boolean = false,
     viewModel: SavingsGoalsViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -51,6 +52,12 @@ fun SavingsGoalsScreen(
     LaunchedEffect(Unit) {
         viewModel.refresh()
         profileViewModel.loadProfile()
+    }
+
+    LaunchedEffect(selectFamilyTab) {
+        if (selectFamilyTab) {
+            viewModel.onTabSelected(1)
+        }
     }
 
     Scaffold(

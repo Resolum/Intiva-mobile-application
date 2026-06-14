@@ -4,12 +4,14 @@ import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.household.domain.models.InvitationDetail
-import com.resolum.intiva.features.household.domain.usecase.AcceptInvitationUseCase
+import com.resolum.intiva.features.household.domain.usecase.AcceptInvitationByTokenUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetDeferredInvitationUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetInvitationByTokenUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetInvitationQrUseCase
+import com.resolum.intiva.features.household.domain.usecase.PersistDeferredInvitationUseCase
 import com.resolum.intiva.features.household.domain.usecase.RejectInvitationByTokenUseCase
 import com.resolum.intiva.features.household.domain.usecase.SendInvitationUseCase
+import com.resolum.intiva.features.household.domain.usecase.SendLinkInvitationUseCase
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,10 +24,12 @@ import javax.inject.Inject
 class InviteViewModel @Inject constructor(
     private val getInvitationQrUseCase: GetInvitationQrUseCase,
     private val sendInvitationUseCase: SendInvitationUseCase,
-    private val acceptInvitationUseCase: AcceptInvitationUseCase,
+    private val acceptInvitationByTokenUseCase: AcceptInvitationByTokenUseCase,
     private val getInvitationByTokenUseCase: GetInvitationByTokenUseCase,
     private val rejectInvitationByTokenUseCase: RejectInvitationByTokenUseCase,
     private val getDeferredInvitationUseCase: GetDeferredInvitationUseCase,
+    private val sendLinkInvitationUseCase: SendLinkInvitationUseCase,
+    private val persistDeferredInvitationUseCase: PersistDeferredInvitationUseCase,
     private val sessionRepository: SessionRepository
 ) : BaseViewModel() {
 
@@ -113,6 +117,46 @@ class InviteViewModel @Inject constructor(
     fun getInvitationLink(): String =
         (_uiState.value.qrState as? UiState.Success)?.data?.invitationLink ?: ""
 
+    fun generateLinkInvitation() {
+        safeLaunch {
+            val groupId = sessionRepository.getGroupId() ?: return@safeLaunch
+
+            _uiState.update { it.copy(linkInviteState = UiState.Loading) }
+
+            when (val result = sendLinkInvitationUseCase(groupId)) {
+                is NetworkResult.Success -> {
+                    _uiState.update {
+                        it.copy(linkInviteState = UiState.Success(result.data))
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update {
+                        it.copy(linkInviteState = UiState.Error(message = result.message))
+                    }
+                }
+            }
+        }
+    }
+
+    fun clearLinkInviteState() {
+        _uiState.update { it.copy(linkInviteState = UiState.Idle) }
+    }
+
+    fun persistDeferredInvitation(installId: String, token: String) {
+        safeLaunch {
+            _uiState.update { it.copy(persistDeferredState = UiState.Loading) }
+
+            when (val result = persistDeferredInvitationUseCase(installId, token)) {
+                is NetworkResult.Success -> {
+                    _uiState.update { it.copy(persistDeferredState = UiState.Success(Unit)) }
+                }
+                is NetworkResult.Error -> {
+                    _uiState.update { it.copy(persistDeferredState = UiState.Error(message = result.message)) }
+                }
+            }
+        }
+    }
+
     fun shareInvitation() {
         val link = getInvitationLink()
 
@@ -170,15 +214,9 @@ class InviteViewModel @Inject constructor(
 
     fun acceptInvite(token: String) {
         safeLaunch {
-            val detail = (_uiState.value.invitationDetail as? UiState.Success)?.data
-            if (detail == null) {
-                _uiState.update { it.copy(actionState = UiState.Error("No se encontró la invitación")) }
-                return@safeLaunch
-            }
-
             _uiState.update { it.copy(actionState = UiState.Loading) }
 
-            when (val result = acceptInvitationUseCase(detail.id)) {
+            when (val result = acceptInvitationByTokenUseCase(token)) {
                 is NetworkResult.Success -> {
                     _uiState.update { it.copy(actionState = UiState.Success("Invitación aceptada")) }
                 }
@@ -193,7 +231,8 @@ class InviteViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 qrState = UiState.Error(message = throwable.message ?: "Error", throwable = throwable),
-                isCreatingInvitation = false
+                isCreatingInvitation = false,
+                linkInviteState = UiState.Error(message = throwable.message ?: "Error", throwable = throwable)
             )
         }
     }

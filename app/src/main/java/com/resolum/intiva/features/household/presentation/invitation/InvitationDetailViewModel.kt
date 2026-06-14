@@ -3,9 +3,9 @@ package com.resolum.intiva.features.household.presentation.invitation
 import androidx.lifecycle.SavedStateHandle
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
-import com.resolum.intiva.features.household.domain.usecase.AcceptInvitationUseCase
+import com.resolum.intiva.features.household.domain.usecase.AcceptInvitationByTokenUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetInvitationByTokenUseCase
-import com.resolum.intiva.features.household.domain.usecase.RejectInvitationUseCase
+import com.resolum.intiva.features.household.domain.usecase.RejectInvitationByTokenUseCase
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,8 +17,8 @@ import javax.inject.Inject
 class InvitationDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getInvitationByTokenUseCase: GetInvitationByTokenUseCase,
-    private val acceptInvitationUseCase: AcceptInvitationUseCase,
-    private val rejectInvitationUseCase: RejectInvitationUseCase,
+    private val acceptInvitationByTokenUseCase: AcceptInvitationByTokenUseCase,
+    private val rejectInvitationByTokenUseCase: RejectInvitationByTokenUseCase,
     private val sessionRepository: SessionRepository
 ) : BaseViewModel() {
 
@@ -70,10 +70,10 @@ class InvitationDetailViewModel @Inject constructor(
         }
     }
 
-    fun acceptInvitation(invitationId: Long) {
+    fun acceptInvitation() {
         safeLaunch {
             _actionState.value = InvitationActionState.Loading
-            when (val result = acceptInvitationUseCase(invitationId)) {
+            when (val result = acceptInvitationByTokenUseCase(token)) {
                 is NetworkResult.Success -> {
                     _actionState.value = InvitationActionState.Success("Invitación aceptada con éxito")
                 }
@@ -84,10 +84,10 @@ class InvitationDetailViewModel @Inject constructor(
         }
     }
 
-    fun rejectInvitation(invitationId: Long) {
+    fun rejectInvitation() {
         safeLaunch {
             _actionState.value = InvitationActionState.Loading
-            when (val result = rejectInvitationUseCase(invitationId)) {
+            when (val result = rejectInvitationByTokenUseCase(token)) {
                 is NetworkResult.Success -> {
                     _actionState.value = InvitationActionState.Success("Invitación rechazada")
                 }

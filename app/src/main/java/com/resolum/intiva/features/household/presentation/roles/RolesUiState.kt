@@ -7,5 +7,6 @@ data class RolesUiState(
     val membersState: UiState<List<FamilyMember>> = UiState.Idle,
     val assignRoleState: UiState<FamilyMember> = UiState.Idle,
     val selectedRoleDescription: String = "",
+    val isCurrentUserAdmin: Boolean = false,
     val error: String? = null
 )

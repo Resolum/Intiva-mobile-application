@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -119,7 +120,11 @@ fun MainShell(
             composable(NavRoutes.FAMILY) {
                 FamilyScreen(
                     onInviteClick = { shellNavController.navigate(NavRoutes.INVITE_MEMBER) },
-                    onViewAllActivity = { shellNavController.navigate(NavRoutes.FAMILY_ROLES) }
+                    onViewAllActivity = { shellNavController.navigate(NavRoutes.FAMILY_ROLES) },
+                    onContributeClick = {
+                        shellNavController.currentBackStackEntry?.savedStateHandle?.set("selectFamilyTab", true)
+                        shellNavController.navigate(NavRoutes.SAVINGS_GOALS)
+                    }
                 )
             }
 
@@ -221,6 +226,15 @@ fun MainShell(
              * Savings Goals feature navigation.
              */
             composable(NavRoutes.SAVINGS_GOALS) {
+                val selectFamilyTab = shellNavController
+                    .previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.getStateFlow("selectFamilyTab", false)
+                    ?.collectAsState()
+                    ?.value == true
+                if (selectFamilyTab) {
+                    shellNavController.previousBackStackEntry?.savedStateHandle?.set("selectFamilyTab", false)
+                }
                 SavingsGoalsScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
                     onNavigateToCreate = { accountId ->
@@ -231,7 +245,8 @@ fun MainShell(
                     },
                     onNavigateToEdit = { accountId, goalId ->
                         shellNavController.navigate("savings_goal_edit/$goalId")
-                    }
+                    },
+                    selectFamilyTab = selectFamilyTab
                 )
             }
 

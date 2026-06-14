@@ -36,7 +36,9 @@ class RolesViewModel @Inject constructor(
 
             when (val result = getFamilyMembersUseCase(groupId)) {
                 is NetworkResult.Success -> {
-                    _uiState.update { it.copy(membersState = UiState.Success(result.data)) }
+                    val currentUserId = sessionRepository.getUserId()
+                    val isAdmin = result.data.any { it.userId == currentUserId && it.role == FamilyRole.ADMIN.name }
+                    _uiState.update { it.copy(membersState = UiState.Success(result.data), isCurrentUserAdmin = isAdmin) }
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(membersState = UiState.Error(message = result.message)) }
@@ -49,6 +51,11 @@ class RolesViewModel @Inject constructor(
         safeLaunch {
             val groupId = sessionRepository.getGroupId()
             if (groupId == null) return@safeLaunch
+
+            if (!_uiState.value.isCurrentUserAdmin) {
+                _uiState.update { it.copy(assignRoleState = UiState.Error("Solo el administrador puede modificar roles")) }
+                return@safeLaunch
+            }
 
             _uiState.update { it.copy(assignRoleState = UiState.Loading) }
 

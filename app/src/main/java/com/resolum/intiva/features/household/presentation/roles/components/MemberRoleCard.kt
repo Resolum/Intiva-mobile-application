@@ -30,7 +30,8 @@ fun MemberRoleCard(
     currentRole: String,
     onRoleSelected: (String) -> Unit,
     roleDescription: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEditable: Boolean = true
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -73,7 +74,8 @@ fun MemberRoleCard(
             RoleSelectorDropdown(
                 currentRole = currentRole,
                 onRoleSelected = onRoleSelected,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isEditable
             )
 
             if (roleDescription.isNotBlank()) {

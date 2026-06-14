@@ -10,5 +10,6 @@ data class FamilyUiState(
     val membersState: UiState<List<FamilyMember>> = UiState.Idle,
     val qrCodeState: UiState<QrCodeResult> = UiState.Idle,
     val scanResultState: UiState<String> = UiState.Idle,
+    val totalBalance: String = "S/ 0.00",
     val error: String? = null
 )
