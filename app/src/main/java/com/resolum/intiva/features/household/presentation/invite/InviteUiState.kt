@@ -14,6 +14,8 @@ data class InviteUiState(
     val error: String? = null,
     val invitationDetail: UiState<InvitationDetail> = UiState.Idle,
     val actionState: UiState<String> = UiState.Idle,
-    val deferredState: UiState<DeepLinkData> = UiState.Idle
+    val deferredState: UiState<DeepLinkData> = UiState.Idle,
+    val linkInviteState: UiState<String> = UiState.Idle,
+    val persistDeferredState: UiState<Unit> = UiState.Idle
 )
 

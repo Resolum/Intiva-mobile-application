@@ -3,6 +3,7 @@ package com.resolum.intiva.features.household.domain.repositories
 import com.resolum.intiva.core.deeplink.DeepLinkData
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.household.domain.models.Invitation
+import com.resolum.intiva.features.household.domain.models.InvitationDetail
 import com.resolum.intiva.features.household.domain.models.QrCodeResult
 
 interface InvitationRepository {
@@ -24,4 +25,10 @@ interface InvitationRepository {
     suspend fun getDeferredInvitation(installId: String): NetworkResult<DeepLinkData>
 
     suspend fun getInvitationQr(familyId: Long): NetworkResult<QrCodeResult>
+
+    suspend fun sendInvitationLink(familyId: Long, inviteeEmail: String? = null): NetworkResult<String>
+
+    suspend fun persistDeferredInvitation(installId: String, token: String): NetworkResult<Unit>
+
+    suspend fun getPublicInvitation(token: String): NetworkResult<InvitationDetail>
 }

@@ -85,7 +85,8 @@ import kotlinx.coroutines.launch
 fun FamilyScreen(
     viewModel: FamilyViewModel = hiltViewModel(),
     onInviteClick: () -> Unit = {},
-    onViewAllActivity: () -> Unit = {}
+    onViewAllActivity: () -> Unit = {},
+    onContributeClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -207,8 +208,8 @@ fun FamilyScreen(
                         item {
                             FamilyHeaderCard(
                                 groupName = family.name,
-                                totalBalance = "S/ 0.00",
-                                onContributeClick = {}
+                                totalBalance = uiState.totalBalance,
+                                onContributeClick = onContributeClick
                             )
                         }
 
