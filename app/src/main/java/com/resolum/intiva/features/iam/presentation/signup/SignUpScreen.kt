@@ -67,6 +67,7 @@ fun SignUpScreen(
     onSignUpSuccess: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
     onNavigateToTermsAndConditions: () -> Unit = {},
+    onNavigateToPrivacyPolicy: () -> Unit = {},
     showBackButton: Boolean = true,
     onNavigateToLogin: () -> Unit,
 ) {
@@ -184,9 +185,15 @@ fun SignUpScreen(
                         checked = termsAccepted,
                         onCheckedChange = { termsAccepted = it },
                         fullText = "Acepto los Términos y Condiciones y la Política de Privacidad de Intiva.",
-                        highlightedPhrases = listOf("Términos y Condiciones", "Política de Privacidad"),
-                        onLinkClick = {
-                            onNavigateToTermsAndConditions()
+                        highlightedPhrases = listOf(
+                            "Términos y Condiciones",
+                            "Política de Privacidad"
+                        ),
+                        onPhraseClick = { clickedText ->
+                            when (clickedText) {
+                                "Términos y Condiciones" -> onNavigateToTermsAndConditions()
+                                "Política de Privacidad" -> onNavigateToPrivacyPolicy()
+                            }
                         }
                     )
 
