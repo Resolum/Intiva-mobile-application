@@ -5,22 +5,21 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "categories",
+    tableName = "financial_accounts",
     indices = [
-        Index(value = ["ownerType", "ownerId", "type"]),
+        Index(value = ["userId"]),
         Index(value = ["isActive"])
     ]
 )
-data class CategoryEntity(
+data class FinancialAccountEntity(
     @PrimaryKey
     val id: Long,
+    val userId: Long,
     val name: String,
-    val ownerType: String,
-    val ownerId: Long,
-    val groupId: Long?,
-    val type: String,
-    val description: String,
-    val color: String,
-    val icon: String,
+    val accountType: String,
+    val currencyCode: String,
+    val currentAmount: Double,
+    val institution: String?,
+    val creditLimit: Double?,
     val isActive: Boolean
 )
