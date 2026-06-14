@@ -10,6 +10,7 @@ import com.resolum.intiva.features.household.domain.usecase.GetFamilyByIdUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetFamilyMembersUseCase
 import com.resolum.intiva.features.household.domain.usecase.GetInvitationQrUseCase
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
+import com.resolum.intiva.features.savings.domain.repositories.SavingGoalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,8 @@ class FamilyViewModel @Inject constructor(
     private val createFamilyUseCase: CreateFamilyUseCase,
     private val getInvitationQrUseCase: GetInvitationQrUseCase,
     private val acceptInvitationByTokenUseCase: AcceptInvitationByTokenUseCase,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val savingGoalRepository: SavingGoalRepository
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(FamilyUiState())
@@ -60,6 +62,7 @@ class FamilyViewModel @Inject constructor(
                     _uiState.update { it.copy(scanResultState = UiState.Success("Te uniste al grupo exitosamente")) }
                     loadFamily()
                     loadMembers()
+                    loadBalance()
                 }
                 is NetworkResult.Error -> {
                     val message = when (result.code) {
@@ -90,6 +93,7 @@ class FamilyViewModel @Inject constructor(
             when (val result = getFamilyByIdUseCase(groupId)) {
                 is NetworkResult.Success -> {
                     _uiState.update { it.copy(familyState = UiState.Success(result.data)) }
+                    loadBalance()
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(familyState = UiState.Error(message = result.message)) }
@@ -119,6 +123,22 @@ class FamilyViewModel @Inject constructor(
         }
     }
 
+    private fun loadBalance() {
+        safeLaunch {
+            val groupId = sessionRepository.getGroupId() ?: return@safeLaunch
+
+            when (val result = savingGoalRepository.getGroupSavingGoals(groupId.toString())) {
+                is NetworkResult.Success -> {
+                    val total = result.data.sumOf { it.currentAmount.toDouble() }
+                    val formatted = "S/ ${"%.2f".format(total)}"
+                    _uiState.update { it.copy(totalBalance = formatted) }
+                }
+                is NetworkResult.Error -> {
+                }
+            }
+        }
+    }
+
     fun createFamily(name: String, description: String) {
         safeLaunch {
             _uiState.update { it.copy(familyState = UiState.Loading) }
@@ -128,6 +148,7 @@ class FamilyViewModel @Inject constructor(
                     sessionRepository.saveGroupId(result.data.id)
                     _uiState.update { it.copy(familyState = UiState.Success(result.data)) }
                     loadMembers()
+                    loadBalance()
                 }
                 is NetworkResult.Error -> {
                     _uiState.update { it.copy(familyState = UiState.Error(message = result.message)) }

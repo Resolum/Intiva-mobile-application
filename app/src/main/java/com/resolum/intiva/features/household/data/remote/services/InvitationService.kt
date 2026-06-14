@@ -4,8 +4,12 @@ import com.resolum.intiva.features.household.data.remote.models.CreateQrInvitati
 import com.resolum.intiva.features.household.data.remote.models.DeferredInvitationResponseDto
 import com.resolum.intiva.features.household.data.remote.models.InvitationRejectResponseDto
 import com.resolum.intiva.features.household.data.remote.models.InvitationResponseDto
+import com.resolum.intiva.features.household.data.remote.models.LinkInvitationResponseDto
+import com.resolum.intiva.features.household.data.remote.models.PersistDeferredInvitationRequestDto
+import com.resolum.intiva.features.household.data.remote.models.PublicInvitationResponseDto
 import com.resolum.intiva.features.household.data.remote.models.QrCodeResponseDto
 import com.resolum.intiva.features.household.data.remote.models.SendInvitationRequestDto
+import com.resolum.intiva.features.household.data.remote.models.SendLinkInvitationRequestDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
@@ -56,12 +60,12 @@ interface InvitationService {
         @Path("invitationId") invitationId: Long
     ): InvitationResponseDto
 
-    @PATCH("api/v1/invitations/{token}/accept")
+    @PATCH("invitations/{token}/accept")
     suspend fun acceptInvitationByToken(
         @Path("token") token: String
     ): InvitationResponseDto
 
-    @PATCH("api/v1/invitations/{token}/reject")
+    @PATCH("invitations/{token}/reject")
     suspend fun rejectInvitationByToken(
         @Path("token") token: String
     ): InvitationRejectResponseDto
@@ -75,4 +79,20 @@ interface InvitationService {
     suspend fun getInvitationQr(
         @Path("familyId") familyId: Long
     ): QrCodeResponseDto
+
+    @POST("users/{userId}/invitations/link")
+    suspend fun sendLinkInvitation(
+        @Path("userId") userId: Long,
+        @Body body: SendLinkInvitationRequestDto
+    ): LinkInvitationResponseDto
+
+    @POST("invitations/deferred")
+    suspend fun persistDeferredInvitation(
+        @Body body: PersistDeferredInvitationRequestDto
+    )
+
+    @GET("invitations/public/{token}")
+    suspend fun getPublicInvitation(
+        @Path("token") token: String
+    ): PublicInvitationResponseDto
 }

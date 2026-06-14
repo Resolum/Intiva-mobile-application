@@ -8,8 +8,12 @@ import com.resolum.intiva.features.household.data.remote.models.FamilyMemberResp
 import com.resolum.intiva.features.household.data.remote.models.FamilyResponseDto
 import com.resolum.intiva.features.household.data.remote.models.InvitationRejectResponseDto
 import com.resolum.intiva.features.household.data.remote.models.InvitationResponseDto
+import com.resolum.intiva.features.household.data.remote.models.LinkInvitationResponseDto
+import com.resolum.intiva.features.household.data.remote.models.PersistDeferredInvitationRequestDto
+import com.resolum.intiva.features.household.data.remote.models.PublicInvitationResponseDto
 import com.resolum.intiva.features.household.data.remote.models.QrCodeResponseDto
 import com.resolum.intiva.features.household.data.remote.models.SendInvitationRequestDto
+import com.resolum.intiva.features.household.data.remote.models.SendLinkInvitationRequestDto
 import com.resolum.intiva.features.household.data.remote.services.FamilyMemberService
 import com.resolum.intiva.features.household.data.remote.services.FamilyService
 import com.resolum.intiva.features.household.data.remote.services.InvitationService
@@ -69,4 +73,13 @@ class FamilyFacadeService @Inject constructor(
 
     suspend fun getInvitationQr(familyId: Long): QrCodeResponseDto =
         invitationService.getInvitationQr(familyId)
+
+    suspend fun sendLinkInvitation(userId: Long, request: SendLinkInvitationRequestDto): LinkInvitationResponseDto =
+        invitationService.sendLinkInvitation(userId, request)
+
+    suspend fun persistDeferredInvitation(request: PersistDeferredInvitationRequestDto) =
+        invitationService.persistDeferredInvitation(request)
+
+    suspend fun getPublicInvitation(token: String): PublicInvitationResponseDto =
+        invitationService.getPublicInvitation(token)
 }

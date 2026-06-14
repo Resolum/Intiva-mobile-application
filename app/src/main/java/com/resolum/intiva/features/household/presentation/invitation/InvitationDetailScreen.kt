@@ -138,7 +138,7 @@ fun InvitationDetailScreen(
 
                     if (state.isUserLoggedIn) {
                         AcceptInvitationButton(
-                            onClick = { viewModel.acceptInvitation(invitation.id) }
+                            onClick = { viewModel.acceptInvitation() }
                         )
 
                         Spacer(Modifier.height(20.dp))
@@ -151,7 +151,7 @@ fun InvitationDetailScreen(
                             modifier = Modifier
                                 .padding(8.dp)
                                 .clickable(enabled = !isLoading) {
-                                    viewModel.rejectInvitation(invitation.id)
+                                    viewModel.rejectInvitation()
                                 }
                         )
                     } else {

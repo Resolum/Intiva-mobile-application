@@ -84,7 +84,8 @@ fun FamilyRolesScreen(
                                 onRoleSelected = { role ->
                                     viewModel.assignRole(member.id, role)
                                 },
-                                roleDescription = viewModel.getRoleDescription(member.role)
+                                roleDescription = viewModel.getRoleDescription(member.role),
+                                isEditable = uiState.isCurrentUserAdmin
                             )
                         }
                     }
