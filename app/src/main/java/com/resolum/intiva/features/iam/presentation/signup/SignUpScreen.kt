@@ -66,6 +66,9 @@ fun SignUpScreen(
     viewModel: SignUpViewModel = hiltViewModel(),
     onSignUpSuccess: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
+    onNavigateToTermsAndConditions: () -> Unit = {},
+    onNavigateToPrivacyPolicy: () -> Unit = {},
+    showBackButton: Boolean = true,
     onNavigateToLogin: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,7 +92,11 @@ fun SignUpScreen(
         ) {
             Spacer(Modifier.height(56.dp))
 
-            IntivaBackButton(onClick = onNavigateBack)
+            if (showBackButton) {
+                IntivaBackButton(onClick = onNavigateBack)
+            } else {
+                Spacer(Modifier.height(40.dp))
+            }
 
             Spacer(Modifier.height(28.dp))
 
@@ -178,10 +185,16 @@ fun SignUpScreen(
                         checked = termsAccepted,
                         onCheckedChange = { termsAccepted = it },
                         fullText = "Acepto los Términos y Condiciones y la Política de Privacidad de Intiva.",
-                        highlightedPhrases = listOf("Términos y Condiciones", "Política de Privacidad"),
-                        onLinkClick = {
-
-                        },
+                        highlightedPhrases = listOf(
+                            "Términos y Condiciones",
+                            "Política de Privacidad"
+                        ),
+                        onPhraseClick = { clickedText ->
+                            when (clickedText) {
+                                "Términos y Condiciones" -> onNavigateToTermsAndConditions()
+                                "Política de Privacidad" -> onNavigateToPrivacyPolicy()
+                            }
+                        }
                     )
 
                     Spacer(Modifier.height(28.dp))
