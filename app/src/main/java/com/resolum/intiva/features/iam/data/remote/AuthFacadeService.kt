@@ -1,5 +1,7 @@
 package com.resolum.intiva.features.iam.data.remote
 
+import com.resolum.intiva.features.iam.data.remote.models.SignInRequestDto
+import com.resolum.intiva.features.iam.data.remote.models.SignInResponseDto
 import com.resolum.intiva.features.iam.data.remote.models.SignUpRequestDto
 import com.resolum.intiva.features.iam.data.remote.models.SignUpResponseDto
 import com.resolum.intiva.features.iam.data.remote.services.AuthService
@@ -17,21 +19,20 @@ class AuthFacadeService @Inject constructor(
 ) {
 
     /**
-     * Registers a new user with the provided sign-up information.
+     * Signs up a new user with the provided [SignUpRequestDto] and returns a [SignUpResponseDto]
+     * containing the result of the sign-up operation.
      *
-     * @param dto The data transfer object containing the user's sign-up information.
-     * @return A [SignUpResponseDto] containing the result of the sign-up operation.
-     * @throws Exception if the response body is empty or if the HTTP request fails.
+     * @param request The sign-up request containing the user's email and password.
+     * @return A [SignUpResponseDto] with the result of the sign-up operation.
      */
-    suspend fun signUp(
-        dto: SignUpRequestDto
-    ) : SignUpResponseDto {
-        val response = authService.signUp(dto)
+    suspend fun signUp(request: SignUpRequestDto): SignUpResponseDto = authService.signUp(request)
 
-        if (response.isSuccessful) {
-            return response.body() ?: throw Exception("Empty response body")
-        } else {
-            throw retrofit2.HttpException(response)
-        }
-    }
+    /**
+     * Signs in an existing user with the provided [SignInRequestDto] and returns a [SignInResponseDto]
+     * containing the result of the sign-in operation, including authentication tokens if successful.
+     *
+     * @param request The sign-in request containing the user's email and password.
+     * @return A [SignInResponseDto] with the result of the sign-in operation.
+     */
+    suspend fun signIn(request: SignInRequestDto): SignInResponseDto = authService.signIn(request)
 }

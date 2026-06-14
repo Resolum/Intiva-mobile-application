@@ -1,0 +1,111 @@
+name: Intiva Firebase App Distribution
+
+on:
+  push:
+    branches:
+      - 'release/**'
+  workflow_dispatch:
+
+jobs:
+  distribute:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Missing GOOGLE_SERVICES_JSON repository secret."
+            exit 1
+          fi
+          echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          jq empty app/google-services.json
+
+      - name: Create Firebase service account file
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "Missing FIREBASE_SERVICE_ACCOUNT repository secret."
+            exit 1
+          fi
+          echo "$FIREBASE_SERVICE_ACCOUNT" > firebase-service-account.json
+          jq empty firebase-service-account.json
+
+      - name: Set Firebase credentials
+        run: |
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-service-account.json" >> $GITHUB_ENV
+
+      - name: Decode and create keystore
+        env:
+          KEYSTORE_BASE: ${{ secrets.KEYSTORE_BASE }}
+        run: |
+          if [ -z "$KEYSTORE_BASE" ]; then
+            echo "Missing KEYSTORE_BASE repository secret."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE" | base64 --decode > "$RUNNER_TEMP/intiva-release.jks"
+          echo "KEYSTORE_FILE_PATH=$RUNNER_TEMP/intiva-release.jks" >> $GITHUB_ENV
+          echo "KEYSTORE_PATH=$RUNNER_TEMP/intiva-release.jks" >> $GITHUB_ENV
+
+      - name: Validate release keystore
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          for secret_name in KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!secret_name}" ]; then
+              echo "Missing $secret_name repository secret."
+              exit 1
+            fi
+          done
+
+          keytool -list \
+            -keystore "$KEYSTORE_PATH" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS" > /dev/null
+
+      - name: Set app version
+        run: |
+          RAW_VERSION="${GITHUB_REF_NAME#release/}"
+
+          if [[ -z "$RAW_VERSION" ]]; then
+            RAW_VERSION="1.0.0"
+          fi
+
+          VERSION_NAME="${RAW_VERSION#v}"
+          VERSION_CODE="${GITHUB_RUN_NUMBER}"
+
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "Version: $VERSION_NAME ($VERSION_CODE)"
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Upload release to Firebase App Distribution
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew appDistributionUploadRelease

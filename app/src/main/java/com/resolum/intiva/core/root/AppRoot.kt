@@ -1,41 +1,91 @@
 package com.resolum.intiva.core.root
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import android.content.Context
+import android.provider.Settings
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
-import com.resolum.intiva.features.iam.presentation.SignUpScreen
-import com.resolum.intiva.features.iam.presentation.TermsAndConditionsScreen
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
+import com.resolum.intiva.core.deeplink.DeepLinkData
+import com.resolum.intiva.core.deeplink.PendingDeepLink
+import com.resolum.intiva.core.fcm.permissions.NotificationPermissionEffect
+import com.resolum.intiva.core.navigation.graph.AppNavGraph
+import com.resolum.intiva.core.ui.theme.IntivaTheme
+import com.resolum.intiva.features.household.presentation.invitation.InviteBottomSheet
+import com.resolum.intiva.features.household.presentation.invite.InviteViewModel
 
-/** The root composable of the app, setting up the main scaffold and navigation. */
 @Composable
 fun AppRoot() {
-    var showTermsAndConditions by remember { mutableStateOf(false) }
+    val navController = rememberNavController()
+    val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val inviteViewModel: InviteViewModel = hiltViewModel()
 
-    Scaffold(
-        snackbarHost = { IntivaSnackBarHost() }
-    ) { padding ->
+    var deepLinkInvite by remember { mutableStateOf<DeepLinkData?>(null) }
 
-        if (showTermsAndConditions) {
-            TermsAndConditionsScreen(
-                onNavigateBack = {
-                    showTermsAndConditions = false
-                }
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val isFirstLaunch = prefs.getBoolean("first_launch", true)
+
+        if (isFirstLaunch) {
+            val installId = Settings.Secure.getString(
+                context.contentResolver,
+                Settings.Secure.ANDROID_ID
             )
-        } else {
-            SignUpScreen(
-                modifier = Modifier.padding(padding),
-                showBackButton = false,
-                onNavigateToTermsAndConditions = {
-                    showTermsAndConditions = true
-                }
-            ) {
+            if (installId != null) {
+                inviteViewModel.loadDeferredInvitation(installId)
             }
+            prefs.edit().putBoolean("first_launch", false).apply()
         }
+    }
+
+    LaunchedEffect(Unit) {
+        if (PendingDeepLink.data != null) {
+            deepLinkInvite = PendingDeepLink.data
+            PendingDeepLink.data = null
+        }
+    }
+
+    LaunchedEffect(inviteViewModel.uiState.value.deferredState) {
+        val state = inviteViewModel.uiState.value.deferredState
+        if (state is com.resolum.intiva.core.common.state.UiState.Success) {
+            deepLinkInvite = state.data
+        }
+    }
+
+    IntivaTheme {
+        NotificationPermissionEffect()
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            AppNavGraph(navController = navController)
+
+            SnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+    }
+
+    deepLinkInvite?.let { invite ->
+        InviteBottomSheet(
+            token = invite.token,
+            viewModel = inviteViewModel,
+            groupName = invite.groupName,
+            inviterName = invite.inviterName,
+            onDismiss = { deepLinkInvite = null },
+            onAccepted = { deepLinkInvite = null },
+            onDeclined = { deepLinkInvite = null }
+        )
     }
 }
