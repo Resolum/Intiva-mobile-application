@@ -1,15 +1,14 @@
 package com.resolum.intiva.core.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -18,7 +17,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resolum.intiva.core.ui.theme.IntivaColors
@@ -31,7 +29,8 @@ import com.resolum.intiva.core.ui.theme.IntivaColors
  * @param modifier Optional [Modifier] for styling.
  * @param fullText The full text to display next to the checkbox.
  * @param highlightedPhrases List of phrases in [fullText] to highlight and make clickable.
- * @param onLinkClick Optional callback when a highlighted phrase is clicked.
+ * @param onLinkClick Optional legacy callback when a highlighted phrase is clicked.
+ * @param onPhraseClick Optional callback that receives the clicked highlighted phrase.
  */
 @Composable
 fun IntivaTermsCheckbox(
@@ -41,31 +40,36 @@ fun IntivaTermsCheckbox(
     fullText: String = "Acepto los Términos y Condiciones y la Política de Privacidad de Intiva.",
     highlightedPhrases: List<String> = listOf("Términos y Condiciones", "Política de Privacidad"),
     onLinkClick: (() -> Unit)? = null,
+    onPhraseClick: ((String) -> Unit)? = null,
 ) {
     val annotated = buildAnnotatedString {
-        var cursor = 0
-        val remaining = fullText
+        append(fullText)
 
-        val sortedMatches = highlightedPhrases
-            .flatMap { phrase ->
-                val indices = mutableListOf<Pair<Int, String>>()
-                var idx = remaining.indexOf(phrase, cursor)
-                while (idx != -1) {
-                    indices.add(idx to phrase)
-                    idx = remaining.indexOf(phrase, idx + 1)
-                }
-                indices
-            }
-            .sortedBy { it.first }
+        highlightedPhrases.forEach { phrase ->
+            var startIndex = fullText.indexOf(phrase)
 
-        for ((start, phrase) in sortedMatches) {
-            if (start > cursor) append(remaining.substring(cursor, start))
-            withStyle(SpanStyle(color = IntivaColors.TextLink, fontWeight = FontWeight.SemiBold)) {
-                append(phrase)
+            while (startIndex >= 0) {
+                val endIndex = startIndex + phrase.length
+
+                addStyle(
+                    style = SpanStyle(
+                        color = IntivaColors.TextLink,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    start = startIndex,
+                    end = endIndex
+                )
+
+                addStringAnnotation(
+                    tag = "LEGAL_LINK",
+                    annotation = phrase,
+                    start = startIndex,
+                    end = endIndex
+                )
+
+                startIndex = fullText.indexOf(phrase, endIndex)
             }
-            cursor = start + phrase.length
         }
-        if (cursor < remaining.length) append(remaining.substring(cursor))
     }
 
     Row(
@@ -85,18 +89,26 @@ fun IntivaTermsCheckbox(
 
         Spacer(Modifier.width(10.dp))
 
-        Text(
+        ClickableText(
             text = annotated,
             style = TextStyle(
                 fontSize = 13.sp,
                 color = IntivaColors.TextSecondary,
                 lineHeight = 18.sp,
             ),
-            modifier = Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = { onLinkClick?.invoke() },
-            ),
+            onClick = { offset ->
+                annotated
+                    .getStringAnnotations(
+                        tag = "LEGAL_LINK",
+                        start = offset,
+                        end = offset
+                    )
+                    .firstOrNull()
+                    ?.let { annotation ->
+                        onPhraseClick?.invoke(annotation.item)
+                        onLinkClick?.invoke()
+                    }
+            }
         )
     }
 }
