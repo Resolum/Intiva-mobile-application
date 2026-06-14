@@ -1,6 +1,9 @@
 package com.resolum.intiva.features.finances.data.sync
 
+import android.util.Log
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import com.resolum.intiva.features.finances.data.local.dao.PendingTransactionDao
 import com.resolum.intiva.features.finances.data.local.entities.PendingTransactionEntity
 import com.resolum.intiva.features.finances.data.local.mappers.toRegisterTransactionRequestDto
@@ -19,6 +22,8 @@ class TransactionOutboxSyncer @Inject constructor(
     suspend fun syncPending(): SyncBatchResult {
         val pendingTransactions = pendingTransactionDao.getByStatus(SyncStatus.PENDING)
         var syncedCount = 0
+
+        Log.i(TAG, "Pending transactions count=${pendingTransactions.size}")
 
         pendingTransactions.forEach { transaction ->
             when (sync(transaction)) {
@@ -43,12 +48,16 @@ class TransactionOutboxSyncer @Inject constructor(
                 request = transaction.toRegisterTransactionRequestDto()
             )
         }.getOrElse {
+            Log.w(TAG, "Sync exception id=${transaction.id}: ${it.message}", it)
             return SyncItemResult.RetryLater
         }
+
+        Log.i(TAG, "Sync response id=${transaction.id} http=${response.code()}")
 
         return when {
             response.isSuccessful -> {
                 pendingTransactionDao.updateStatus(transaction.id, SyncStatus.SYNCED)
+                Log.i(TAG, "Marked SYNCED id=${transaction.id}")
                 SyncItemResult.Synced
             }
 
@@ -58,26 +67,78 @@ class TransactionOutboxSyncer @Inject constructor(
                     id = transaction.id,
                     reason = reason
                 )
+                Log.i(TAG, "Marked FAILED conflict id=${transaction.id} reason=$reason")
+                SyncItemResult.FailedConflict(reason)
+            }
+
+            response.code() in CLIENT_ERROR_STATUS_CODES -> {
+                val reason = response.errorBody()?.string().toSyncFailureReason(response.code())
+                pendingTransactionDao.markFailed(
+                    id = transaction.id,
+                    reason = reason
+                )
+                Log.i(TAG, "Marked FAILED client id=${transaction.id} reason=$reason")
                 SyncItemResult.FailedConflict(reason)
             }
 
             else -> {
+                Log.i(TAG, "Retry later id=${transaction.id} http=${response.code()}")
                 SyncItemResult.RetryLater
             }
         }
     }
 
     private fun String?.toConflictReason(): String {
-        if (isNullOrBlank()) return DEFAULT_CONFLICT_REASON
+        return extractBackendMessage(DEFAULT_CONFLICT_REASON)
+    }
+
+    private fun String?.toSyncFailureReason(statusCode: Int): String {
+        return extractBackendMessage("No se pudo sincronizar la transaccion. HTTP $statusCode")
+    }
+
+    private fun String?.extractBackendMessage(defaultMessage: String): String {
+        if (isNullOrBlank()) return defaultMessage
+
+        val responseMessage = runCatching {
+            Gson().fromJson(this, ResponseDto::class.java)?.message
+        }.getOrNull()
+
+        if (!responseMessage.isNullOrBlank()) return responseMessage
 
         return runCatching {
-            Gson().fromJson(this, ResponseDto::class.java)?.message
-        }.getOrNull()?.takeIf { it.isNotBlank() } ?: DEFAULT_CONFLICT_REASON
+            val json = JsonParser.parseString(this)
+            json.findMessage()
+        }.getOrNull()?.takeIf { it.isNotBlank() } ?: defaultMessage
+    }
+
+    private fun JsonElement.findMessage(): String? {
+        if (isJsonPrimitive && asJsonPrimitive.isString) return asString
+        if (!isJsonObject) return null
+
+        val jsonObject = asJsonObject
+        val directMessage = MESSAGE_KEYS.firstNotNullOfOrNull { key ->
+            jsonObject.get(key)?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+        }
+        if (!directMessage.isNullOrBlank()) return directMessage
+
+        val firstNestedMessage = jsonObject.entrySet().firstNotNullOfOrNull { (_, value) ->
+            when {
+                value.isJsonArray -> value.asJsonArray.firstOrNull()?.findMessage()
+                value.isJsonObject -> value.findMessage()
+                value.isJsonPrimitive && value.asJsonPrimitive.isString -> value.asString
+                else -> null
+            }
+        }
+
+        return firstNestedMessage
     }
 
     private companion object {
+        const val TAG = "TransactionSync"
         const val CONFLICT_STATUS_CODE = 409
         const val DEFAULT_CONFLICT_REASON = "No se pudo sincronizar por un conflicto con la cuenta familiar."
+        val CLIENT_ERROR_STATUS_CODES = 400..499
+        val MESSAGE_KEYS = listOf("message", "error", "detail", "details", "reason")
     }
 }
 

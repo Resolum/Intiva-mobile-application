@@ -23,13 +23,13 @@ interface TransactionService {
      *
      * @param userId The ID of the user for whom the transaction is being registered.
      * @param body The request body containing the details of the transaction to be registered.
-     * @return A [TransactionWithDesignResponseDto] containing the details of the registered transaction if successful, or an error response if not.
+     * @return A [Response] with the HTTP status of the transaction registration operation.
      */
     @POST("users/{userId}/transactions")
     suspend fun registerIndividualTransaction(
         @Path("userId") userId: Long,
         @Body body: RegisterTransactionRequestDto,
-    ) : Response<TransactionResponseDto>
+    ) : Response<Unit>
 
     /**
      * Makes a GET request to the "transactions" endpoint to retrieve a list of transactions for a specific owner, optionally filtered by transaction type.

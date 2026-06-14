@@ -4,8 +4,13 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.resolum.intiva.core.fcm.notifications.DefaultNotificationChannelManager
+import com.resolum.intiva.core.fcm.notifications.NotificationDeviceRegister
 import com.resolum.intiva.features.finances.data.sync.TransactionSyncScheduler
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -23,6 +28,11 @@ class MyApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var transactionSyncScheduler: TransactionSyncScheduler
 
+    @Inject
+    lateinit var notificationDeviceRegister: NotificationDeviceRegister
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -32,5 +42,8 @@ class MyApplication : Application(), Configuration.Provider {
         super.onCreate()
         defaultNotificationChannelManager.createDefaultChannel()
         transactionSyncScheduler.enqueue()
+        applicationScope.launch {
+            notificationDeviceRegister.registerCurrentSessionDevice()
+        }
     }
 }

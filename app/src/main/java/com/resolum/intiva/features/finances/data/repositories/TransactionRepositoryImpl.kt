@@ -4,9 +4,13 @@ import com.resolum.intiva.core.data.repository.BaseRepository
 import com.resolum.intiva.core.network.ConnectivityChecker
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.finances.data.local.dao.PendingTransactionDao
+import com.resolum.intiva.features.finances.data.local.dao.TransactionDao
+import com.resolum.intiva.features.finances.data.local.mappers.toEntities
 import com.resolum.intiva.features.finances.data.local.mappers.toAccountType
 import com.resolum.intiva.features.finances.data.local.mappers.toDomainTransaction
 import com.resolum.intiva.features.finances.data.local.mappers.toPendingEntity
+import com.resolum.intiva.features.finances.data.local.mappers.toTransaction
+import com.resolum.intiva.features.finances.data.local.mappers.toTransactionGroups
 import com.resolum.intiva.features.finances.data.remote.TransactionFacadeService
 import com.resolum.intiva.features.finances.data.remote.mappers.toDomain
 import com.resolum.intiva.features.finances.data.sync.SyncItemResult
@@ -33,6 +37,7 @@ class TransactionRepositoryImpl @Inject constructor(
     private val transactionFacadeService: TransactionFacadeService,
     private val sessionRepository: SessionRepository,
     private val pendingTransactionDao: PendingTransactionDao,
+    private val transactionDao: TransactionDao,
     private val connectivityChecker: ConnectivityChecker,
     private val transactionOutboxSyncer: TransactionOutboxSyncer,
     private val transactionSyncScheduler: TransactionSyncScheduler
@@ -81,28 +86,61 @@ class TransactionRepositoryImpl @Inject constructor(
      * @return A [NetworkResult] containing a list of [TransactionGroupByDate] if successful, or an error if not.
      */
     override suspend fun getTransactionsByOwnerId(transactionType: String?): NetworkResult<List<TransactionGroupByDate>> {
-        val result = safeCall {
+        val userId = sessionRepository.getUserId()
+            ?: return NetworkResult.Error("User ID not found in session")
 
-            val userId = sessionRepository.getUserId()
-                ?: throw IllegalStateException("User ID not found in session")
+        val localTransactions = transactionDao
+            .getTransactions(ownerId = userId, transactionType = transactionType)
+            .toTransactionGroups()
 
+        if (!connectivityChecker.isConnected()) {
+            return if (localTransactions.isNotEmpty()) {
+                NetworkResult.Success(localTransactions)
+            } else {
+                NetworkResult.Error("No internet connection")
+            }
+        }
+
+        val remoteResult = safeCall {
             val response = transactionFacadeService.getTransactionsByOwnerId(
                 ownerId = userId,
                 transactionType = transactionType
             )
 
-            response.data.map { it.toDomain() }
+            val remoteGroups = response.data.map { it.toDomain() }
+            transactionDao.deleteByOwnerAndType(ownerId = userId, transactionType = transactionType)
+            transactionDao.insertAll(remoteGroups.toEntities())
+
+            transactionDao
+                .getTransactions(ownerId = userId, transactionType = transactionType)
+                .toTransactionGroups()
         }
 
-        return result
+        return when (remoteResult) {
+            is NetworkResult.Success -> remoteResult
+            is NetworkResult.Error -> {
+                if (localTransactions.isNotEmpty()) {
+                    NetworkResult.Success(localTransactions)
+                } else {
+                    remoteResult
+                }
+            }
+        }
     }
 
     override suspend fun getTransactionById(id: Long): NetworkResult<Transaction> {
-        val result = safeCall {
+        val remoteResult = safeCall {
             transactionFacadeService.getTransactionById(id).toDomain()
         }
 
-        return result
+        return when (remoteResult) {
+            is NetworkResult.Success -> remoteResult
+            is NetworkResult.Error -> {
+                transactionDao.getById(id)?.let { localTransaction ->
+                    NetworkResult.Success(localTransaction.toTransaction())
+                } ?: remoteResult
+            }
+        }
     }
 
     /**
@@ -111,19 +149,41 @@ class TransactionRepositoryImpl @Inject constructor(
      * @return A [NetworkResult] containing a list of [TransactionGroupByDate] representing the latest transactions if successful, or an error if not.
      */
     override suspend fun getLastestTransactionsByOwnerId(): NetworkResult<List<TransactionGroupByDate>> {
-        val result = safeCall {
+        val userId = sessionRepository.getUserId()
+            ?: return NetworkResult.Error("User ID not found in session")
 
-            val userId = sessionRepository.getUserId()
-                ?: throw IllegalStateException("User ID not found in session")
+        val localTransactions = transactionDao
+            .getLatestTransactions(ownerId = userId, limit = LATEST_TRANSACTION_LIMIT)
+            .toTransactionGroups()
 
+        if (!connectivityChecker.isConnected()) {
+            return if (localTransactions.isNotEmpty()) {
+                NetworkResult.Success(localTransactions)
+            } else {
+                NetworkResult.Error("No internet connection")
+            }
+        }
+
+        val remoteResult = safeCall {
             val response = transactionFacadeService.getLastestTransactionByOwnerId(
                 ownerId = userId
             )
 
-            response.data.map { it.toDomain() }
+            val remoteGroups = response.data.map { it.toDomain() }
+            transactionDao.insertAll(remoteGroups.toEntities())
+            remoteGroups
         }
 
-        return result
+        return when (remoteResult) {
+            is NetworkResult.Success -> remoteResult
+            is NetworkResult.Error -> {
+                if (localTransactions.isNotEmpty()) {
+                    NetworkResult.Success(localTransactions)
+                } else {
+                    remoteResult
+                }
+            }
+        }
     }
 
     override fun observeSyncStatusSummary(): Flow<SyncStatusSummary> {
@@ -138,6 +198,10 @@ class TransactionRepositoryImpl @Inject constructor(
                 latestConflictReason = latestConflictReason
             )
         }
+    }
+
+    private companion object {
+        const val LATEST_TRANSACTION_LIMIT = 10
     }
 
 }

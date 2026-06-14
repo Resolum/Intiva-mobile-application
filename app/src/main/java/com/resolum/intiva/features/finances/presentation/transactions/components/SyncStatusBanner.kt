@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,21 +23,12 @@ fun SyncStatusBanner(
     summary: SyncStatusSummary,
     modifier: Modifier = Modifier
 ) {
-    if (summary.pendingCount == 0 && summary.failedCount == 0) return
+    if (summary.pendingCount == 0) return
 
-    val hasFailure = summary.failedCount > 0
-    val backgroundColor = if (hasFailure) Color(0xFFFFF1F1) else Color(0xFFEFF7FF)
-    val contentColor = if (hasFailure) Color(0xFFB3261E) else IntivaColors.PrimaryBrand
-    val title = if (hasFailure) {
-        "${summary.failedCount} operacion(es) no se pudieron sincronizar"
-    } else {
-        "${summary.pendingCount} operacion(es) pendientes de sincronizar"
-    }
-    val detail = if (hasFailure) {
-        summary.latestConflictReason ?: "Revisa la operacion rechazada por el backend."
-    } else {
-        "Se enviaran automaticamente cuando vuelva la conexion."
-    }
+    val backgroundColor = Color(0xFFEFF7FF)
+    val contentColor = IntivaColors.PrimaryBrand
+    val title = "${summary.pendingCount} operacion(es) pendientes de sincronizar"
+    val detail = "Se enviaran automaticamente cuando vuelva la conexión."
 
     Column(
         modifier = modifier
@@ -48,7 +38,7 @@ fun SyncStatusBanner(
     ) {
         androidx.compose.foundation.layout.Row {
             Icon(
-                imageVector = if (hasFailure) Icons.Default.SyncProblem else Icons.Default.Sync,
+                imageVector = Icons.Default.Sync,
                 contentDescription = null,
                 tint = contentColor
             )
