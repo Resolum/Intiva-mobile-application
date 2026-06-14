@@ -17,5 +17,6 @@ data class FinancialAccountResponseDto(
     @SerializedName("currentAmount") val currentAmount: Double,
     @SerializedName("institution") val institution: String?,
     @SerializedName("creditLimit") val creditLimit: Double?,
-    @SerializedName("isActive") val isActive: Boolean
+    @SerializedName(value = "isActive", alternate = ["active", "enabled"]) val isActive: Boolean? = null,
+    @SerializedName("status") val status: String? = null
 )

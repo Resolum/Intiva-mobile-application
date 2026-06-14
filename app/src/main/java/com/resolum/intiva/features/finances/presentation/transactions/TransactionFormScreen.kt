@@ -299,7 +299,8 @@ fun TransactionFormScreen(
                                         amount = confirmedAmount.ifEmpty { amountToSend },
                                         category = selectedCategory,
                                         account = selectedAccount,
-                                        transactionType = transactionType
+                                        transactionType = transactionType,
+                                        ownerType = ownerType.name
                                     )
                                 }
                             }
