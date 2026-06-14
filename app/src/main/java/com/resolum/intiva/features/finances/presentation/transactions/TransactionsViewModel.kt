@@ -10,6 +10,7 @@ import com.resolum.intiva.features.finances.domain.models.RegisterTransactionReq
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.domain.usecase.GetTransactionsByOwnerIdUseCase
 import com.resolum.intiva.features.finances.domain.usecase.GetTransactionByIdUseCase
+import com.resolum.intiva.features.finances.domain.usecase.ObserveTransactionSyncStatusUseCase
 import com.resolum.intiva.features.finances.domain.usecase.RegisterIndividualTransactionUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
@@ -33,11 +34,20 @@ class TransactionViewModel @Inject constructor(
     private val registerIndividualTransactionUseCase: RegisterIndividualTransactionUseCase,
     private val getTransactionsByOwnerIdUseCase: GetTransactionsByOwnerIdUseCase,
     private val getTransactionByIdUseCase: GetTransactionByIdUseCase,
+    private val observeTransactionSyncStatusUseCase: ObserveTransactionSyncStatusUseCase,
 ) : BaseViewModel() {
 
     /** Backing property for the UI state, initialized with a default TransactionUiState. */
     private val _uiState = MutableStateFlow(TransactionUiState())
     val uiState: StateFlow<TransactionUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            observeTransactionSyncStatusUseCase().collect { summary ->
+                _uiState.update { it.copy(syncStatusSummary = summary) }
+            }
+        }
+    }
 
     /**
      * Registers a financial transaction based on the provided parameters.
@@ -55,7 +65,8 @@ class TransactionViewModel @Inject constructor(
         amount: String,
         category: Category?,
         account: FinancialAccount?,
-        transactionType: TransactionType
+        transactionType: TransactionType,
+        ownerType: String
     ) {
 
         if (category == null) {
@@ -117,7 +128,7 @@ class TransactionViewModel @Inject constructor(
             financialAccountId = account.id,
             transactionType = transactionType,
             categoryId = category.id,
-            ownerType = "INDIVIDUAL"
+            ownerType = ownerType
         )
 
         safeLaunch {

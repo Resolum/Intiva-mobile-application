@@ -60,6 +60,7 @@ import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.transactions.components.AppliedFiltersHeader
 import com.resolum.intiva.features.finances.presentation.transactions.components.EmptyTransactionsContent
+import com.resolum.intiva.features.finances.presentation.transactions.components.SyncStatusBanner
 import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionFiltersSheet
 import com.resolum.intiva.features.finances.presentation.transactions.components.iconForTransactionCategory
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.CategoryViewModel
@@ -206,6 +207,11 @@ fun TransactionsScreen(
                         categoryIds = emptySet()
                     )
                 }
+            )
+
+            SyncStatusBanner(
+                summary = uiState.syncStatusSummary,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
             )
 
             Box(

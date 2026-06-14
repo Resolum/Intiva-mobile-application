@@ -1,6 +1,6 @@
 package com.resolum.intiva.core.data.local.room
 
-/*
+
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -20,4 +20,3 @@ interface BaseDao<T> {
     @Delete
     suspend fun delete(entity: T)
 }
-*/

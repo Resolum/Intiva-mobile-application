@@ -141,6 +141,8 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // Room dependencies for local data storage
     implementation(libs.androidx.room.runtime)
@@ -173,4 +175,7 @@ dependencies {
 
     // Firebase Cloud Messaging dependency for handling push notifications
     implementation(libs.firebase.messaging)
+
+    // WorkManager dependency for background sync
+    implementation(libs.androidx.work.runtime.ktx)
 }
