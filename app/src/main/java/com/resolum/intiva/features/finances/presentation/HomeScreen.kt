@@ -65,9 +65,10 @@ import com.resolum.intiva.features.finances.presentation.spendinglimits.Spending
 import com.resolum.intiva.features.finances.presentation.spendinglimits.components.SpendingLimitCard
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionViewModel
 import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionItem
-import com.resolum.intiva.features.iam.domain.models.FirstTransactionTutorialStep
-import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingViewModel
-import com.resolum.intiva.features.iam.presentation.onboarding.components.SpotlightOverlay
+import com.resolum.intiva.features.profiles.domain.models.FirstTransactionTutorialStep
+import com.resolum.intiva.features.profiles.presentation.onboarding.OnboardingViewModel
+import com.resolum.intiva.features.profiles.presentation.onboarding.components.FirstTransactionPresentationOverlay
+import com.resolum.intiva.features.profiles.presentation.onboarding.components.SpotlightOverlay
 import com.resolum.intiva.features.profiles.presentation.ProfileViewModel
 import coil3.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
@@ -415,15 +416,20 @@ fun HomeScreen(
                 }
             }
 
-            if (onboardingState.step == FirstTransactionTutorialStep.OPEN_CREATE_TRANSACTION
+            if (onboardingState.step == FirstTransactionTutorialStep.PRESENTATION) {
+                FirstTransactionPresentationOverlay(
+                    onStart = { onboardingViewModel.advance() },
+                    onSkip = { onboardingViewModel.skip() }
+                )
+            } else if (onboardingState.step == FirstTransactionTutorialStep.OPEN_CREATE_TRANSACTION
                 && incomeButtonRect != null
             ) {
                 SpotlightOverlay(
                     rect = incomeButtonRect,
                     title = "Registra tu primer ingreso",
                     message = "Toca el botón Ingreso para comenzar a llevar el control de tus finanzas.",
-                    stepNumber = 1,
-                    totalSteps = 4,
+                    stepNumber = 2,
+                    totalSteps = 5,
                     onNext = { onboardingViewModel.advance() }
                 )
             }
