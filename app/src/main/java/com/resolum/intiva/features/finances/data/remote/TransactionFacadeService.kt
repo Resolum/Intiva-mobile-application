@@ -24,6 +24,11 @@ class TransactionFacadeService @Inject constructor(
      */
     suspend fun registerIndividualTransaction(request: RegisterTransactionRequestDto, userId: Long)  = transactionService.registerIndividualTransaction(userId, request)
 
+    suspend fun registerIndividualTransactionResponse(
+        request: RegisterTransactionRequestDto,
+        userId: Long
+    ) = transactionService.registerIndividualTransaction(userId, request)
+
     /**
      * Retrieves a list of transactions for a specific owner, optionally filtered by transaction type.
      *
@@ -32,6 +37,8 @@ class TransactionFacadeService @Inject constructor(
      * @return A list of transactions grouped by date for the specified owner and transaction type.
      */
     suspend fun getTransactionsByOwnerId(ownerId: Long, transactionType: String?) = transactionService.getTransactionsByOwnerId(ownerId, transactionType)
+
+    suspend fun getTransactionById(id: Long) = transactionService.getTransactionById(id)
 
     /**
      * Retrieves the latest transactions for a specific owner.

@@ -10,6 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.Response
 
 /**
  * Retrofit service interface for transaction-related API calls.
@@ -22,13 +23,13 @@ interface TransactionService {
      *
      * @param userId The ID of the user for whom the transaction is being registered.
      * @param body The request body containing the details of the transaction to be registered.
-     * @return A [TransactionWithDesignResponseDto] containing the details of the registered transaction if successful, or an error response if not.
+     * @return A [Response] with the HTTP status of the transaction registration operation.
      */
     @POST("users/{userId}/transactions")
     suspend fun registerIndividualTransaction(
         @Path("userId") userId: Long,
         @Body body: RegisterTransactionRequestDto,
-    ) : TransactionResponseDto
+    ) : Response<Unit>
 
     /**
      * Makes a GET request to the "transactions" endpoint to retrieve a list of transactions for a specific owner, optionally filtered by transaction type.
@@ -42,6 +43,11 @@ interface TransactionService {
         @Query("ownerId") ownerId: Long,
         @Query("transactionType") transactionType: String? = null,
     ) : ResponseWrapperDto<List<TransactionGroupByDateResponseDto>>
+
+    @GET("transactions/{id}")
+    suspend fun getTransactionById(
+        @Path("id") id: Long,
+    ) : TransactionResponseDto
 
     /**
      * Makes a GET request to the "transactions/lastest" endpoint to retrieve the latest transactions for a specific owner.

@@ -9,6 +9,8 @@ import com.resolum.intiva.core.ui.snackbar.SnackBarType
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.domain.usecase.GetTransactionsByOwnerIdUseCase
+import com.resolum.intiva.features.finances.domain.usecase.GetTransactionByIdUseCase
+import com.resolum.intiva.features.finances.domain.usecase.ObserveTransactionSyncStatusUseCase
 import com.resolum.intiva.features.finances.domain.usecase.RegisterIndividualTransactionUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
@@ -31,11 +33,21 @@ import kotlinx.coroutines.launch
 class TransactionViewModel @Inject constructor(
     private val registerIndividualTransactionUseCase: RegisterIndividualTransactionUseCase,
     private val getTransactionsByOwnerIdUseCase: GetTransactionsByOwnerIdUseCase,
+    private val getTransactionByIdUseCase: GetTransactionByIdUseCase,
+    private val observeTransactionSyncStatusUseCase: ObserveTransactionSyncStatusUseCase,
 ) : BaseViewModel() {
 
     /** Backing property for the UI state, initialized with a default TransactionUiState. */
     private val _uiState = MutableStateFlow(TransactionUiState())
     val uiState: StateFlow<TransactionUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            observeTransactionSyncStatusUseCase().collect { summary ->
+                _uiState.update { it.copy(syncStatusSummary = summary) }
+            }
+        }
+    }
 
     /**
      * Registers a financial transaction based on the provided parameters.
@@ -53,8 +65,10 @@ class TransactionViewModel @Inject constructor(
         amount: String,
         category: Category?,
         account: FinancialAccount?,
-        transactionType: TransactionType
+        transactionType: TransactionType,
+        ownerType: String
     ) {
+        if (_uiState.value.state is UiState.Loading) return
 
         if (category == null) {
             viewModelScope.launch {
@@ -115,14 +129,14 @@ class TransactionViewModel @Inject constructor(
             financialAccountId = account.id,
             transactionType = transactionType,
             categoryId = category.id,
-            ownerType = "INDIVIDUAL"
+            ownerType = ownerType
         )
 
-        safeLaunch {
+        _uiState.update {
+            it.copy(state = UiState.Loading)
+        }
 
-            _uiState.update {
-                it.copy(state = UiState.Loading)
-            }
+        safeLaunch {
 
             when (val result = registerIndividualTransactionUseCase(request)) {
 
@@ -200,6 +214,33 @@ class TransactionViewModel @Inject constructor(
                         SnackBarBus.send(
                             "Error al obtener transacciones: ${result.message}",
                             SnackBarType.Error
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun getTransactionById(id: Long) {
+        safeLaunch {
+            _uiState.update {
+                it.copy(transactionDetailState = UiState.Loading)
+            }
+
+            when (val result = getTransactionByIdUseCase(id)) {
+                is NetworkResult.Success -> {
+                    _uiState.update {
+                        it.copy(transactionDetailState = UiState.Success(result.data))
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            transactionDetailState = UiState.Error(
+                                message = result.message,
+                                throwable = result.throwable
+                            )
                         )
                     }
                 }

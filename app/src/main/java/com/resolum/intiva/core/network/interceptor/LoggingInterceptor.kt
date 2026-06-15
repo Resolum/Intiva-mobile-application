@@ -42,6 +42,17 @@ class LoggingInterceptor(
         Log.d("HttpLogger", "URL: ${request.url}")
         Log.d("HttpLogger", "METHOD: ${request.method}")
 
+        request.headers.let { headers ->
+            Log.d("HttpLogger", "HEADERS:")
+            headers.forEach { (name, value) ->
+                if (name.equals("Authorization", ignoreCase = true)) {
+                    Log.d("HttpLogger", "  $name: Bearer ${value.take(20)}...")
+                } else {
+                    Log.d("HttpLogger", "  $name: $value")
+                }
+            }
+        }
+
         request.body?.let { body ->
             val buffer = Buffer()
             body.writeTo(buffer)

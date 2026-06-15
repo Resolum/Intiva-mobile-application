@@ -17,12 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
+import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.theme.IntivaColors
+import com.resolum.intiva.features.profiles.presentation.ProfileViewModel
 import com.resolum.intiva.features.savings.domain.models.SavingGoal
 
 /**
@@ -35,15 +39,25 @@ fun SavingsGoalsScreen(
     onNavigateToCreate: (accountId: Long) -> Unit,
     onNavigateToDetail: (accountId: Long, goalId: Long) -> Unit,
     onNavigateToEdit: (accountId: Long, goalId: Long) -> Unit,
-    viewModel: SavingsGoalsViewModel = hiltViewModel()
+    selectFamilyTab: Boolean = false,
+    viewModel: SavingsGoalsViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val screenState by viewModel.uiState.collectAsState()
+    val profileUiState by profileViewModel.uiState.collectAsState()
     val accountId = screenState.accountId
 
     var goalToDelete by remember { mutableStateOf<com.resolum.intiva.features.savings.domain.models.SavingGoal?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.refresh()
+        profileViewModel.loadProfile()
+    }
+
+    LaunchedEffect(selectFamilyTab) {
+        if (selectFamilyTab) {
+            viewModel.onTabSelected(1)
+        }
     }
 
     Scaffold(
@@ -51,17 +65,21 @@ fun SavingsGoalsScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
+                        val profile = (profileUiState.profileState as? UiState.Success)?.data
+                        val avatarUrl = profile?.avatarUrl?.ifEmpty { null }
+                        AsyncImage(
+                            model = avatarUrl ?: "https://res.cloudinary.com/dcppsmlzd/image/upload/v1781121388/avatar_default_kf0yvc.png",
+                            contentDescription = "Avatar",
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(Color.LightGray)
+                                .size(32.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Intiva",
+                            text = profile?.name?.split(" ")?.firstOrNull() ?: "Intiva",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp,
+                            fontSize = 20.sp,
                             color = IntivaColors.TextPrimary
                         )
                     }

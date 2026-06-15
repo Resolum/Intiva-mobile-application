@@ -56,7 +56,6 @@ class TokenDataStore @Inject constructor(
         dataStore.edit {
             it.remove(AUTH_TOKEN)
             it.remove(USER_ID)
-            it.remove(GROUP_ID)
         }
     }
 }

@@ -63,71 +63,51 @@ fun ContributeToGoalScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessage = (uiState.goalState as? UiState.Error)?.message
+        ?: uiState.inputError
     LaunchedEffect(errorMessage) {
-        if (errorMessage != null) snackbarHostState.showSnackbar(errorMessage)
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                duration = SnackbarDuration.Long
+            )
+        }
+    }
+    val successMessage = uiState.successMessage
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            snackbarHostState.showSnackbar(
+                message = successMessage,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearSuccessMessage()
+        }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = BrandPurple
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            GoalProgressHeader(
-                title = goalTitle,
-                currentAmount = currentAmount,
-                targetAmount = targetAmount,
-                currencyCode = currencyCode,
-                progress = progress,
-                onNavigateBack = onNavigateBack
-            )
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                val isSuccess = data.visuals.message.contains("éxito", ignoreCase = true)
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = if (isSuccess) Color(0xFF4CAF50) else Color(0xFFB00020),
+                    contentColor = Color.White
+                )
+            }
+        },
+        containerColor = BrandPurple,
+        bottomBar = {
+            val isLoading = uiState.goalState is UiState.Loading ||
+                    uiState.isContributorIdLoading
+            val canContribute = uiState.contributorId != null &&
+                    uiState.amountInput.isNotEmpty() &&
+                    !isLoading
 
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                color = Color.White,
-                shadowElevation = 8.dp
-            ) {
-                Column(
+            Surface(color = Color.White) {
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 24.dp, vertical = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
                 ) {
-                    ContributeAccountSelector(
-                        onAccountSelected = { account: FinancialAccount ->
-                            selectedAccountId = account.id
-                        }
-                    )
-
-                    HorizontalDivider(color = BackgroundGray)
-
-                    AmountDisplay(
-                        amountInput = uiState.amountInput,
-                        currencyCode = currencyCode,
-                        inputError = uiState.inputError
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    NumericKeypad(
-                        onDigitClick = { viewModel.appendDigit(it) },
-                        onDeleteClick = { viewModel.deleteLastDigit() }
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val isLoading = uiState.goalState is UiState.Loading ||
-                            uiState.isContributorIdLoading
-                    val canContribute = uiState.contributorId != null &&
-                            uiState.amountInput.isNotEmpty() &&
-                            !isLoading
                     Button(
                         onClick = {
                             viewModel.contribute(
@@ -163,6 +143,61 @@ fun ContributeToGoalScreen(
                             )
                         }
                     }
+                }
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            GoalProgressHeader(
+                title = goalTitle,
+                currentAmount = currentAmount,
+                targetAmount = targetAmount,
+                currencyCode = currencyCode,
+                progress = progress,
+                onNavigateBack = onNavigateBack
+            )
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                color = Color.White,
+                shadowElevation = 8.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp, vertical = 28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ContributeAccountSelector(
+                        onAccountSelected = { account: FinancialAccount ->
+                            selectedAccountId = account.id
+                        }
+                    )
+
+                    HorizontalDivider(color = BackgroundGray)
+
+                    AmountDisplay(
+                        amountInput = uiState.amountInput,
+                        currencyCode = currencyCode,
+                        inputError = uiState.inputError
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    NumericKeypad(
+                        onDigitClick = { viewModel.appendDigit(it) },
+                        onDeleteClick = { viewModel.deleteLastDigit() }
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }

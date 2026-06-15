@@ -141,6 +141,8 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // Room dependencies for local data storage
     implementation(libs.androidx.room.runtime)
@@ -165,6 +167,15 @@ dependencies {
     // Firebase dependencies for using Firebase services in the app
     implementation(platform(libs.firebase.bom))
 
+    // ML Kit Barcode Scanning dependency for QR code scanning
+    implementation(libs.mlkit.barcode.scanning)
+
+    // Guava (required by CameraX ProcessCameraProvider)
+    implementation(libs.guava.android)
+
     // Firebase Cloud Messaging dependency for handling push notifications
     implementation(libs.firebase.messaging)
+
+    // WorkManager dependency for background sync
+    implementation(libs.androidx.work.runtime.ktx)
 }

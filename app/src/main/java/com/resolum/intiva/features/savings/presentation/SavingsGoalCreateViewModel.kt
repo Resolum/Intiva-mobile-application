@@ -2,6 +2,7 @@ package com.resolum.intiva.features.savings.presentation
 
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
+import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import com.resolum.intiva.features.savings.domain.models.SavingGoalOwnerType
 import com.resolum.intiva.features.savings.domain.usecases.CreateSavingGoalUseCase
 import com.resolum.intiva.features.savings.domain.usecases.GetSavingsAccountIdUseCase
@@ -25,7 +26,8 @@ import javax.inject.Inject
 class SavingsGoalCreateViewModel @Inject constructor(
     private val getSavingsAccountIdUseCase: GetSavingsAccountIdUseCase,
     private val createSavingGoalUseCase: CreateSavingGoalUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val sessionRepository: SessionRepository
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(SavingsGoalCreateUiState())
@@ -183,20 +185,29 @@ class SavingsGoalCreateViewModel @Inject constructor(
 
     private fun loadFamilyGroups() {
         safeLaunch {
+            val groups = mutableListOf<FamilyGroupOption>()
+            sessionRepository.getGroupId()?.let { groupId ->
+                if (groups.none { it.groupId == groupId }) {
+                    groups.add(FamilyGroupOption(groupId = groupId, label = "Mi Familia"))
+                }
+            }
+
             when (val result = getCategoriesUseCase()) {
                 is NetworkResult.Success -> {
-                    val groups = result.data
+                    val categoryGroups = result.data
                         .filter { it.ownerType.equals("family", ignoreCase = true) }
                         .distinctBy { it.ownerId }
                         .map { category -> FamilyGroupOption(groupId = category.ownerId, label = category.name) }
-                    _uiState.update { state ->
-                        state.copy(
-                            availableGroups = groups,
-                            selectedGroupId = state.selectedGroupId ?: groups.firstOrNull()?.groupId
-                        )
-                    }
+                    groups.addAll(categoryGroups)
                 }
                 is NetworkResult.Error -> Unit
+            }
+
+            _uiState.update { state ->
+                state.copy(
+                    availableGroups = groups.distinctBy { it.groupId },
+                    selectedGroupId = state.selectedGroupId ?: groups.firstOrNull()?.groupId
+                )
             }
         }
     }

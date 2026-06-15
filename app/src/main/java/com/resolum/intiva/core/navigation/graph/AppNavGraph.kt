@@ -3,12 +3,19 @@ package com.resolum.intiva.core.navigation.graph
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.resolum.intiva.core.navigation.extensions.navigateAndClearBackStack
 import com.resolum.intiva.core.navigation.extensions.navigateSingleTop
+import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.core.navigation.routes.Screen
-import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingScreen
+import com.resolum.intiva.features.household.presentation.invitation.InvitationDetailScreen
+import com.resolum.intiva.features.iam.presentation.PrivacyPolicyScreen
+import com.resolum.intiva.features.iam.presentation.TermsAndConditionsScreen
+import com.resolum.intiva.features.profiles.presentation.onboarding.OnboardingScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
 import com.resolum.intiva.features.iam.presentation.splash.SplashScreen
@@ -86,7 +93,15 @@ fun AppNavGraph(
                         popUpTo = Screen.SignUp.route,
                     )
                 },
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToTermsAndConditions = {
+                    navController.navigate(Screen.TermsAndConditions.route)
+                },
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate(Screen.PrivacyPolicy.route)
+                },
                 onNavigateToLogin = {
                     navController.navigateAndClearBackStack(
                         route = Screen.SignIn.route,
@@ -96,8 +111,62 @@ fun AppNavGraph(
             )
         }
 
+
+        composable(Screen.TermsAndConditions.route) {
+            TermsAndConditionsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         composable(Screen.MainShell.route) {
-            MainShell()
+            MainShell(
+                onLogout = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.SignIn.route,
+                        popUpTo = Screen.MainShell.route,
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = NavRoutes.INVITATION_DEEP_LINK,
+            arguments = listOf(navArgument("token") { type = NavType.StringType }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "https://intiva.vercel.app/lander?token={token}" },
+                navDeepLink { uriPattern = "https://intiva.vercel.app/join?token={token}" },
+                navDeepLink { uriPattern = "https://intiva-1406c.web.app/lander?token={token}" },
+                navDeepLink { uriPattern = "intiva://lander?token={token}" },
+                navDeepLink { uriPattern = "intiva://join?token={token}" }
+            )
+        ) {
+            InvitationDetailScreen(
+                onAccepted = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.MainShell.route,
+                        popUpTo = NavRoutes.INVITATION_DEEP_LINK,
+                    )
+                },
+                onDeclined = {
+                    navController.navigateAndClearBackStack(
+                        route = Screen.MainShell.route,
+                        popUpTo = NavRoutes.INVITATION_DEEP_LINK,
+                    )
+                },
+                onGoToLanding = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +18,7 @@ import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.HomeScreen
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionFormScreen
+import com.resolum.intiva.features.finances.presentation.transactions.TransactionDetailScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionsScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.ManageCategoriesScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.CreateFinancialAccountScreen
@@ -29,13 +31,27 @@ import com.resolum.intiva.features.savings.presentation.completion.GoalCompleted
 import com.resolum.intiva.features.savings.presentation.completion.GoalUncompletedScreen
 import com.resolum.intiva.features.savings.presentation.contribute.ContributeToGoalScreen
 import com.resolum.intiva.features.shared.domain.model.OwnerType
+import com.resolum.intiva.features.profiles.presentation.ProfileScreen
+import com.resolum.intiva.features.profiles.presentation.EditProfileScreen
+import com.resolum.intiva.features.profiles.presentation.ConfiguracionScreen
+import com.resolum.intiva.features.profiles.presentation.PrivacidadSeguridadScreen
+import com.resolum.intiva.features.profiles.presentation.CentroAyudaScreen
+import com.resolum.intiva.features.profiles.presentation.NotificacionesScreen
+import com.resolum.intiva.features.profiles.presentation.AparienciaScreen
+import com.resolum.intiva.features.household.presentation.family.FamilyScreen
+import com.resolum.intiva.features.household.presentation.invite.InviteMemberScreen
+import com.resolum.intiva.features.household.presentation.invitation.InvitationDetailScreen
+import com.resolum.intiva.features.household.presentation.roles.FamilyRolesScreen
+
 
 /**
  * Main shell of the app, containing the bottom navigation and root-level destinations.
  * Each feature's main screen should be registered here, with deeper navigation handled within the feature's own nav graph.
  */
 @Composable
-fun MainShell() {
+fun MainShell(
+    onLogout: () -> Unit = {}
+) {
     val shellNavController = rememberNavController()
     val navBackStackEntry by shellNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -43,16 +59,19 @@ fun MainShell() {
     Scaffold(
         containerColor = Color.White,
         bottomBar = {
-            IntivaBottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    shellNavController.navigate(route) {
-                        popUpTo(NavRoutes.HOME) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                },
-            )
-        }, contentWindowInsets = WindowInsets(0)
+            if (currentRoute in NavRoutes.BOTTOM_NAV_ROUTES) {
+                IntivaBottomNavBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        shellNavController.navigate(route) {
+                            popUpTo(NavRoutes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
+                )
+            }
+        },
+        contentWindowInsets = WindowInsets(0)
     ) { padding ->
         NavHost(
             navController = shellNavController,
@@ -69,19 +88,117 @@ fun MainShell() {
                     onNavigateToSpendingLimitAlert = {
                         shellNavController.navigate(NavRoutes.SPENDING_LIMIT_ALERT)
                     },
+                    onNavigateToTransactionDetail = { transactionId ->
+                        shellNavController.navigate(NavRoutes.transactionDetail(transactionId))
+                    },
                 )
             }
 
             composable(NavRoutes.TRANSACTIONS) {
-                TransactionsScreen()
+                TransactionsScreen(
+                    onNavigateToTransactionDetail = { transactionId ->
+                        shellNavController.navigate(NavRoutes.transactionDetail(transactionId))
+                    }
+                )
+            }
+
+            composable(NavRoutes.TRANSACTION_DETAIL) { backStackEntry ->
+                val transactionId = backStackEntry.arguments
+                    ?.getString("transactionId")
+                    ?.toLongOrNull()
+                    ?: return@composable
+                TransactionDetailScreen(
+                    transactionId = transactionId,
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
             }
 
             composable(NavRoutes.SPENDING_LIMIT_ALERT) {
                 SpendingLimitScreen(onNavigateBack = { shellNavController.popBackStack() })
             }
 
-            composable(NavRoutes.FAMILY) { }
-            composable(NavRoutes.PROFILE) { }
+            composable(NavRoutes.FAMILY) {
+                FamilyScreen(
+                    onInviteClick = { shellNavController.navigate(NavRoutes.INVITE_MEMBER) },
+                    onViewAllActivity = { shellNavController.navigate(NavRoutes.FAMILY_ROLES) },
+                    onContributeClick = {
+                        shellNavController.currentBackStackEntry?.savedStateHandle?.set("selectFamilyTab", true)
+                        shellNavController.navigate(NavRoutes.SAVINGS_GOALS)
+                    }
+                )
+            }
+
+            composable(NavRoutes.INVITE_MEMBER) {
+                InviteMemberScreen()
+            }
+
+            composable(NavRoutes.FAMILY_ROLES) {
+                FamilyRolesScreen()
+            }
+
+            composable(NavRoutes.INVITATION_DETAIL) {
+                InvitationDetailScreen()
+            }
+
+            composable(NavRoutes.PROFILE) {
+                ProfileScreen(
+                    onNavigateToEdit = { shellNavController.navigate(NavRoutes.EDIT_PROFILE) },
+                    onNavigateToConfig = { shellNavController.navigate(NavRoutes.CONFIG) },
+                    onPrivacyClick = { shellNavController.navigate(NavRoutes.PRIVACY) },
+                    onHelpClick = { shellNavController.navigate(NavRoutes.HELP) },
+                    onLogoutClick = onLogout
+                )
+            }
+
+            composable(NavRoutes.EDIT_PROFILE) {
+                EditProfileScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.CONFIG) {
+                ConfiguracionScreen(
+                    onNavigateToPersonalDetails = {
+                        shellNavController.navigate(NavRoutes.EDIT_PROFILE)
+                    },
+                    onNavigateToCategories = {
+                        shellNavController.navigate(NavRoutes.MANAGE_CATEGORIES)
+                    },
+                    onNavigateToNotifications = {
+                        shellNavController.navigate(NavRoutes.NOTIFICATIONS)
+                    },
+                    onNavigateToAppearance = {
+                        shellNavController.navigate(NavRoutes.APPEARANCE)
+                    },
+                    onNavigateBack = {
+                        shellNavController.popBackStack()
+                    }
+                )
+            }
+
+            composable(NavRoutes.PRIVACY) {
+                PrivacidadSeguridadScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.HELP) {
+                CentroAyudaScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.NOTIFICATIONS) {
+                NotificacionesScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.APPEARANCE) {
+                AparienciaScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
 
             // Payment methods and categories
             composable(NavRoutes.MANAGE_CATEGORIES) {
@@ -109,6 +226,15 @@ fun MainShell() {
              * Savings Goals feature navigation.
              */
             composable(NavRoutes.SAVINGS_GOALS) {
+                val selectFamilyTab = shellNavController
+                    .previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.getStateFlow("selectFamilyTab", false)
+                    ?.collectAsState()
+                    ?.value == true
+                if (selectFamilyTab) {
+                    shellNavController.previousBackStackEntry?.savedStateHandle?.set("selectFamilyTab", false)
+                }
                 SavingsGoalsScreen(
                     onNavigateBack = { shellNavController.popBackStack() },
                     onNavigateToCreate = { accountId ->
@@ -119,7 +245,8 @@ fun MainShell() {
                     },
                     onNavigateToEdit = { accountId, goalId ->
                         shellNavController.navigate("savings_goal_edit/$goalId")
-                    }
+                    },
+                    selectFamilyTab = selectFamilyTab
                 )
             }
 
@@ -252,6 +379,7 @@ fun MainShell() {
                     ownerType = OwnerType.INDIVIDUAL
                 )
             }
+
         }
     }
 }

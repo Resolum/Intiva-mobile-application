@@ -21,11 +21,10 @@ interface CategoryService {
         @Query("ownerType") ownerType: String,
         @Query("ownerId") ownerId: Long,
         @Query("type") type: String? = null
-    ) : List<CategoryResponseDto>
+    ): List<CategoryResponseDto>
 
-    @POST("users/{userId}/categories")
+    @POST("categories")
     suspend fun createCategory(
-        @Path("userId") userId: Long,
         @Body request: CreateCategoryRequestDto
     ): CategoryResponseDto
 }

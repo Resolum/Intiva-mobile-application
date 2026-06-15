@@ -3,9 +3,10 @@ package com.resolum.intiva.features.paymentmethodsandcategories.presentation.cat
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
-import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
+import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.CreateCategoryUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.GetCategoriesUseCase
+import com.resolum.intiva.features.shared.domain.model.OwnerType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,23 +23,32 @@ class CategoryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CategoryUiState())
     val uiState: StateFlow<CategoryUiState> = _uiState.asStateFlow()
 
-    fun getCategories(ownerType: String = "", type: String = "") {
+    fun getCategories(
+        ownerType: String = OwnerType.INDIVIDUAL.name,
+        type: String = TransactionType.EXPENSE.name
+    ) {
         safeLaunch {
             _uiState.update { it.copy(categoriesState = UiState.Loading) }
+
             when (val result = getCategoriesUseCase(ownerType, type)) {
-                is NetworkResult.Success -> _uiState.update {
-                    it.copy(
-                        categories = result.data,
-                        categoriesState = UiState.Success(result.data)
-                    )
-                }
-                is NetworkResult.Error -> _uiState.update {
-                    it.copy(
-                        categoriesState = UiState.Error(
-                            message = result.message,
-                            throwable = result.throwable
+                is NetworkResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            categories = result.data,
+                            categoriesState = UiState.Success(result.data)
                         )
-                    )
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            categoriesState = UiState.Error(
+                                message = result.message,
+                                throwable = result.throwable
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -48,7 +58,11 @@ class CategoryViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 name = value,
-                nameError = if (value.isBlank()) "El nombre de la categoría es obligatorio" else null
+                nameError = if (value.isBlank()) {
+                    "El nombre de la categoría es obligatorio"
+                } else {
+                    null
+                }
             )
         }
     }
@@ -110,9 +124,11 @@ class CategoryViewModel @Inject constructor(
                             nameError = null
                         )
                     }
+
                     getCategories()
                     onSuccess()
                 }
+
                 is NetworkResult.Error -> {
                     _uiState.update {
                         it.copy(
