@@ -68,6 +68,7 @@ class TransactionViewModel @Inject constructor(
         transactionType: TransactionType,
         ownerType: String
     ) {
+        if (_uiState.value.state is UiState.Loading) return
 
         if (category == null) {
             viewModelScope.launch {
@@ -131,11 +132,11 @@ class TransactionViewModel @Inject constructor(
             ownerType = ownerType
         )
 
-        safeLaunch {
+        _uiState.update {
+            it.copy(state = UiState.Loading)
+        }
 
-            _uiState.update {
-                it.copy(state = UiState.Loading)
-            }
+        safeLaunch {
 
             when (val result = registerIndividualTransactionUseCase(request)) {
 

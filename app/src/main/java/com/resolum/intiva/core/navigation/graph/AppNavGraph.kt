@@ -15,7 +15,7 @@ import com.resolum.intiva.core.navigation.routes.Screen
 import com.resolum.intiva.features.household.presentation.invitation.InvitationDetailScreen
 import com.resolum.intiva.features.iam.presentation.PrivacyPolicyScreen
 import com.resolum.intiva.features.iam.presentation.TermsAndConditionsScreen
-import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingScreen
+import com.resolum.intiva.features.profiles.presentation.onboarding.OnboardingScreen
 import com.resolum.intiva.features.iam.presentation.signin.SignInScreen
 import com.resolum.intiva.features.iam.presentation.signup.SignUpScreen
 import com.resolum.intiva.features.iam.presentation.splash.SplashScreen

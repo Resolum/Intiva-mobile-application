@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.components.IntivaBackButton
 import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
 import com.resolum.intiva.core.ui.snackbar.SnackBarBus
@@ -49,9 +52,9 @@ import com.resolum.intiva.features.finances.domain.models.TransactionType
 import com.resolum.intiva.features.finances.presentation.transactions.components.AmountInput.appendDigit
 import com.resolum.intiva.features.finances.presentation.transactions.components.AmountInput.deleteDigit
 import com.resolum.intiva.features.finances.presentation.transactions.components.NumPad
-import com.resolum.intiva.features.iam.domain.models.FirstTransactionTutorialStep
-import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingViewModel
-import com.resolum.intiva.features.iam.presentation.onboarding.components.OnboardingOverlay
+import com.resolum.intiva.features.profiles.domain.models.FirstTransactionTutorialStep
+import com.resolum.intiva.features.profiles.presentation.onboarding.OnboardingViewModel
+import com.resolum.intiva.features.profiles.presentation.onboarding.components.OnboardingOverlay
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.FinancialAccount
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.components.CategoryGrid
@@ -88,6 +91,7 @@ fun TransactionFormScreen(
     var saveButtonRect by remember { mutableStateOf<Rect?>(null) }
     var categoryRect by remember { mutableStateOf<Rect?>(null) }
     var numpadRect by remember { mutableStateOf<Rect?>(null) }
+    var amountDisplayRect by remember { mutableStateOf<Rect?>(null) }
 
     val onboardingState by onboardingViewModel.state.collectAsState()
 
@@ -117,6 +121,7 @@ fun TransactionFormScreen(
     val isOnboardingActive = effectiveStep == FirstTransactionTutorialStep.SELECT_CATEGORY ||
             effectiveStep == FirstTransactionTutorialStep.ENTER_AMOUNT ||
             effectiveStep == FirstTransactionTutorialStep.CONFIRM_TRANSACTION
+    val isSavingTransaction = uiState.state is UiState.Loading
 
     LaunchedEffect(Unit) {
         onboardingViewModel.loadStatus()
@@ -161,6 +166,9 @@ fun TransactionFormScreen(
         TransactionType.EXPENSE -> "Registrar Gasto"
         else -> "Guardar"
     }
+    val actionButtonLabel = if (showLocalEnterAmountStep) "Continuar" else saveLabel
+    val actionButtonColor = if (showLocalEnterAmountStep) Color(0xFF534AB7) else Color(0xFFCCFF00)
+    val actionButtonContentColor = if (showLocalEnterAmountStep) Color.White else Color.Black
 
     val headerBackground = IntivaColors.BackgroundPurple
 
@@ -209,7 +217,10 @@ fun TransactionFormScreen(
                             style = MaterialTheme.typography.displayMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color.White
+                            color = Color.White,
+                            modifier = Modifier.onGloballyPositioned { coordinates ->
+                                amountDisplayRect = coordinates.boundsInRoot()
+                            }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Box {
@@ -305,6 +316,7 @@ fun TransactionFormScreen(
                                 }
                             }
                         },
+                        enabled = !isSavingTransaction,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -313,14 +325,24 @@ fun TransactionFormScreen(
                             },
                         shape = RoundedCornerShape(50.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFCCFF00)
+                            containerColor = actionButtonColor,
+                            disabledContainerColor = Color(0xFFE5E0EC),
+                            disabledContentColor = IntivaColors.TextSecondary
                         )
                     ) {
-                        Text(
-                            text = saveLabel,
-                            color = Color.Black,
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                        if (isSavingTransaction) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                color = Color.Black,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = actionButtonLabel,
+                                color = actionButtonContentColor,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
                     }
                 }
             }
@@ -330,6 +352,7 @@ fun TransactionFormScreen(
                 incomeRect = null,
                 categoryRect = categoryRect,
                 amountRect = numpadRect,
+                amountDisplayRect = amountDisplayRect,
                 saveButtonRect = saveButtonRect,
                 onNext = {
                     if (showLocalEnterAmountStep) {
@@ -339,8 +362,7 @@ fun TransactionFormScreen(
                     } else {
                         onboardingViewModel.advance()
                     }
-                },
-                currentAmount = if (showLocalEnterAmountStep) displayAmount else null
+                }
             )
         }
     }
