@@ -1,6 +1,6 @@
 package com.resolum.intiva.features.iam.domain.usecase
 
-import com.resolum.intiva.features.iam.domain.repositories.OnboardingRepository
+import com.resolum.intiva.features.profiles.domain.repositories.OnboardingRepository
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import com.resolum.intiva.features.iam.presentation.splash.SplashDestination
 import jakarta.inject.Inject

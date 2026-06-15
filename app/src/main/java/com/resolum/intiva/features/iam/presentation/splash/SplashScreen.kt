@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.resolum.intiva.core.ui.theme.IntivaColors
-import com.resolum.intiva.features.iam.presentation.onboarding.OnboardingViewModel
+import com.resolum.intiva.features.profiles.presentation.onboarding.OnboardingViewModel
 import com.resolum.intiva.features.iam.presentation.splash.components.SplashScreenContent
 import kotlinx.coroutines.delay
 
