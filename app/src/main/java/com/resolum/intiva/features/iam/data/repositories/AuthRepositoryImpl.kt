@@ -42,7 +42,11 @@ class AuthRepositoryImpl @Inject constructor(
             authFacadeService.signUp(
                 SignUpRequestDto(
                     email = request.email,
-                    password = request.password
+                    password = request.password,
+                    name = request.name,
+                    age = request.age,
+                    phoneNumber = request.phoneNumber,
+                    bio = request.bio
                 )
             )
         }.map {
