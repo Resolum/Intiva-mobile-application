@@ -96,6 +96,7 @@ fun FamilyScreen(
 
     var showQrOptionsSheet by remember { mutableStateOf(false) }
     var showQrScanner by remember { mutableStateOf(false) }
+    var showCreateFamilySheet by remember { mutableStateOf(false) }
     var showMyQrSheet by remember { mutableStateOf(false) }
     var showCameraDeniedDialog by remember { mutableStateOf(false) }
     var qrScanConsumed by remember { mutableStateOf(false) }
@@ -190,9 +191,14 @@ fun FamilyScreen(
 
                 is UiState.Idle -> {
                     NoFamilyContent(
-                        onCreateFamily = { name, description ->
-                            viewModel.createFamily(name, description)
-                        }
+                        onJoinFamily = {
+                            if (cameraPermissionGranted) {
+                                showQrScanner = true
+                            } else {
+                                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        },
+                        onCreateFamily = { showCreateFamilySheet = true }
                     )
                 }
 
@@ -364,6 +370,16 @@ fun FamilyScreen(
             uiState = uiState,
             onDismiss = { showMyQrSheet = false },
             onRetry = { viewModel.loadFamilyQrCode() }
+        )
+    }
+
+    if (showCreateFamilySheet) {
+        CreateFamilyBottomSheet(
+            onDismiss = { showCreateFamilySheet = false },
+            onCreateFamily = { name, description ->
+                viewModel.createFamily(name, description)
+                showCreateFamilySheet = false
+            }
         )
     }
 
@@ -633,11 +649,9 @@ private fun MyQrBottomSheet(
 
 @Composable
 private fun NoFamilyContent(
-    onCreateFamily: (name: String, description: String) -> Unit
+    onJoinFamily: () -> Unit,
+    onCreateFamily: () -> Unit
 ) {
-    var familyName by remember { mutableStateOf("") }
-    var familyDesc by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -672,55 +686,159 @@ private fun NoFamilyContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Crea un grupo para gestionar finanzas\nen familia y hacer seguimiento conjunto.",
+            text = "Únete a una familia existente o crea\nuna nueva para gestionar finanzas juntos.",
             fontSize = 14.sp,
             color = IntivaColors.TextSecondary,
             textAlign = TextAlign.Center,
             lineHeight = 20.sp
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OutlinedTextField(
-            value = familyName,
-            onValueChange = { familyName = it },
-            label = { Text("Nombre del grupo") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = familyDesc,
-            onValueChange = { familyDesc = it },
-            label = { Text("Descripción (opcional)") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            maxLines = 2
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         Button(
-            onClick = {
-                if (familyName.isNotBlank()) {
-                    onCreateFamily(familyName.trim(), familyDesc.trim())
-                }
-            },
+            onClick = onJoinFamily,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(26.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = IntivaColors.PrimaryBrand),
-            enabled = familyName.isNotBlank()
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFCCFF00),
+                contentColor = Color(0xFF0D0D0D)
+            )
         ) {
+            Icon(
+                imageVector = Icons.Outlined.QrCodeScanner,
+                contentDescription = null,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Crear grupo familiar",
+                text = "Unirme a un grupo familiar",
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = onCreateFamily,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = IntivaColors.PrimaryBrand)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Group,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Crear un grupo familiar",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateFamilyBottomSheet(
+    onDismiss: () -> Unit,
+    onCreateFamily: (name: String, description: String) -> Unit
+) {
+    var familyName by remember { mutableStateOf("") }
+    var familyDesc by remember { mutableStateOf("") }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Color.White
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Crear grupo familiar",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = IntivaColors.TextPrimary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Completa los datos para crear tu grupo",
+                fontSize = 14.sp,
+                color = IntivaColors.TextSecondary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = familyName,
+                onValueChange = { familyName = it },
+                label = { Text("Nombre del grupo") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = familyDesc,
+                onValueChange = { familyDesc = it },
+                label = { Text("Descripción (opcional)") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                maxLines = 2
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (familyName.isNotBlank()) {
+                        onCreateFamily(familyName.trim(), familyDesc.trim())
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(26.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = IntivaColors.PrimaryBrand),
+                enabled = familyName.isNotBlank()
+            ) {
+                Text(
+                    text = "Crear grupo familiar",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Cancelar",
+                color = IntivaColors.PrimaryBrand,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onDismiss() }
             )
         }
     }

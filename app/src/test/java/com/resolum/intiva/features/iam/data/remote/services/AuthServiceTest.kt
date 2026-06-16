@@ -5,7 +5,7 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
@@ -59,7 +59,6 @@ class AuthServiceTest {
         assertEquals("/authentication/sign-up", request.path)
         assertEquals("POST", request.method)
 
-        assertTrue(response.isSuccessful)
-        assertEquals("test@mail.com", response.body()?.email)
+        assertEquals("test@mail.com", response.email)
     }
 }

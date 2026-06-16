@@ -75,6 +75,7 @@ class InvitationDetailViewModel @Inject constructor(
             _actionState.value = InvitationActionState.Loading
             when (val result = acceptInvitationByTokenUseCase(token)) {
                 is NetworkResult.Success -> {
+                    sessionRepository.saveGroupId(result.data)
                     _actionState.value = InvitationActionState.Success("Invitación aceptada con éxito")
                 }
                 is NetworkResult.Error -> {

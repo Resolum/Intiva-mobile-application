@@ -7,7 +7,7 @@ import jakarta.inject.Inject
 class AcceptInvitationByTokenUseCase @Inject constructor(
     private val invitationRepository: InvitationRepository
 ) {
-    suspend operator fun invoke(token: String): NetworkResult<Unit> {
+    suspend operator fun invoke(token: String): NetworkResult<Long> {
         if (token.isBlank()) {
             return NetworkResult.Error("Token is required")
         }
