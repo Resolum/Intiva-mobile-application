@@ -1,22 +1,29 @@
 package com.resolum.intiva.features.iam.data.repositories
 
-import androidx.camera.core.ImageProcessor
 import com.resolum.intiva.core.network.model.NetworkResult
+import com.resolum.intiva.features.iam.data.remote.AuthFacadeService
+import com.resolum.intiva.features.iam.data.remote.models.SignUpRequestDto
 import com.resolum.intiva.features.iam.data.remote.models.SignUpResponseDto
-import com.resolum.intiva.features.iam.data.remote.services.AuthService
 import com.resolum.intiva.features.iam.domain.models.SignUpRequest
+import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
+import com.resolum.intiva.features.communications.domain.repositories.NotificationDeviceRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.*
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import retrofit2.Response
 
 class AuthRepositoryImplTest {
 
-    private val authService = mockk<AuthService>()
+    private val authFacadeService = mockk<AuthFacadeService>()
+    private val sessionRepository = mockk<SessionRepository>()
+    private val notificationDeviceRepository = mockk<NotificationDeviceRepository>()
 
-    private val authRepository = AuthRepositoryImpl(authService)
+    private val authRepository = AuthRepositoryImpl(
+        authFacadeService,
+        sessionRepository,
+        notificationDeviceRepository
+    )
 
     @Test
     fun signUp(): Unit = runTest {
@@ -24,10 +31,8 @@ class AuthRepositoryImplTest {
         val request = SignUpRequest("test@mail.com", "1234")
 
         coEvery {
-            authService.signUp(any())
-        } returns Response.success(
-            SignUpResponseDto(id = "1", email = "test@mail.com")
-        )
+            authFacadeService.signUp(any())
+        } returns SignUpResponseDto(id = 1L, email = "test@mail.com")
 
         val result = authRepository.signUp(request)
 

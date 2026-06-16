@@ -218,6 +218,7 @@ class InviteViewModel @Inject constructor(
 
             when (val result = acceptInvitationByTokenUseCase(token)) {
                 is NetworkResult.Success -> {
+                    sessionRepository.saveGroupId(result.data)
                     _uiState.update { it.copy(actionState = UiState.Success("Invitación aceptada")) }
                 }
                 is NetworkResult.Error -> {

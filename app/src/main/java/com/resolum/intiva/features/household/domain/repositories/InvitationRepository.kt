@@ -18,7 +18,7 @@ interface InvitationRepository {
 
     suspend fun rejectInvitation(invitationId: Long): NetworkResult<Invitation>
 
-    suspend fun acceptInvitationByToken(token: String): NetworkResult<Unit>
+    suspend fun acceptInvitationByToken(token: String): NetworkResult<Long>
 
     suspend fun rejectInvitationByToken(token: String): NetworkResult<String>
 
