@@ -38,11 +38,17 @@ class TokenDataStore @Inject constructor(
     val groupId: Flow<Long?> =
         dataStore.data.map { it[GROUP_ID] }
 
-    /** Saves the provided authentication token to DataStore preferences. */
+    /** Saves the provided authentication token to DataStore preferences.
+     * If the userId differs from the stored one, the cached groupId is cleared
+     * so a different user won't use a stale group from the previous session. */
     suspend fun saveToken(token: String, userId: Long) {
-        dataStore.edit {
-            it[AUTH_TOKEN] = token
-            it[USER_ID] = userId
+        dataStore.edit { prefs ->
+            val previousUserId = prefs[USER_ID]
+            prefs[AUTH_TOKEN] = token
+            prefs[USER_ID] = userId
+            if (previousUserId != null && previousUserId != userId) {
+                prefs.remove(GROUP_ID)
+            }
         }
     }
 

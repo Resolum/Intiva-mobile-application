@@ -54,12 +54,13 @@ class InvitationRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun acceptInvitationByToken(token: String): NetworkResult<Unit> = safeCall {
+    override suspend fun acceptInvitationByToken(token: String): NetworkResult<Long> = safeCall {
         val userId = sessionRepository.getUserId() ?: throw IllegalStateException("User ID not found in session")
         val dto = familyFacadeService.getPublicInvitation(token)
         val invitationId = dto.id ?: throw IllegalStateException("Invitation ID not found in public response")
+        val familyId = dto.familyId ?: throw IllegalStateException("Family ID not found in public response")
         familyFacadeService.acceptInvitation(userId, invitationId)
-        Unit
+        familyId
     }
 
     override suspend fun rejectInvitationByToken(token: String): NetworkResult<String> = safeCall {

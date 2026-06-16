@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,7 @@ fun QrCodeScannerContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val analyzerExecutor = remember { Executors.newSingleThreadExecutor() }
     var detected by remember { mutableStateOf(false) }
@@ -99,7 +101,7 @@ fun QrCodeScannerContent(
                         try {
                             cameraProvider.unbindAll()
                             cameraProvider.bindToLifecycle(
-                                ctx as androidx.lifecycle.LifecycleOwner,
+                                lifecycleOwner,
                                 cameraSelector,
                                 preview,
                                 imageAnalysis

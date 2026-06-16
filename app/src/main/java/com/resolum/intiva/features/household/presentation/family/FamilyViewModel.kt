@@ -59,6 +59,7 @@ class FamilyViewModel @Inject constructor(
 
             when (val result = acceptInvitationByTokenUseCase(token)) {
                 is NetworkResult.Success -> {
+                    sessionRepository.saveGroupId(result.data)
                     _uiState.update { it.copy(scanResultState = UiState.Success("Te uniste al grupo exitosamente")) }
                     loadFamily()
                     loadMembers()

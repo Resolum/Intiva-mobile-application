@@ -46,7 +46,7 @@ class LoggingInterceptor(
             Log.d("HttpLogger", "HEADERS:")
             headers.forEach { (name, value) ->
                 if (name.equals("Authorization", ignoreCase = true)) {
-                    Log.d("HttpLogger", "  $name: Bearer ${value.take(20)}...")
+                    Log.d("HttpLogger", "  $name: ${value.take(20)}...")
                 } else {
                     Log.d("HttpLogger", "  $name: $value")
                 }
