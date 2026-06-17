@@ -15,19 +15,10 @@ class TransactionFacadeService @Inject constructor(
     private val transactionService: TransactionService
 ) {
 
-    /**
-     * Registers an individual financial transaction for a user with the provided [RegisterTransactionRequestDto].
-     *
-     * @param request The request containing the details of the transaction to be registered.
-     * @param userId The ID of the user performing the transaction.
-     * @return The result of the transaction registration operation.
-     */
-    suspend fun registerIndividualTransaction(request: RegisterTransactionRequestDto, userId: Long)  = transactionService.registerIndividualTransaction(userId, request)
-
     suspend fun registerIndividualTransactionResponse(
         request: RegisterTransactionRequestDto,
-        userId: Long
-    ) = transactionService.registerIndividualTransaction(userId, request)
+        idempotencyKey: String
+    ) = transactionService.registerIndividualTransaction(idempotencyKey, request)
 
     /**
      * Retrieves a list of transactions for a specific owner, optionally filtered by transaction type.

@@ -44,7 +44,7 @@ class TransactionOutboxSyncer @Inject constructor(
     private suspend fun sync(transaction: PendingTransactionEntity): SyncItemResult {
         val response = runCatching {
             transactionFacadeService.registerIndividualTransactionResponse(
-                userId = transaction.userId,
+                idempotencyKey = transaction.idempotencyKey,
                 request = transaction.toRegisterTransactionRequestDto()
             )
         }.getOrElse {

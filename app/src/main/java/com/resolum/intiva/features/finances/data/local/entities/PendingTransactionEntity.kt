@@ -19,6 +19,7 @@ data class PendingTransactionEntity(
     val ownerType: String,
     val date: Long,
     val note: String,
+    val idempotencyKey: String,
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val conflictReason: String? = null
 )
