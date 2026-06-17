@@ -7,13 +7,15 @@ import com.resolum.intiva.features.finances.domain.models.RegisterTransactionReq
  * Mapper object to convert between RegisterTransactionRequest domain model and RegisterTransactionRequestDto.
  */
 fun RegisterTransactionRequest.toDto(
-    performedByUserId: Long
+    userId: Long,
+    performedByUserId: Long = userId
 ): RegisterTransactionRequestDto {
     return RegisterTransactionRequestDto(
         amount = amount,
         currencyCode = currencyCode,
         description = description,
         financialAccountId = financialAccountId,
+        userId = userId,
         transactionType = transactionType.name,
         categoryId = categoryId,
         ownerType = ownerType,
