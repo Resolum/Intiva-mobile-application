@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -65,6 +67,7 @@ import com.resolum.intiva.features.finances.presentation.spendinglimits.Spending
 import com.resolum.intiva.features.finances.presentation.spendinglimits.components.SpendingLimitCard
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionViewModel
 import com.resolum.intiva.features.finances.presentation.transactions.components.TransactionItem
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.CategoryViewModel
 import com.resolum.intiva.features.profiles.domain.models.FirstTransactionTutorialStep
 import com.resolum.intiva.features.profiles.presentation.onboarding.OnboardingViewModel
 import com.resolum.intiva.features.profiles.presentation.onboarding.components.FirstTransactionPresentationOverlay
@@ -97,6 +100,7 @@ fun HomeScreen(
     navController: NavController,
     viewModel: TransactionViewModel = hiltViewModel(),
     spendingLimitViewModel: SpendingLimitViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel(),
     onNavigateToTransactions: () -> Unit,
     onNavigateToSpendingLimitAlert: () -> Unit = {},
@@ -105,6 +109,7 @@ fun HomeScreen(
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
     val spendingLimitUiState by spendingLimitViewModel.uiState.collectAsState()
+    val categoryUiState by categoryViewModel.uiState.collectAsState()
     val profileUiState by profileViewModel.uiState.collectAsState()
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
     val onboardingState by onboardingViewModel.state.collectAsState()
@@ -116,6 +121,11 @@ fun HomeScreen(
         onboardingViewModel.loadStatus()
         viewModel.getTransactionsByOwnerId(onlyLatest = true)
         spendingLimitViewModel.loadMonthlySpendingLimit()
+        spendingLimitViewModel.loadSpendingLimits()
+        categoryViewModel.getCategories(
+            ownerType = com.resolum.intiva.features.shared.domain.model.OwnerType.INDIVIDUAL.name,
+            type = com.resolum.intiva.features.finances.domain.models.TransactionType.EXPENSE.name
+        )
         profileViewModel.loadProfile()
 
         val success = navController.currentBackStackEntry
@@ -323,11 +333,52 @@ fun HomeScreen(
                 }
 
                 item {
-                    SpendingLimitCard(
-                        state = spendingLimitUiState.spendingLimitState,
-                        onRetry = { spendingLimitViewModel.loadMonthlySpendingLimit() },
-                        onOpenAlert = onNavigateToSpendingLimitAlert
-                    )
+                    when (val state = spendingLimitUiState.spendingLimitsState) {
+                        is UiState.Success -> {
+                            if (state.data.isEmpty()) {
+                                SpendingLimitCard(
+                                    state = UiState.Idle,
+                                    onRetry = { spendingLimitViewModel.loadSpendingLimits() },
+                                    onOpenAlert = onNavigateToSpendingLimitAlert
+                                )
+                            } else {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    contentPadding = PaddingValues(horizontal = 0.dp)
+                                ) {
+                                    items(state.data) { summary ->
+                                        SpendingLimitCard(
+                                            state = UiState.Success(summary),
+                                            category = categoryUiState.categories.firstOrNull {
+                                                it.id == summary.limit.targetId
+                                            },
+                                            onRetry = { spendingLimitViewModel.loadSpendingLimits() },
+                                            onOpenAlert = onNavigateToSpendingLimitAlert,
+                                            modifier = Modifier.fillParentMaxWidth(0.92f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        is UiState.Loading -> SpendingLimitCard(
+                            state = UiState.Loading,
+                            onRetry = { spendingLimitViewModel.loadSpendingLimits() },
+                            onOpenAlert = onNavigateToSpendingLimitAlert
+                        )
+
+                        is UiState.Error -> SpendingLimitCard(
+                            state = UiState.Error(message = state.message, throwable = state.throwable),
+                            onRetry = { spendingLimitViewModel.loadSpendingLimits() },
+                            onOpenAlert = onNavigateToSpendingLimitAlert
+                        )
+
+                        is UiState.Idle -> SpendingLimitCard(
+                            state = spendingLimitUiState.spendingLimitState,
+                            onRetry = { spendingLimitViewModel.loadSpendingLimits() },
+                            onOpenAlert = onNavigateToSpendingLimitAlert
+                        )
+                    }
                 }
 
                 item {

@@ -15,15 +15,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitSummary
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import java.math.BigDecimal
 import java.text.DecimalFormat
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 @Composable
-fun SpendingLimitSuccessContent(summary: SpendingLimitSummary) {
+fun SpendingLimitSuccessContent(summary: SpendingLimitSummary, category: Category? = null) {
     val progressColor = when {
         summary.isExceeded -> IntivaColors.StatusError
         summary.progressPercent >= 80 -> IntivaColors.StatusWarning
@@ -64,17 +68,22 @@ fun SpendingLimitSuccessContent(summary: SpendingLimitSummary) {
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Límite de Gasto Mensual",
+                text = category?.name?.let { "$it · ${periodLabel(summary)}" }
+                    ?: "Límite ${summary.limit.targetId} · ${periodLabel(summary)}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
-                color = IntivaColors.TextPrimary
+                color = IntivaColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = subtitle,
                 fontSize = 12.sp,
-                color = if (summary.isExceeded) IntivaColors.StatusError else IntivaColors.TextSecondary
+                color = if (summary.isExceeded) IntivaColors.StatusError else IntivaColors.TextSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -84,4 +93,17 @@ fun SpendingLimitSuccessContent(summary: SpendingLimitSummary) {
 private fun formatCurrency(amount: BigDecimal): String {
     val formatter = DecimalFormat("#,##0.00")
     return "S/ ${formatter.format(amount)}"
+}
+
+private fun periodLabel(summary: SpendingLimitSummary): String {
+    val start = runCatching { LocalDate.parse(summary.limit.startDate) }.getOrNull()
+    val end = runCatching { LocalDate.parse(summary.limit.endDate) }.getOrNull()
+    if (start == null || end == null) return "Periodo"
+
+    val inclusiveDays = ChronoUnit.DAYS.between(start, end) + 1
+    return when {
+        inclusiveDays <= 7 -> "Semanal"
+        start.dayOfYear == 1 && end.dayOfYear == end.lengthOfYear() -> "Anual"
+        else -> "Mensual"
+    }
 }

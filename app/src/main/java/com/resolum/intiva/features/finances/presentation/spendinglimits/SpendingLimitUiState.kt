@@ -8,7 +8,8 @@ import java.math.RoundingMode
 data class SpendingLimitUiState(
     val spendingLimitState: UiState<SpendingLimitSummary> = UiState.Idle,
     val spendingLimitsState: UiState<List<SpendingLimitSummary>> = UiState.Idle,
-    val createState: UiState<SpendingLimit> = UiState.Idle
+    val createState: UiState<SpendingLimit> = UiState.Idle,
+    val updateState: UiState<SpendingLimit> = UiState.Idle
 )
 
 data class SpendingLimitSummary(
