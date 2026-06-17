@@ -30,9 +30,9 @@ fun EmptyLimitsCard(onAddClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onAddClick() },
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(
             modifier = Modifier.padding(24.dp),

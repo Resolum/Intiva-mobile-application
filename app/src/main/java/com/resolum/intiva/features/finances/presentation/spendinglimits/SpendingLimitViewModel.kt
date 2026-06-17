@@ -4,10 +4,15 @@ import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.common.viewmodel.BaseViewModel
 import com.resolum.intiva.core.network.model.NetworkResult
 import com.resolum.intiva.features.finances.domain.models.CreateSpendingLimitRequest
+import com.resolum.intiva.features.finances.domain.models.SpendingLimit
 import com.resolum.intiva.features.finances.domain.models.SpendingLimitOwnerType
 import com.resolum.intiva.features.finances.domain.models.SpendingLimitTargetType
+import com.resolum.intiva.features.finances.domain.models.UpdateSpendingLimitAmountRequest
+import com.resolum.intiva.features.finances.domain.models.UpdateSpendingLimitPeriodRequest
 import com.resolum.intiva.features.finances.domain.usecase.CreateSpendingLimitUseCase
 import com.resolum.intiva.features.finances.domain.usecase.GetSpendingLimitsUseCase
+import com.resolum.intiva.features.finances.domain.usecase.UpdateSpendingLimitAmountUseCase
+import com.resolum.intiva.features.finances.domain.usecase.UpdateSpendingLimitPeriodUseCase
 import com.resolum.intiva.features.iam.domain.repositories.SessionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +28,8 @@ import javax.inject.Inject
 class SpendingLimitViewModel @Inject constructor(
     private val getSpendingLimitsUseCase: GetSpendingLimitsUseCase,
     private val createSpendingLimitUseCase: CreateSpendingLimitUseCase,
+    private val updateSpendingLimitAmountUseCase: UpdateSpendingLimitAmountUseCase,
+    private val updateSpendingLimitPeriodUseCase: UpdateSpendingLimitPeriodUseCase,
     private val sessionRepository: SessionRepository
 ) : BaseViewModel() {
 
@@ -183,6 +190,94 @@ class SpendingLimitViewModel @Inject constructor(
 
     fun clearCreateState() {
         _uiState.update { it.copy(createState = UiState.Idle) }
+    }
+
+    fun updateSpendingLimit(
+        limit: SpendingLimit,
+        amount: String,
+        frequency: SpendingLimitFrequency,
+        updatePeriod: Boolean
+    ) {
+        safeLaunch {
+            val limitAmount = amount.toBigDecimalOrNull()
+            if (limitAmount == null || limitAmount <= BigDecimal.ZERO) {
+                _uiState.update {
+                    it.copy(updateState = UiState.Error("Ingresa un monto válido."))
+                }
+                return@safeLaunch
+            }
+
+            val period = frequency.toPeriod()
+            val amountChanged = limitAmount.compareTo(limit.limitAmount) != 0
+            val periodChanged = updatePeriod &&
+                (period.first.toString() != limit.startDate || period.second.toString() != limit.endDate)
+
+            if (!amountChanged && !periodChanged) {
+                _uiState.update { it.copy(updateState = UiState.Success(limit)) }
+                return@safeLaunch
+            }
+
+            _uiState.update { it.copy(updateState = UiState.Loading) }
+
+            if (amountChanged) {
+                val amountResult = updateSpendingLimitAmountUseCase(
+                    spendingLimitId = limit.id,
+                    request = UpdateSpendingLimitAmountRequest(
+                        limitAmount = limitAmount,
+                        currencyCode = limit.currencyCode
+                    )
+                )
+
+                if (amountResult is NetworkResult.Error) {
+                    _uiState.update {
+                        it.copy(
+                            updateState = UiState.Error(
+                                message = amountResult.message,
+                                throwable = amountResult.throwable
+                            )
+                        )
+                    }
+                    return@safeLaunch
+                }
+            }
+
+            if (periodChanged) {
+                when (
+                    val periodResult = updateSpendingLimitPeriodUseCase(
+                        spendingLimitId = limit.id,
+                        request = UpdateSpendingLimitPeriodRequest(
+                            startDate = period.first.toString(),
+                            endDate = period.second.toString()
+                        )
+                    )
+                ) {
+                    is NetworkResult.Success -> {
+                        _uiState.update { it.copy(updateState = UiState.Success(periodResult.data)) }
+                    }
+
+                    is NetworkResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                updateState = UiState.Error(
+                                    message = periodResult.message,
+                                    throwable = periodResult.throwable
+                                )
+                            )
+                        }
+                        return@safeLaunch
+                    }
+                }
+            } else {
+                _uiState.update { it.copy(updateState = UiState.Success(limit.copy(limitAmount = limitAmount))) }
+            }
+
+            loadSpendingLimits()
+            loadMonthlySpendingLimit()
+        }
+    }
+
+    fun clearUpdateState() {
+        _uiState.update { it.copy(updateState = UiState.Idle) }
     }
 
     override fun handleError(throwable: Throwable) {

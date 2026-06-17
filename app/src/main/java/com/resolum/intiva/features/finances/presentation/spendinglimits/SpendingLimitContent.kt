@@ -3,6 +3,7 @@ package com.resolum.intiva.features.finances.presentation.spendinglimits
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,12 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.theme.IntivaColors
+import com.resolum.intiva.features.finances.domain.models.SpendingLimit
+import com.resolum.intiva.features.finances.presentation.spendinglimits.components.AdjustSpendingLimitSheet
 import com.resolum.intiva.features.finances.presentation.spendinglimits.components.BudgetSummaryCard
 import com.resolum.intiva.features.finances.presentation.spendinglimits.components.EmptyLimitsCard
 import com.resolum.intiva.features.finances.presentation.spendinglimits.components.MessageCard
@@ -41,15 +46,20 @@ fun SpendingLimitListContent(
     limitsState: UiState<List<SpendingLimitSummary>>,
     categories: List<Category>,
     onAddClick: () -> Unit,
+    updateState: UiState<SpendingLimit>,
+    selectedLimitToAdjust: SpendingLimitSummary?,
+    onAdjustClick: (SpendingLimitSummary) -> Unit,
+    onDismissAdjust: () -> Unit,
+    onSaveAdjust: (SpendingLimit, String, SpendingLimitFrequency, Boolean) -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
-        containerColor = Color(0xFFFAF7FF),
+        containerColor = IntivaColors.BackgroundDefault,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddClick,
-                containerColor = IntivaColors.PrimaryGreen,
-                contentColor = IntivaColors.TextPrimary,
+                containerColor = IntivaColors.PrimaryBrand,
+                contentColor = IntivaColors.TextInverse,
                 shape = CircleShape
             ) {
                 Icon(
@@ -65,16 +75,28 @@ fun SpendingLimitListContent(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 24.dp),
-            contentPadding = PaddingValues(top = 32.dp, bottom = 112.dp),
+            contentPadding = PaddingValues(top = 18.dp, bottom = 112.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             item {
-                Text(
-                    text = "Límites de Gasto",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = IntivaColors.TextPrimary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = IntivaColors.TextPrimary
+                        )
+                    }
+                    Text(
+                        text = "Límites de Gasto",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = IntivaColors.TextPrimary
+                    )
+                }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Monitorea tus presupuestos por categoría este mes.",
@@ -109,7 +131,8 @@ fun SpendingLimitListContent(
                         items(summaries) { summary ->
                             SpendingLimitListItem(
                                 summary = summary,
-                                category = categories.firstOrNull { it.id == summary.limit.targetId }
+                                category = categories.firstOrNull { it.id == summary.limit.targetId },
+                                onAdjustClick = { onAdjustClick(summary) }
                             )
                         }
                     }
@@ -134,5 +157,16 @@ fun SpendingLimitListContent(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+
+    selectedLimitToAdjust?.let { summary ->
+        AdjustSpendingLimitSheet(
+            limit = summary.limit,
+            updateState = updateState,
+            onDismiss = onDismissAdjust,
+            onSave = { amount, frequency, updatePeriod ->
+                onSaveAdjust(summary.limit, amount, frequency, updatePeriod)
+            }
+        )
     }
 }

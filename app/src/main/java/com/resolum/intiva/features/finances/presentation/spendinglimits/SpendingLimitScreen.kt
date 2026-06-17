@@ -23,6 +23,7 @@ fun SpendingLimitScreen(
     val uiState by viewModel.uiState.collectAsState()
     val categoryUiState by categoryViewModel.uiState.collectAsState()
     var showCreate by remember { mutableStateOf(false) }
+    var selectedLimitToAdjust by remember { mutableStateOf<SpendingLimitSummary?>(null) }
 
     LaunchedEffect(Unit) {
         categoryViewModel.getCategories(
@@ -36,6 +37,13 @@ fun SpendingLimitScreen(
         if (uiState.createState is UiState.Success) {
             showCreate = false
             viewModel.clearCreateState()
+        }
+    }
+
+    LaunchedEffect(uiState.updateState) {
+        if (uiState.updateState is UiState.Success) {
+            selectedLimitToAdjust = null
+            viewModel.clearUpdateState()
         }
     }
 
@@ -59,6 +67,21 @@ fun SpendingLimitScreen(
             limitsState = uiState.spendingLimitsState,
             categories = categoryUiState.categories,
             onAddClick = { showCreate = true },
+            updateState = uiState.updateState,
+            selectedLimitToAdjust = selectedLimitToAdjust,
+            onAdjustClick = { selectedLimitToAdjust = it },
+            onDismissAdjust = {
+                selectedLimitToAdjust = null
+                viewModel.clearUpdateState()
+            },
+            onSaveAdjust = { limit, amount, frequency, updatePeriod ->
+                viewModel.updateSpendingLimit(
+                    limit = limit,
+                    amount = amount,
+                    frequency = frequency,
+                    updatePeriod = updatePeriod
+                )
+            },
             onBack = onNavigateBack
         )
     }

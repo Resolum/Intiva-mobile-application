@@ -11,16 +11,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitSummary
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 
 @Composable
 fun SpendingLimitCard(
     state: UiState<SpendingLimitSummary>,
+    category: Category? = null,
     onRetry: () -> Unit,
-    onOpenAlert: () -> Unit
+    onOpenAlert: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth()
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .clickable { onOpenAlert() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -32,7 +34,7 @@ fun SpendingLimitCard(
     ) {
         when (state) {
             is UiState.Loading -> SpendingLimitLoadingContent()
-            is UiState.Success -> SpendingLimitSuccessContent(summary = state.data)
+            is UiState.Success -> SpendingLimitSuccessContent(summary = state.data, category = category)
             is UiState.Error -> SpendingLimitErrorContent(onRetry = onRetry)
             is UiState.Idle -> SpendingLimitEmptyContent()
         }
