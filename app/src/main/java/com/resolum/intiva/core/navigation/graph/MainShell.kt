@@ -21,8 +21,10 @@ import com.resolum.intiva.features.finances.presentation.transactions.Transactio
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionDetailScreen
 import com.resolum.intiva.features.finances.presentation.transactions.TransactionsScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.ManageCategoriesScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.AccountDetailScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.CreateFinancialAccountScreen
 import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.FinancialAccountScreen
+import com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.EditFinancialAccountScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalCreateScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalDetailScreen
 import com.resolum.intiva.features.savings.presentation.SavingsGoalEditScreen
@@ -171,6 +173,9 @@ fun MainShell(
                     onNavigateToAppearance = {
                         shellNavController.navigate(NavRoutes.APPEARANCE)
                     },
+                    onNavigateToLinkedAccounts = {
+                        shellNavController.navigate(NavRoutes.FINANCIAL_ACCOUNTS)
+                    },
                     onNavigateBack = {
                         shellNavController.popBackStack()
                     }
@@ -218,6 +223,9 @@ fun MainShell(
                 FinancialAccountScreen(
                     onAddAccountClick = {
                         shellNavController.navigate(NavRoutes.CREATE_FINANCIAL_ACCOUNT)
+                    },
+                    onAccountClick = { accountId ->
+                        shellNavController.navigate(NavRoutes.financialAccountDetail(accountId))
                     }
                 )
             }
@@ -225,6 +233,22 @@ fun MainShell(
             composable(NavRoutes.CREATE_FINANCIAL_ACCOUNT) {
                 CreateFinancialAccountScreen(
                     onAccountCreated = { shellNavController.popBackStack() },
+                    onBackClick = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.FINANCIAL_ACCOUNT_DETAIL) {
+                AccountDetailScreen(
+                    onBackClick = { shellNavController.popBackStack() },
+                    onEditClick = { accountId ->
+                        shellNavController.navigate(NavRoutes.editFinancialAccount(accountId))
+                    }
+                )
+            }
+
+            composable(NavRoutes.EDIT_FINANCIAL_ACCOUNT) {
+                EditFinancialAccountScreen(
+                    onAccountUpdated = { shellNavController.popBackStack() },
                     onBackClick = { shellNavController.popBackStack() }
                 )
             }

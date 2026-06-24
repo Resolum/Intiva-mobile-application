@@ -5,14 +5,14 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Fin
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.repositories.FinancialAccountRepository
 import javax.inject.Inject
 
-/**
- * Use case for disabling a financial account.
- *
- * @property financialAccountRepository Repository for financial account operations.
- */
-class DisableFinancialAccountUseCase @Inject constructor(
+class UpdateFinancialAccountUseCase @Inject constructor(
     private val repository: FinancialAccountRepository
 ) {
-    suspend operator fun invoke(accountId: Long): NetworkResult<FinancialAccount> =
-        repository.updateFinancialAccount(accountId = accountId, isActive = false)
+    suspend operator fun invoke(
+        accountId: Long,
+        name: String? = null,
+        isActive: Boolean? = null
+    ): NetworkResult<FinancialAccount> {
+        return repository.updateFinancialAccount(accountId, name, isActive)
+    }
 }

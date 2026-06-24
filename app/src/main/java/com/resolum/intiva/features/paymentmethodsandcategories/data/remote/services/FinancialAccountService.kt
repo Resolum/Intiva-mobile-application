@@ -1,31 +1,20 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.data.remote.services
 
-import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.FinancialAccountResponseDto
 import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.CreateFinancialAccountRequestDto
-import retrofit2.http.GET
-import retrofit2.http.Path
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.FinancialAccountResponseDto
+import com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models.UpdateFinancialAccountRequestDto
 import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.GET
 import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Path
 
-/**
- * Retrofit service interface for fetching financial account data from the API.
- *
- * This interface defines the endpoints and HTTP methods for interacting with financial account-related
- * resources on the server. It includes a method to retrieve financial accounts based on a user's ID.
- */
 interface FinancialAccountService {
 
-    /**
-     * Fetches a list of financial accounts associated with a specific user ID.
-     *
-     * @param userId The ID of the user whose financial accounts are to be retrieved.
-     * @return A list of [FinancialAccountResponseDto] objects representing the user's financial accounts.
-     */
     @GET("users/{userId}/financial-accounts")
     suspend fun getFinancialAccountsByUserId(
         @Path("userId") userId: Long
-    ) : List<FinancialAccountResponseDto>
+    ): List<FinancialAccountResponseDto>
 
     @POST("users/{userId}/financial-accounts")
     suspend fun createFinancialAccount(
@@ -33,9 +22,10 @@ interface FinancialAccountService {
         @Body request: CreateFinancialAccountRequestDto
     ): FinancialAccountResponseDto
 
-    @PATCH("users/{userId}/financial-accounts/{accountId}/disable")
-    suspend fun disableFinancialAccount(
+    @PATCH("users/{userId}/financial-accounts/{accountId}")
+    suspend fun updateFinancialAccount(
         @Path("userId") userId: Long,
-        @Path("accountId") accountId: Long
+        @Path("accountId") accountId: Long,
+        @Body request: UpdateFinancialAccountRequestDto
     ): FinancialAccountResponseDto
 }

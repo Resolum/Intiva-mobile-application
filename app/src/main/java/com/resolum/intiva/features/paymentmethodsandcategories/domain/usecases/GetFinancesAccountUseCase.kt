@@ -17,4 +17,7 @@ class GetFinancesAccountUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): NetworkResult<List<FinancialAccount>> =
         repository.getFinancialAccountsByUserId()
+
+    suspend fun getById(accountId: Long): FinancialAccount? =
+        repository.getFinancialAccountById(accountId)
 }

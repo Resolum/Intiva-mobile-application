@@ -35,7 +35,7 @@ import com.resolum.intiva.features.paymentmethodsandcategories.data.local.entiti
         CategoryEntity::class,
         FinancialAccountEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(RoomConverters::class)

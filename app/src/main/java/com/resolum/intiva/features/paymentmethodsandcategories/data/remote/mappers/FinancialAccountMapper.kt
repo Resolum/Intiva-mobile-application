@@ -17,7 +17,8 @@ fun FinancialAccountResponseDto.toDomain() = FinancialAccount(
     currentAmount = currentAmount,
     institution = institution,
     creditLimit = creditLimit,
-    isActive = isActive ?: status.toIsActive()
+    isActive = isActive ?: status.toIsActive(),
+    version = version ?: 0
 )
 
 private fun String?.toIsActive(): Boolean {

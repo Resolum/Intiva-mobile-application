@@ -7,6 +7,7 @@ import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Fin
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.CreateFinancialAccountUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.DisableFinancialAccountUseCase
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.GetFinancesAccountUseCase
+import com.resolum.intiva.features.paymentmethodsandcategories.domain.usecases.UpdateFinancialAccountUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,8 @@ import javax.inject.Inject
 class FinancialAccountViewModel @Inject constructor(
     private val getFinancialAccountsUseCase: GetFinancesAccountUseCase,
     private val createFinancialAccountUseCase: CreateFinancialAccountUseCase,
-    private val disableFinancialAccountUseCase: DisableFinancialAccountUseCase
+    private val disableFinancialAccountUseCase: DisableFinancialAccountUseCase,
+    private val updateFinancialAccountUseCase: UpdateFinancialAccountUseCase
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(FinancialAccountUiState())
@@ -145,6 +147,30 @@ class FinancialAccountViewModel @Inject constructor(
     fun resetDisableAccountState() {
         _uiState.update { it.copy(disableAccountState = UiState.Idle) }
     }
+
+    fun updateFinancialAccount(
+        accountId: Long,
+        name: String? = null,
+        isActive: Boolean? = null
+    ) {
+        safeLaunch {
+            when (val result = updateFinancialAccountUseCase(accountId, name, isActive)) {
+                is NetworkResult.Success -> _uiState.update { state ->
+                    state.copy(
+                        accounts = state.accounts.map {
+                            if (it.id == result.data.id) result.data else it
+                        }
+                    )
+                }
+                is NetworkResult.Error -> { /* handled by BaseViewModel */ }
+            }
+        }
+    }
+
+    val totalBalance: Double
+        get() = _uiState.value.accounts
+            .filter { it.isActive }
+            .sumOf { it.currentAmount }
 
     override fun handleError(throwable: Throwable) {
         _uiState.update {
