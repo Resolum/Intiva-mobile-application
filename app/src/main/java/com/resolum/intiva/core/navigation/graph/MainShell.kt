@@ -36,7 +36,8 @@ import com.resolum.intiva.features.profiles.presentation.EditProfileScreen
 import com.resolum.intiva.features.profiles.presentation.ConfiguracionScreen
 import com.resolum.intiva.features.profiles.presentation.PrivacidadSeguridadScreen
 import com.resolum.intiva.features.profiles.presentation.CentroAyudaScreen
-import com.resolum.intiva.features.profiles.presentation.NotificacionesScreen
+import com.resolum.intiva.features.communications.presentation.notifications.NotificationSettingsScreen
+import com.resolum.intiva.features.communications.presentation.notifications.InAppNotificationsScreen
 import com.resolum.intiva.features.profiles.presentation.AparienciaScreen
 import com.resolum.intiva.features.household.presentation.family.FamilyScreen
 import com.resolum.intiva.features.household.presentation.invite.InviteMemberScreen
@@ -189,7 +190,13 @@ fun MainShell(
             }
 
             composable(NavRoutes.NOTIFICATIONS) {
-                NotificacionesScreen(
+                NotificationSettingsScreen(
+                    onNavigateBack = { shellNavController.popBackStack() }
+                )
+            }
+
+            composable(NavRoutes.IN_APP_NOTIFICATIONS) {
+                InAppNotificationsScreen(
                     onNavigateBack = { shellNavController.popBackStack() }
                 )
             }

@@ -26,6 +26,7 @@ object NavRoutes {
     const val PRIVACY                     = "privacy"
     const val HELP                        = "help"
     const val NOTIFICATIONS               = "notifications"
+    const val IN_APP_NOTIFICATIONS        = "in_app_notifications"
     const val APPEARANCE                  = "appearance"
 
     const val NEW_INCOME           = "transactions/new_income"
