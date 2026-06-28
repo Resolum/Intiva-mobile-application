@@ -5,12 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,6 +43,8 @@ fun InAppNotificationCard(
     onClick: (InAppNotificationUiState) -> Unit = {}
 ) {
     val style = notification.type.visualStyle()
+    val isUnread = !notification.isRead
+    val borderColor = if (isUnread) notification.type.borderColor() else Color.Transparent
 
     Card(
         modifier = modifier
@@ -49,71 +54,98 @@ fun InAppNotificationCard(
         colors = CardDefaults.cardColors(containerColor = IntivaColors.SurfaceWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .background(style.backgroundColor, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = style.icon,
-                    contentDescription = null,
-                    tint = style.contentColor,
-                    modifier = Modifier.size(22.dp)
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            if (isUnread) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .background(
+                            color = borderColor,
+                            shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                        )
                 )
             }
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(style.backgroundColor, CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = notification.title,
-                        modifier = Modifier.weight(1f),
-                        color = IntivaColors.TextPrimary,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    Icon(
+                        imageVector = style.icon,
+                        contentDescription = null,
+                        tint = style.contentColor,
+                        modifier = Modifier.size(22.dp)
                     )
-
-                    if (!notification.isRead) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .background(IntivaColors.PrimaryBrand, CircleShape)
-                        )
-                    }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = notification.title,
+                            modifier = Modifier.weight(1f),
+                            color = IntivaColors.TextPrimary,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
 
-                Text(
-                    text = notification.message,
-                    color = IntivaColors.TextSecondary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                        if (notification.createdAt.isNotEmpty()) {
+                            Text(
+                                text = notification.createdAt,
+                                color = IntivaColors.TextSecondary,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                        if (isUnread) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(IntivaColors.PrimaryBrand, CircleShape)
+                            )
+                        }
+                    }
 
-                Text(
-                    text = notification.createdAt,
-                    color = IntivaColors.TextSecondary,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Medium
-                )
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = notification.message,
+                        color = IntivaColors.TextSecondary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }
+}
+
+private fun InAppNotificationType.borderColor(): Color = when (this) {
+    InAppNotificationType.Error,
+    InAppNotificationType.Urgent -> IntivaColors.StatusError
+
+    InAppNotificationType.Info,
+    InAppNotificationType.Remembering -> IntivaColors.StatusInfo
+
+    InAppNotificationType.Warning -> IntivaColors.StatusWarning
+    InAppNotificationType.Success -> IntivaColors.StatusSuccess
 }
 
 private data class NotificationVisualStyle(

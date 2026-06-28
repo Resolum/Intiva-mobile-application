@@ -1,11 +1,13 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.data.remote.models
 
+import com.google.gson.annotations.SerializedName
+
 data class CreateFinancialAccountRequestDto(
-    val name: String,
-    val accountType: String,
-    val currencyCode: String,
-    val currentAmount: Double,
-    val institution: String?,
-    val creditLimit: Double?,
-    val isActive: Boolean = true
+    @SerializedName("name") val name: String,
+    @SerializedName("accountType") val accountType: String,
+    @SerializedName("currencyCode") val currencyCode: String,
+    @SerializedName("initialAmount") val currentAmount: Double,
+    @SerializedName("institution") val institution: String?,
+    @SerializedName("creditLimit") val creditLimit: Double?,
+    @SerializedName("isActive") val isActive: Boolean = true
 )

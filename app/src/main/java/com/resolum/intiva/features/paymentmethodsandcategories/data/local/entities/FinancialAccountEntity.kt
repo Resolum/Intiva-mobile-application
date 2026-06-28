@@ -21,5 +21,6 @@ data class FinancialAccountEntity(
     val currentAmount: Double,
     val institution: String?,
     val creditLimit: Double?,
-    val isActive: Boolean
+    val isActive: Boolean,
+    val version: Long = 0
 )

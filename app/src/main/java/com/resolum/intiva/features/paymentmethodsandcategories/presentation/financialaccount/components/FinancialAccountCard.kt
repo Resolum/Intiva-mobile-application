@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.presentation.financialaccount.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,13 +39,14 @@ private val IntivaError        = Color(0xFFD32F2F)
 fun FinancialAccountCard(
     account: FinancialAccount,
     modifier: Modifier = Modifier,
+    onCardClick: ((FinancialAccount) -> Unit)? = null,
     onDisableClick: ((FinancialAccount) -> Unit)? = null
 ) {
-    val icon = when (account.accountType.lowercase()) {
-        "credit", "credit_card", "tarjeta_credito" -> Icons.Outlined.CreditCard
-        "debit", "debit_card", "tarjeta_debito"    -> Icons.Outlined.AccountBalance
-        "wallet", "billetera"                       -> Icons.Outlined.AccountBalanceWallet
-        else                                        -> Icons.Outlined.AccountBalanceWallet
+    val (icon, tintColor) = when (account.accountType.lowercase()) {
+        "credit", "credit_card", "tarjeta_credito" -> Icons.Outlined.CreditCard to Color(0xFFE91E63)
+        "debit", "debit_card", "tarjeta_debito"    -> Icons.Outlined.AccountBalance to Color(0xFF2196F3)
+        "wallet", "billetera"                       -> Icons.Outlined.AccountBalanceWallet to Color(0xFF4CAF50)
+        else                                        -> Icons.Outlined.AccountBalanceWallet to IntivaPrimary
     }
 
     val accountTypeText = when (account.accountType.lowercase()) {
@@ -55,7 +57,9 @@ fun FinancialAccountCard(
     }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = onCardClick != null) { onCardClick?.invoke(account) },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = IntivaCardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -65,12 +69,12 @@ fun FinancialAccountCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Card(
                     shape = RoundedCornerShape(50.dp),
-                    colors = CardDefaults.cardColors(containerColor = IntivaPrimary)
+                    colors = CardDefaults.cardColors(containerColor = tintColor.copy(alpha = 0.15f))
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = tintColor,
                         modifier = Modifier.padding(12.dp).size(22.dp)
                     )
                 }
@@ -94,7 +98,7 @@ fun FinancialAccountCard(
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "${account.currencyCode} ${account.currentAmount}",
+                text = "${account.currencyCode} ${String.format("%,.2f", account.currentAmount)}",
                 style = MaterialTheme.typography.headlineSmall,
                 color = IntivaPrimary
             )
@@ -107,7 +111,7 @@ fun FinancialAccountCard(
             account.creditLimit?.let {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Límite: ${account.currencyCode} $it",
+                    text = "Límite: ${account.currencyCode} ${String.format("%,.2f", it)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = IntivaNeutral
                 )
@@ -118,7 +122,7 @@ fun FinancialAccountCard(
             Text(
                 text = if (account.isActive) "Activa" else "Inactiva",
                 style = MaterialTheme.typography.labelMedium,
-                color = if (account.isActive) IntivaPrimary else IntivaNeutral
+                color = if (account.isActive) Color(0xFF4CAF50) else IntivaNeutral
             )
 
             if (account.isActive && onDisableClick != null) {

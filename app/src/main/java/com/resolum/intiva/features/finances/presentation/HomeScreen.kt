@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.resolum.intiva.core.navigation.routes.NavRoutes
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.snackbar.IntivaSnackBarHost
 import com.resolum.intiva.core.ui.snackbar.SnackBarType
@@ -180,7 +181,7 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { navController.navigate(NavRoutes.IN_APP_NOTIFICATIONS) }) {
                         Icon(
                             Icons.Default.NotificationsNone,
                             contentDescription = "Notifications",
