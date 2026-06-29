@@ -1,6 +1,10 @@
 package com.resolum.intiva.core.utils.date
 
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -48,12 +52,19 @@ fun Long.toRelativeDateTime(): String {
  * - "26 May, 10:30 AM"
  */
 fun String.toRelativeDateTime(): String {
-    return try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-        val date = inputFormat.parse(this) ?: return this
-        date.time.toRelativeDateTime()
-    } catch (e: Exception) {
-        this
+    return toBackendInstantOrNull()?.toEpochMilli()?.toRelativeDateTime() ?: this
+}
+
+private fun String.toBackendInstantOrNull(): Instant? {
+    val value = trim()
+    return runCatching {
+        Instant.parse(value)
+    }.getOrElse {
+        runCatching {
+            LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME)
+                .atOffset(ZoneOffset.UTC)
+                .toInstant()
+        }.getOrNull()
     }
 }
 
