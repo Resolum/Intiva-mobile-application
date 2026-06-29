@@ -5,6 +5,7 @@ import com.resolum.intiva.features.finances.domain.models.TransactionGroupByDate
 import com.resolum.intiva.features.finances.domain.models.TransactionType
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -40,9 +41,9 @@ data class FilterCategory(
 fun List<TransactionGroupByDate>.filterWith(
     filters: TransactionFilters
 ): List<TransactionGroupByDate> {
-    return mapNotNull { group ->
+    return flatMap { group ->
         val groupDate = group.date.toLocalDateOrNull()
-        val filteredTransactions = group.transactions.filter { transaction ->
+        group.transactions.mapNotNull { transaction ->
             val transactionDate = transaction.registeredAt.toLocalDateOrNull() ?: groupDate
             val matchesDate = transactionDate == null ||
                 ((filters.fromDate == null || !transactionDate.isBefore(filters.fromDate)) &&
@@ -50,15 +51,21 @@ fun List<TransactionGroupByDate>.filterWith(
             val matchesCategory = filters.categoryIds.isEmpty() ||
                 transaction.categoryId in filters.categoryIds
 
-            matchesDate && matchesCategory
-        }
-
-        if (filteredTransactions.isEmpty()) {
-            null
-        } else {
-            group.copy(transactions = filteredTransactions)
+            if (matchesDate && matchesCategory) {
+                (transactionDate ?: groupDate) to transaction
+            } else {
+                null
+            }
         }
     }
+        .groupBy { (date, _) -> date }
+        .toSortedMap(compareByDescending { it })
+        .map { (date, entries) ->
+            TransactionGroupByDate(
+                date = date?.toString().orEmpty(),
+                transactions = entries.map { (_, transaction) -> transaction }
+            )
+        }
 }
 
 fun DateRangeOption.toDates(): Pair<LocalDate, LocalDate> {
@@ -74,10 +81,18 @@ fun DateRangeOption.toDates(): Pair<LocalDate, LocalDate> {
 }
 
 fun String.toLocalDateOrNull(): LocalDate? {
+    val value = trim()
     return runCatching {
-        Instant.parse(this).atZone(ZoneId.systemDefault()).toLocalDate()
+        Instant.parse(value).atZone(ZoneId.systemDefault()).toLocalDate()
     }.getOrElse {
-        runCatching { LocalDate.parse(take(10)) }.getOrNull()
+        runCatching {
+            LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME)
+                .atOffset(ZoneOffset.UTC)
+                .atZoneSameInstant(ZoneId.systemDefault())
+                .toLocalDate()
+        }.getOrElse {
+            runCatching { LocalDate.parse(value.take(10)) }.getOrNull()
+        }
     }
 }
 
