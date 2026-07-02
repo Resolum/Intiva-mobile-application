@@ -11,8 +11,8 @@ import javax.inject.Inject
  * @property financialAccountRepository Repository for financial account operations.
  */
 class DisableFinancialAccountUseCase @Inject constructor(
-    private val financialAccountRepository: FinancialAccountRepository
+    private val repository: FinancialAccountRepository
 ) {
     suspend operator fun invoke(accountId: Long): NetworkResult<FinancialAccount> =
-        financialAccountRepository.disableFinancialAccount(accountId)
+        repository.updateFinancialAccount(accountId = accountId, isActive = false)
 }

@@ -5,6 +5,7 @@ import com.resolum.intiva.features.finances.data.remote.models.RegisterTransacti
 import com.resolum.intiva.features.finances.domain.models.AccountType
 import com.resolum.intiva.features.finances.domain.models.RegisterTransactionRequest
 import com.resolum.intiva.features.finances.domain.models.Transaction
+import java.util.UUID
 
 fun RegisterTransactionRequest.toPendingEntity(
     userId: Long,
@@ -21,7 +22,8 @@ fun RegisterTransactionRequest.toPendingEntity(
         transactionType = transactionType.name,
         ownerType = ownerType,
         date = date,
-        note = description
+        note = description,
+        idempotencyKey = UUID.randomUUID().toString()
     )
 }
 
@@ -31,6 +33,7 @@ fun PendingTransactionEntity.toRegisterTransactionRequestDto(): RegisterTransact
         currencyCode = currencyCode,
         description = note,
         financialAccountId = financialAccountId,
+        userId = userId,
         performedByUserId = userId,
         transactionType = transactionType,
         categoryId = categoryId,

@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.finances.presentation.spendinglimits.components
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,25 +33,26 @@ fun FrequencyButton(
         modifier = modifier.height(54.dp),
         shape = RoundedCornerShape(28.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (selected) Color(0xFFF4F0FF) else Color.White,
-            contentColor = if (selected) IntivaColors.PrimaryBrand else IntivaColors.TextSecondary
+            containerColor = if (selected) IntivaColors.PrimaryBrand else Color.White,
+            contentColor = if (selected) IntivaColors.TextInverse else IntivaColors.TextSecondary
         ),
         border = androidx.compose.foundation.BorderStroke(
             width = if (selected) 2.dp else 1.dp,
             color = if (selected) IntivaColors.PrimaryBrand else Color(0xFFD4CEDD)
-        )
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp)
     ) {
         if (selected) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(14.dp)
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
             text = frequency.label,
-            fontSize = 14.sp,
+            fontSize = if (selected) 13.sp else 14.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )
     }

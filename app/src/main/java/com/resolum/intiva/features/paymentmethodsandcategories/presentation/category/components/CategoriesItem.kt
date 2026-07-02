@@ -1,6 +1,7 @@
 package com.resolum.intiva.features.paymentmethodsandcategories.presentation.category.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
 import androidx.core.graphics.toColorInt
+import com.resolum.intiva.core.ui.theme.IntivaColors
 
 /**
  * Composable function to display a single category item in a grid or list.
@@ -49,9 +51,9 @@ fun CategoryItem(
         onClick = onClick,
         modifier = Modifier.aspectRatio(1f),
         shape = RoundedCornerShape(12.dp),
-        colors = if (isSelected) CardDefaults.cardColors(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-        else CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        colors = CardDefaults.cardColors(Color.White),
+        border = if (isSelected) BorderStroke(2.dp, IntivaColors.PrimaryBrand) else BorderStroke(1.dp, Color(0xFFE7E4ED)),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 3.dp else 1.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(8.dp),

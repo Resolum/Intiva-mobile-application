@@ -14,7 +14,8 @@ fun FinancialAccountResponseDto.toEntity(userId: Long): FinancialAccountEntity {
         currentAmount = currentAmount,
         institution = institution,
         creditLimit = creditLimit,
-        isActive = isActive ?: status.toIsActive()
+        isActive = isActive ?: status.toIsActive(),
+        version = version ?: 0
     )
 }
 
@@ -28,7 +29,8 @@ fun FinancialAccount.toEntity(userId: Long): FinancialAccountEntity {
         currentAmount = currentAmount,
         institution = institution,
         creditLimit = creditLimit,
-        isActive = isActive
+        isActive = isActive,
+        version = version
     )
 }
 
@@ -41,7 +43,8 @@ fun FinancialAccountEntity.toDomain(): FinancialAccount {
         currentAmount = currentAmount,
         institution = institution,
         creditLimit = creditLimit,
-        isActive = isActive
+        isActive = isActive,
+        version = version
     )
 }
 

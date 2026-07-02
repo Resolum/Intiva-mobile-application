@@ -13,9 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,7 +41,8 @@ import java.text.DecimalFormat
 @Composable
 fun SpendingLimitListItem(
     summary: SpendingLimitSummary,
-    category: Category?
+    category: Category?,
+    onAdjustClick: () -> Unit
 ) {
     val progressColor = when {
         summary.isExceeded -> IntivaColors.StatusError
@@ -127,6 +133,33 @@ fun SpendingLimitListItem(
                 color = progressColor,
                 trackColor = Color(0xFFE5E0EC)
             )
+
+            Spacer(modifier = Modifier.height(14.dp))
+            OutlinedButton(
+                onClick = onAdjustClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = if (summary.isExceeded) IntivaColors.PrimaryBrand else Color.White,
+                    contentColor = if (summary.isExceeded) IntivaColors.TextInverse else IntivaColors.PrimaryBrand
+                ),
+                border = androidx.compose.foundation.BorderStroke(
+                    width = 1.dp,
+                    color = IntivaColors.PrimaryBrand
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Ajustar límite",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

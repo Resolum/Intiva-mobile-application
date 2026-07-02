@@ -7,6 +7,7 @@ import com.resolum.intiva.features.finances.data.remote.models.TransactionWithDe
 import com.resolum.intiva.features.shared.data.remote.models.ResponseWrapperDto
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -19,15 +20,15 @@ import retrofit2.Response
 interface TransactionService {
 
     /**
-     * Makes a POST request to the "users/{userId}/transactions" endpoint to register a new financial transaction for a specific user.
+     * Makes a POST request to the "transactions" endpoint to register a new financial transaction.
      *
-     * @param userId The ID of the user for whom the transaction is being registered.
+     * @param idempotencyKey Unique key used by the backend to safely deduplicate retries.
      * @param body The request body containing the details of the transaction to be registered.
      * @return A [Response] with the HTTP status of the transaction registration operation.
      */
-    @POST("users/{userId}/transactions")
+    @POST("transactions")
     suspend fun registerIndividualTransaction(
-        @Path("userId") userId: Long,
+        @Header("Idempotency-Key") idempotencyKey: String,
         @Body body: RegisterTransactionRequestDto,
     ) : Response<Unit>
 

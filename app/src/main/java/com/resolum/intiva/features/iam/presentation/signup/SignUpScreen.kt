@@ -19,7 +19,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Card
@@ -53,12 +56,30 @@ import com.resolum.intiva.core.ui.components.IntivaTextField
 import com.resolum.intiva.core.ui.theme.IntivaColors
 
 /**
- * Screen for user registration, allowing new users to create an account by providing their email and password.
- * Includes form validation, error handling, and navigation options to login and terms of service.
+ * Screen for user registration.
  *
- * @param onSignUpSuccess Callback triggered when the sign-up process is successful, typically used for navigation.
- * @param onNavigateBack Callback for navigating back to the previous screen.
- * @param onNavigateToLogin Callback for navigating to the login screen.
+ * This screen allows new users to create an account by providing:
+ * - Full name
+ * - Email
+ * - Password
+ * - Age
+ * - Phone number
+ * - Biography
+ *
+ * It also handles:
+ * - Form validation errors
+ * - Password visibility
+ * - Terms and privacy policy navigation
+ * - Sign-up loading and error states
+ *
+ * @param modifier Modifier used to customize the screen layout.
+ * @param viewModel ViewModel that manages the sign-up state and actions.
+ * @param onSignUpSuccess Callback triggered when the sign-up process finishes successfully.
+ * @param onNavigateBack Callback used to navigate back to the previous screen.
+ * @param onNavigateToTermsAndConditions Callback used to open the Terms and Conditions screen.
+ * @param onNavigateToPrivacyPolicy Callback used to open the Privacy Policy screen.
+ * @param showBackButton Indicates whether the back button should be shown.
+ * @param onNavigateToLogin Callback used to navigate to the login screen.
  */
 @Composable
 fun SignUpScreen(
@@ -75,12 +96,17 @@ fun SignUpScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var termsAccepted by remember { mutableStateOf(false) }
 
+    /**
+     * Navigates after the sign-up process is completed successfully.
+     */
     LaunchedEffect(uiState.signUpState) {
-        if (uiState.signUpState is UiState.Success) onSignUpSuccess()
+        if (uiState.signUpState is UiState.Success) {
+            onSignUpSuccess()
+        }
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(IntivaColors.BackgroundLavender),
     ) {
@@ -100,6 +126,9 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(28.dp))
 
+            /**
+             * Header section of the sign-up screen.
+             */
             AnimatedVisibility(
                 visible = true,
                 enter = fadeIn() + slideInVertically { -20 },
@@ -130,6 +159,9 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(32.dp))
 
+            /**
+             * Form card containing all required registration fields.
+             */
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -143,7 +175,25 @@ fun SignUpScreen(
                         .fillMaxWidth()
                         .padding(24.dp),
                 ) {
+                    /**
+                     * Full name input.
+                     */
+                    IntivaTextField(
+                        value = uiState.name,
+                        onValueChange = viewModel::onNameChange,
+                        label = "Nombre completo",
+                        leadingIcon = Icons.Outlined.Person,
+                        isError = uiState.nameError != null,
+                        errorMessage = uiState.nameError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
+                    Spacer(Modifier.height(20.dp))
+
+                    /**
+                     * Email input.
+                     */
                     IntivaTextField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChange,
@@ -158,6 +208,9 @@ fun SignUpScreen(
 
                     Spacer(Modifier.height(20.dp))
 
+                    /**
+                     * Password input with visibility toggle.
+                     */
                     IntivaTextField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChange,
@@ -178,9 +231,59 @@ fun SignUpScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
+                    Spacer(Modifier.height(20.dp))
+
+                    /**
+                     * Age input.
+                     */
+                    IntivaTextField(
+                        value = uiState.age,
+                        onValueChange = viewModel::onAgeChange,
+                        label = "Edad",
+                        leadingIcon = Icons.Outlined.Person,
+                        isError = uiState.ageError != null,
+                        errorMessage = uiState.ageError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    /**
+                     * Phone number input.
+                     */
+                    IntivaTextField(
+                        value = uiState.phoneNumber,
+                        onValueChange = viewModel::onPhoneNumberChange,
+                        label = "Número de teléfono",
+                        leadingIcon = Icons.Outlined.Phone,
+                        isError = uiState.phoneNumberError != null,
+                        errorMessage = uiState.phoneNumberError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    /**
+                     * Biography input.
+                     */
+                    IntivaTextField(
+                        value = uiState.bio,
+                        onValueChange = viewModel::onBioChange,
+                        label = "Biografía",
+                        leadingIcon = Icons.Outlined.Info,
+                        isError = uiState.bioError != null,
+                        errorMessage = uiState.bioError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
                     Spacer(Modifier.height(24.dp))
 
-
+                    /**
+                     * Terms and privacy policy checkbox.
+                     */
                     IntivaTermsCheckbox(
                         checked = termsAccepted,
                         onCheckedChange = { termsAccepted = it },
@@ -199,7 +302,9 @@ fun SignUpScreen(
 
                     Spacer(Modifier.height(28.dp))
 
-
+                    /**
+                     * General sign-up error message.
+                     */
                     AnimatedVisibility(visible = uiState.signUpState is UiState.Error) {
                         Column {
                             Text(
@@ -209,10 +314,16 @@ fun SignUpScreen(
                                     color = IntivaColors.ErrorRed,
                                 ),
                             )
+
                             Spacer(Modifier.height(12.dp))
                         }
                     }
 
+                    /**
+                     * Submit button.
+                     *
+                     * The button is enabled only when the user accepts the terms and privacy policy.
+                     */
                     IntivaPrimaryButton(
                         text = "Crear cuenta",
                         onClick = viewModel::onSignUpClick,
@@ -224,15 +335,23 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(32.dp))
 
-
+            /**
+             * Login navigation text.
+             */
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 val loginText = buildAnnotatedString {
-                    withStyle(SpanStyle(color = IntivaColors.TextSecondary, fontSize = 14.sp)) {
+                    withStyle(
+                        SpanStyle(
+                            color = IntivaColors.TextSecondary,
+                            fontSize = 14.sp
+                        )
+                    ) {
                         append("¿Ya tienes una cuenta? ")
                     }
+
                     withStyle(
                         SpanStyle(
                             color = IntivaColors.TextLink,

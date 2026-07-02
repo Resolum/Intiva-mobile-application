@@ -26,6 +26,7 @@ object NavRoutes {
     const val PRIVACY                     = "privacy"
     const val HELP                        = "help"
     const val NOTIFICATIONS               = "notifications"
+    const val IN_APP_NOTIFICATIONS        = "in_app_notifications"
     const val APPEARANCE                  = "appearance"
 
     const val NEW_INCOME           = "transactions/new_income"
@@ -37,6 +38,11 @@ object NavRoutes {
 
     const val FINANCIAL_ACCOUNTS = "financial_accounts"
     const val CREATE_FINANCIAL_ACCOUNT = "create_financial_account"
+    const val FINANCIAL_ACCOUNT_DETAIL = "financial_account_detail/{accountId}"
+    const val EDIT_FINANCIAL_ACCOUNT = "edit_financial_account/{accountId}"
+
+    fun financialAccountDetail(accountId: Long) = "financial_account_detail/$accountId"
+    fun editFinancialAccount(accountId: Long) = "edit_financial_account/$accountId"
 
     val BOTTOM_NAV_ROUTES = setOf(HOME, TRANSACTIONS, SAVINGS_GOALS, FAMILY, PROFILE)
 }

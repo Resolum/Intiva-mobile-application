@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,15 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColorInt
 import com.resolum.intiva.core.common.state.UiState
 import com.resolum.intiva.core.ui.theme.IntivaColors
 import com.resolum.intiva.features.finances.presentation.spendinglimits.SpendingLimitFrequency
 import com.resolum.intiva.features.paymentmethodsandcategories.domain.models.Category
-import java.math.BigDecimal
-import java.text.DecimalFormat
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,8 +65,8 @@ fun SpendingLimitCreateContent(
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Cerrar",
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
                             tint = Color.White
                         )
                     }
@@ -81,7 +76,7 @@ fun SpendingLimitCreateContent(
                 )
             )
         },
-        containerColor = Color(0xFFFAF7FF),
+        containerColor = IntivaColors.BackgroundDefault,
         bottomBar = {
             Button(
                 onClick = {
@@ -96,7 +91,7 @@ fun SpendingLimitCreateContent(
                     .height(58.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = IntivaColors.PrimaryGreen,
+                    containerColor = IntivaColors.PrimaryAction,
                     contentColor = IntivaColors.TextPrimary,
                     disabledContainerColor = Color(0xFFE5E0EC),
                     disabledContentColor = IntivaColors.TextSecondary
@@ -134,8 +129,6 @@ fun SpendingLimitCreateContent(
 
             item {
                 StepLabel(text = "PASO 1: SELECCIONA UN OBJETIVO")
-                SelectedCategoryCard(selectedCategory = selectedCategory)
-                Spacer(modifier = Modifier.height(12.dp))
                 SpendingLimitCategorySelector(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it }

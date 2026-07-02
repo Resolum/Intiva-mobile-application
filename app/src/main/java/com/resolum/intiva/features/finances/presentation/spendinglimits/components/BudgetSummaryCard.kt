@@ -40,9 +40,9 @@ fun BudgetSummaryCard(summaries: List<SpendingLimitSummary>) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(
@@ -87,7 +87,7 @@ fun BudgetSummaryCard(summaries: List<SpendingLimitSummary>) {
                     .height(8.dp)
                     .clip(RoundedCornerShape(6.dp)),
                 color = IntivaColors.PrimaryBrand,
-                trackColor = Color(0xFFE0DCE8)
+                trackColor = Color(0xFFE8E5EF)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
